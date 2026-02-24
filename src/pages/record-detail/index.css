@@ -1,1 +1,251 @@
+.detail-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e293b 0%, #581c87 50%, #1e293b 100%);
+}
 
+/* 头部 */
+.header {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* 内容区域 */
+.content {
+  padding: 16px;
+}
+
+/* 加载和空状态 */
+.loading-container,
+.empty-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+.loading-text,
+.empty-text {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+}
+
+/* 卡片 */
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-date {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+/* 队伍卡片 */
+.team-card {
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.team-card-winner {
+  border: 1px solid;
+}
+
+.team-card:last-child {
+  margin-bottom: 0;
+}
+
+.team-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.team-title-1 {
+  color: #ec4899;
+}
+
+.team-title-2 {
+  color: #06b6d4;
+}
+
+.team-card-winner .team-card {
+  background: linear-gradient(90deg, rgba(236, 72, 153, 0.2) 0%, rgba(225, 29, 72, 0.2) 100%);
+  border-color: rgba(236, 72, 153, 0.3);
+}
+
+.team-players {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.team-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-1 {
+  background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
+}
+
+.avatar-2 {
+  background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
+}
+
+.avatar-text {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.player-name {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.plus-sign {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.winner-badge {
+  color: #ec4899;
+  font-size: 14px;
+  font-weight: bold;
+  display: block;
+  margin-top: 12px;
+}
+
+.team-card:last-child .winner-badge {
+  color: #06b6d4;
+}
+
+/* 章节标题 */
+.section-title {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* 输入框 */
+.input-wrapper {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.score-input,
+.remark-input {
+  background: transparent;
+  color: #ffffff;
+  font-size: 14px;
+  width: 100%;
+}
+
+.score-input {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* 比分显示 */
+.score-display {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: bold;
+  display: block;
+}
+
+/* 备注显示 */
+.remark-display {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  display: block;
+}
+
+.remark-empty {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* 编辑历史 */
+.history-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.history-time {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.history-action {
+  color: #ffffff;
+  font-size: 12px;
+  display: block;
+}
+
+/* 取消编辑按钮 */
+.cancel-btn {
+  background: rgba(239, 68, 68, 0.5);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.cancel-btn-text {
+  color: #ffffff;
+  font-weight: bold;
+}

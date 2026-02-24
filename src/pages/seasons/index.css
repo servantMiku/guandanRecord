@@ -1,1 +1,260 @@
+.seasons-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e293b 0%, #581c87 50%, #1e293b 100%);
+}
 
+/* 头部 */
+.header {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.create-btn {
+  background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.create-btn-text {
+  color: #ffffff;
+  font-weight: bold;
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+/* 表单容器 */
+.form-container {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.form-field {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.date-picker {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.date-picker-empty {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+.date-text {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.date-text-empty {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.warning-text {
+  color: #f59e0b;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.form-actions {
+  display: flex;
+  margin-top: 16px;
+}
+
+.form-btn {
+  flex: 1;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.form-btn-cancel {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.form-btn-submit {
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  margin-left: 12px;
+}
+
+.form-btn-text {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* 内容区域 */
+.content {
+  padding: 16px;
+}
+
+/* 赛季分组 */
+.season-group {
+  margin-bottom: 24px;
+}
+
+.group-title {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* 赛季卡片 */
+.season-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.season-card-active {
+  border-color: rgba(236, 72, 153, 0.3);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(225, 29, 72, 0.1) 100%);
+}
+
+.season-card-ended {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.season-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.season-name {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.season-name-ended {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.season-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.season-badge-active {
+  background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
+}
+
+.season-badge-ended {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.season-badge-text {
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.season-date {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.season-date-ended {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.season-actions {
+  display: flex;
+}
+
+.season-action {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.season-action-delete {
+  background: rgba(239, 68, 68, 0.5);
+  margin-left: 8px;
+}
+
+.season-action-text {
+  color: #ffffff;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+/* 空状态 */
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 16px;
+}
+
+.empty-text {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  margin-top: 16px;
+}
+
+.empty-hint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  margin-top: 8px;
+}

@@ -234,41 +234,41 @@ export default function RecordFormPage() {
 
   const getPlayerTeamColor = (playerId: string) => {
     if (team1Player1 === playerId || team1Player2 === playerId) {
-      return 'from-pink-500 to-rose-600 border-pink-400'
+      return 'player-selected-team1'
     }
     if (team2Player1 === playerId || team2Player2 === playerId) {
-      return 'from-cyan-500 to-blue-600 border-cyan-400'
+      return 'player-selected-team2'
     }
     return ''
   }
 
   return (
-    <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <View className="record-form-page">
       {/* 头部 */}
-      <View className="bg-white/10 backdrop-blur-lg px-4 py-4 border-b border-white/20 flex items-center">
+      <View className="header">
         <ArrowLeft size={24} color="#ffffff" onClick={() => Taro.navigateBack()} />
-        <Text className="block text-white text-lg font-bold ml-3">录入战绩</Text>
+        <Text className="header-title">录入战绩</Text>
         {season && (
-          <Text className="block text-pink-400 text-sm ml-auto">{season.name}</Text>
+          <Text className="header-season">{season.name}</Text>
         )}
       </View>
 
       {loading ? (
-        <View className="flex items-center justify-center py-20">
-          <Text className="block text-white/60 text-base">加载中...</Text>
+        <View className="loading-container">
+          <Text className="loading-text">加载中...</Text>
         </View>
       ) : (
-        <View className="px-4 py-4 pb-8">
+        <View className="content">
           {/* 玩家选择 - 平铺显示 */}
-          <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-4 border border-white/20">
-            <View className="flex items-center mb-4">
+          <View className="card">
+            <View className="card-header">
               <Users size={24} color="#f472b6" />
-              <Text className="block text-white text-lg font-bold ml-2">选择玩家</Text>
-              <Text className="block text-white/60 text-sm ml-auto">点击选择/取消</Text>
+              <Text className="card-title">选择玩家</Text>
+              <Text className="card-hint">点击选择/取消</Text>
             </View>
 
-            {/* 玩家按钮网格 */}
-            <View className="grid grid-cols-3 gap-3">
+            {/* 玩家按钮网格 - 使用 flex 布局代替 grid */}
+            <View className="player-grid">
               {players.map((player) => {
                 const selected = isPlayerSelected(player.id)
                 const colorClass = getPlayerTeamColor(player.id)
@@ -276,17 +276,13 @@ export default function RecordFormPage() {
                 return (
                   <View
                     key={player.id}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center border-2 transition-all ${
-                      selected
-                        ? `bg-gradient-to-br ${colorClass}`
-                        : 'bg-white/10 border-white/20'
-                    }`}
+                    className={`player-btn ${selected ? colorClass : ''}`}
                     onClick={() => handlePlayerClick(player.id)}
                   >
-                    <Text className={`text-3xl font-bold mb-1 ${selected ? 'text-white' : 'text-white/60'}`}>
+                    <Text className={`player-avatar ${selected ? 'avatar-selected' : ''}`}>
                       {player.name.charAt(0)}
                     </Text>
-                    <Text className={`text-sm font-medium ${selected ? 'text-white' : 'text-white/80'}`}>
+                    <Text className={`player-name ${selected ? 'name-selected' : ''}`}>
                       {player.name}
                     </Text>
                   </View>
@@ -295,19 +291,19 @@ export default function RecordFormPage() {
             </View>
 
             {/* 队伍分配 */}
-            <View className="mt-4 space-y-3">
+            <View className="teams-container">
               {/* 队伍1 */}
-              <View className="bg-gradient-to-r from-pink-500/20 to-rose-600/20 rounded-xl p-3 border border-pink-500/30">
-                <Text className="block text-pink-400 text-sm font-bold mb-2">队伍1 (粉色)</Text>
-                <View className="flex gap-2">
-                  <View className="flex-1 bg-white/10 rounded-lg px-3 py-2 text-center relative">
-                    <Text className="block text-white/60 text-xs mb-1">玩家1</Text>
-                    <Text className="block text-white font-semibold">
+              <View className="team-card team-card-1">
+                <Text className="team-title">队伍1 (粉色)</Text>
+                <View className="team-players">
+                  <View className="team-player">
+                    <Text className="team-player-label">玩家1</Text>
+                    <Text className="team-player-name">
                       {getPlayerName(team1Player1) || '-'}
                     </Text>
                     {team1Player1 && (
                       <View
-                        className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                        className="clear-btn"
                         onClick={(e) => {
                           e.stopPropagation()
                           clearPlayer('team1Player1')
@@ -317,14 +313,14 @@ export default function RecordFormPage() {
                       </View>
                     )}
                   </View>
-                  <View className="flex-1 bg-white/10 rounded-lg px-3 py-2 text-center relative">
-                    <Text className="block text-white/60 text-xs mb-1">玩家2</Text>
-                    <Text className="block text-white font-semibold">
+                  <View className="team-player">
+                    <Text className="team-player-label">玩家2</Text>
+                    <Text className="team-player-name">
                       {getPlayerName(team1Player2) || '-'}
                     </Text>
                     {team1Player2 && (
                       <View
-                        className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                        className="clear-btn"
                         onClick={(e) => {
                           e.stopPropagation()
                           clearPlayer('team1Player2')
@@ -338,17 +334,17 @@ export default function RecordFormPage() {
               </View>
 
               {/* 队伍2 */}
-              <View className="bg-gradient-to-r from-cyan-500/20 to-blue-600/20 rounded-xl p-3 border border-cyan-500/30">
-                <Text className="block text-cyan-400 text-sm font-bold mb-2">队伍2 (蓝色)</Text>
-                <View className="flex gap-2">
-                  <View className="flex-1 bg-white/10 rounded-lg px-3 py-2 text-center relative">
-                    <Text className="block text-white/60 text-xs mb-1">玩家1</Text>
-                    <Text className="block text-white font-semibold">
+              <View className="team-card team-card-2">
+                <Text className="team-title">队伍2 (蓝色)</Text>
+                <View className="team-players">
+                  <View className="team-player">
+                    <Text className="team-player-label">玩家1</Text>
+                    <Text className="team-player-name">
                       {getPlayerName(team2Player1) || '-'}
                     </Text>
                     {team2Player1 && (
                       <View
-                        className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                        className="clear-btn"
                         onClick={(e) => {
                           e.stopPropagation()
                           clearPlayer('team2Player1')
@@ -358,14 +354,14 @@ export default function RecordFormPage() {
                       </View>
                     )}
                   </View>
-                  <View className="flex-1 bg-white/10 rounded-lg px-3 py-2 text-center relative">
-                    <Text className="block text-white/60 text-xs mb-1">玩家2</Text>
-                    <Text className="block text-white font-semibold">
+                  <View className="team-player">
+                    <Text className="team-player-label">玩家2</Text>
+                    <Text className="team-player-name">
                       {getPlayerName(team2Player2) || '-'}
                     </Text>
                     {team2Player2 && (
                       <View
-                        className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                        className="clear-btn"
                         onClick={(e) => {
                           e.stopPropagation()
                           clearPlayer('team2Player2')
@@ -381,64 +377,67 @@ export default function RecordFormPage() {
           </View>
 
           {/* 比分录入 */}
-          <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-4 border border-white/20">
-            <View className="flex items-center mb-4">
+          <View className="card">
+            <View className="card-header">
               <Trophy size={24} color="#fbbf24" />
-              <Text className="block text-white text-lg font-bold ml-2">比分录入</Text>
+              <Text className="card-title">比分录入</Text>
             </View>
 
-            <View className="flex items-center justify-between gap-3">
-              <View className="flex-1">
-                <Text className="block text-pink-400 text-sm font-bold mb-2 text-center">队伍1</Text>
-                <Input
-                  className="w-full bg-white/10 text-white text-center rounded-lg px-4 py-3"
-                  type="number"
-                  placeholder="0"
-                  value={team1Score}
-                  onInput={(e) => {
-                    setTeam1Score(e.detail.value)
-                    saveDraft()
-                  }}
-                />
+            <View className="score-container">
+              <View className="score-input-wrapper">
+                <Text className="score-label">队伍1</Text>
+                <View className="input-wrapper">
+                  <Input
+                    className="score-input"
+                    type="number"
+                    placeholder="0"
+                    value={team1Score}
+                    onInput={(e) => {
+                      setTeam1Score(e.detail.value)
+                      saveDraft()
+                    }}
+                  />
+                </View>
               </View>
-              <Text className="block text-white/60 text-2xl font-bold">VS</Text>
-              <View className="flex-1">
-                <Text className="block text-cyan-400 text-sm font-bold mb-2 text-center">队伍2</Text>
-                <Input
-                  className="w-full bg-white/10 text-white text-center rounded-lg px-4 py-3"
-                  type="number"
-                  placeholder="0"
-                  value={team2Score}
-                  onInput={(e) => {
-                    setTeam2Score(e.detail.value)
-                    saveDraft()
-                  }}
-                />
+              <Text className="vs-text">VS</Text>
+              <View className="score-input-wrapper">
+                <Text className="score-label">队伍2</Text>
+                <View className="input-wrapper">
+                  <Input
+                    className="score-input"
+                    type="number"
+                    placeholder="0"
+                    value={team2Score}
+                    onInput={(e) => {
+                      setTeam2Score(e.detail.value)
+                      saveDraft()
+                    }}
+                  />
+                </View>
               </View>
             </View>
           </View>
 
           {/* 备注 */}
-          <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-4 border border-white/20">
-            <Text className="block text-white text-base font-semibold mb-3">备注 (可选)</Text>
-            <Input
-              className="w-full bg-white/10 text-white rounded-lg px-4 py-3"
-              placeholder="添加备注信息..."
-              value={remark}
-              onInput={(e) => {
-                setRemark(e.detail.value)
-                saveDraft()
-              }}
-            />
+          <View className="card">
+            <Text className="section-title">备注 (可选)</Text>
+            <View className="input-wrapper">
+              <Input
+                className="remark-input"
+                placeholder="添加备注信息..."
+                value={remark}
+                onInput={(e) => {
+                  setRemark(e.detail.value)
+                  saveDraft()
+                }}
+              />
+            </View>
           </View>
 
           {/* 提交按钮 */}
-          <View
-            className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl py-4 flex items-center justify-center shadow-lg"
-            onClick={handleSubmit}
-          >
+          <View className="submit-btn" onClick={handleSubmit}>
             <Save size={24} color="#ffffff" />
-            <Text className="block text-white font-bold ml-2 text-lg">保存战绩</Text>
+            <Text className="submit-btn-text">保存战绩</Text>
           </View>
         </View>
       )}

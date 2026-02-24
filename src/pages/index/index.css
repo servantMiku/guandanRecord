@@ -1,1 +1,186 @@
+.index-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e293b 0%, #581c87 50%, #1e293b 100%);
+}
 
+/* 头部 */
+.header {
+  background: linear-gradient(90deg, #7c3aed 0%, #4f46e5 100%);
+  padding: 24px 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.header-title {
+  display: block;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.header-season-name {
+  display: block;
+  color: #ffffff;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.header-date {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+/* 内容区域 */
+.content {
+  padding: 16px;
+}
+
+/* 快捷操作 */
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.quick-btn {
+  flex: 1;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.quick-btn-add {
+  background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
+}
+
+.quick-btn-season {
+  background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
+}
+
+.quick-btn-text {
+  color: #ffffff;
+  font-weight: bold;
+  margin-left: 8px;
+  font-size: 16px;
+}
+
+/* 卡片 */
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+/* 加载状态 */
+.loading-container,
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.loading-text,
+.empty-text {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.empty-hint {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* 战绩项 */
+.match-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.match-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.match-date {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.match-winner {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.winner-team1 {
+  color: #22c55e;
+}
+
+.winner-team2 {
+  color: #ec4899;
+}
+
+.match-score {
+  display: block;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.match-remark {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+/* 快捷入口 */
+.shortcuts {
+  display: flex;
+  gap: 12px;
+}
+
+.shortcut-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.shortcut-text {
+  color: #ffffff;
+  font-weight: 500;
+  margin-top: 8px;
+  font-size: 14px;
+}

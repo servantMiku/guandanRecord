@@ -77,73 +77,70 @@ export default function IndexPage() {
   }
 
   return (
-    <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <View className="index-page">
       {/* 头部 - 当前赛季 */}
-      <View className="bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-6 shadow-lg">
-        <Text className="block text-white text-2xl font-bold mb-2">掼蛋战绩</Text>
+      <View className="header">
+        <Text className="header-title">掼蛋战绩</Text>
         {currentSeason ? (
           <View>
-            <Text className="block text-white text-lg mb-1">{currentSeason.name}</Text>
-            <Text className="block text-violet-200 text-sm">
+            <Text className="header-season-name">{currentSeason.name}</Text>
+            <Text className="header-date">
               {currentSeason.startDate} - {currentSeason.endDate || '进行中'}
             </Text>
           </View>
         ) : (
-          <Text className="block text-violet-200 text-base">暂无活跃赛季</Text>
+          <Text className="header-date">暂无活跃赛季</Text>
         )}
       </View>
 
-      <View className="px-4 py-4">
+      <View className="content">
         {/* 快捷操作 */}
-        <View className="flex gap-3 mb-4">
-          <View
-            className="flex-1 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl py-4 flex items-center justify-center shadow-lg"
-            onClick={handleAddRecord}
-          >
+        <View className="quick-actions">
+          <View className="quick-btn quick-btn-add" onClick={handleAddRecord}>
             <Plus size={24} color="#ffffff" />
-            <Text className="text-white font-bold ml-2">录入战绩</Text>
+            <Text className="quick-btn-text">录入战绩</Text>
           </View>
           <View
-            className="flex-1 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl py-4 flex items-center justify-center shadow-lg"
+            className="quick-btn quick-btn-season"
             onClick={() => navigateTo('/pages/seasons/index')}
           >
             <Calendar size={24} color="#ffffff" />
-            <Text className="text-white font-bold ml-2">赛季管理</Text>
+            <Text className="quick-btn-text">赛季管理</Text>
           </View>
         </View>
 
         {/* 最近战绩 */}
-        <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 shadow-xl border border-white/20 mb-4">
-          <View className="flex items-center mb-4">
+        <View className="card">
+          <View className="card-header">
             <Trophy size={24} color="#fbbf24" />
-            <Text className="block text-xl font-bold text-white ml-2">最近战绩</Text>
+            <Text className="card-title">最近战绩</Text>
           </View>
 
           {loading ? (
-            <View className="flex items-center justify-center py-8">
-              <Text className="block text-white/60 text-sm">加载中...</Text>
+            <View className="loading-container">
+              <Text className="loading-text">加载中...</Text>
             </View>
           ) : recentMatches.length === 0 ? (
-            <View className="flex flex-col items-center justify-center py-8">
-              <Text className="block text-white/60 text-base">暂无战绩记录</Text>
-              <Text className="block text-white/60 text-sm mt-1">快去录入第一场战绩吧</Text>
+            <View className="empty-container">
+              <Text className="empty-text">暂无战绩记录</Text>
+              <Text className="empty-hint">快去录入第一场战绩吧</Text>
             </View>
           ) : (
             <View>
               {recentMatches.map((match) => (
-                <View key={match.id} className="bg-white/10 rounded-xl p-4 mb-3 last:mb-0 border border-white/10">
-                  <View className="flex items-center justify-between mb-2">
-                    <Text className="block text-sm text-white/60">
+                <View key={match.id} className="match-item">
+                  <View className="match-header">
+                    <Text className="match-date">
                       {new Date(match.createdAt).toLocaleDateString()}
                     </Text>
-                    <Text className={`text-sm font-bold ${match.winnerTeam === 1 ? 'text-green-400' : 'text-pink-400'}`}>
+                    <Text
+                      className={`match-winner ${match.winnerTeam === 1 ? 'winner-team1' : 'winner-team2'}`}
+                    >
                       {match.winnerTeam === 1 ? '队伍1获胜' : '队伍2获胜'}
                     </Text>
                   </View>
-                  <Text className="block text-xl font-bold text-white mb-1">{match.score}</Text>
-                  {match.remark && (
-                    <Text className="block text-sm text-white/60">{match.remark}</Text>
-                  )}
+                  <Text className="match-score">{match.score}</Text>
+                  {match.remark && <Text className="match-remark">{match.remark}</Text>}
                 </View>
               ))}
             </View>
@@ -151,20 +148,20 @@ export default function IndexPage() {
         </View>
 
         {/* 快捷入口 */}
-        <View className="flex gap-3">
+        <View className="shortcuts">
           <View
-            className="flex-1 bg-white/10 backdrop-blur-lg rounded-2xl p-4 flex flex-col items-center border border-white/20"
+            className="shortcut-item shortcut-records"
             onClick={() => switchTab('/pages/records/index')}
           >
             <Users size={32} color="#f472b6" />
-            <Text className="block text-white font-medium mt-2">战绩列表</Text>
+            <Text className="shortcut-text">战绩列表</Text>
           </View>
           <View
-            className="flex-1 bg-white/10 backdrop-blur-lg rounded-2xl p-4 flex flex-col items-center border border-white/20"
+            className="shortcut-item shortcut-stats"
             onClick={() => switchTab('/pages/stats/index')}
           >
             <TrendingUp size={32} color="#34d399" />
-            <Text className="block text-white font-medium mt-2">统计分析</Text>
+            <Text className="shortcut-text">统计分析</Text>
           </View>
         </View>
       </View>

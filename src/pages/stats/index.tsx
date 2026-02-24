@@ -123,27 +123,23 @@ export default function StatsPage() {
   const sortedStats = getSortedStats()
 
   return (
-    <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <View className="stats-page">
       {/* 赛季选择 */}
-      <View className="bg-white/10 backdrop-blur-lg px-4 py-4 border-b border-white/20">
-        <Text className="block text-white text-lg font-bold mb-3">选择赛季</Text>
+      <View className="season-selector">
+        <Text className="selector-title">选择赛季</Text>
         {seasons.length === 0 ? (
-          <View className="bg-white/10 rounded-xl px-4 py-3 text-center">
-            <Text className="block text-white/60 text-sm">暂无赛季</Text>
+          <View className="empty-season">
+            <Text className="empty-text">暂无赛季</Text>
           </View>
         ) : (
-          <View className="flex flex-wrap gap-2">
+          <View className="season-tags">
             {seasons.map((season) => (
               <View
                 key={season.id}
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                  selectedSeasonId === season.id
-                    ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white'
-                    : 'bg-white/10 text-white/60'
-                }`}
+                className={`season-tag ${selectedSeasonId === season.id ? 'season-tag-active' : ''}`}
                 onClick={() => setSelectedSeasonId(season.id)}
               >
-                {season.name}
+                <Text className="season-tag-text">{season.name}</Text>
               </View>
             ))}
           </View>
@@ -152,91 +148,81 @@ export default function StatsPage() {
 
       {/* 汇总信息 */}
       {summary && (
-        <View className="px-4 py-4">
-          <View className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 shadow-lg">
-            <View className="flex items-center mb-3">
-              <Trophy size={24} color="#ffffff" />
-              <Text className="block text-white text-lg font-bold ml-2">赛季总结</Text>
+        <View className="summary-card">
+          <View className="summary-header">
+            <Trophy size={24} color="#ffffff" />
+            <Text className="summary-title">赛季总结</Text>
+          </View>
+          <View className="summary-stats">
+            <View className="summary-stat">
+              <Text className="summary-value">{summary.totalMatches}</Text>
+              <Text className="summary-label">总场次</Text>
             </View>
-            <View className="flex justify-between text-white">
-              <View className="text-center">
-                <Text className="block text-2xl font-bold">{summary.totalMatches}</Text>
-                <Text className="block text-sm opacity-80">总场次</Text>
-              </View>
-              <View className="text-center">
-                <Text className="block text-2xl font-bold">{summary.bestPlayer}</Text>
-                <Text className="block text-sm opacity-80">最佳玩家</Text>
-              </View>
-              <View className="text-center">
-                <Text className="block text-2xl font-bold">{summary.bestWinRate}</Text>
-                <Text className="block text-sm opacity-80">最高胜率</Text>
-              </View>
+            <View className="summary-stat">
+              <Text className="summary-value">{summary.bestPlayer}</Text>
+              <Text className="summary-label">最佳玩家</Text>
+            </View>
+            <View className="summary-stat">
+              <Text className="summary-value">{summary.bestWinRate}</Text>
+              <Text className="summary-label">最高胜率</Text>
             </View>
           </View>
         </View>
       )}
 
       {/* 排名表格 */}
-      <View className="px-4 pb-4">
-        <View className="bg-white/10 backdrop-blur-lg rounded-2xl overflow-hidden shadow-lg border border-white/20">
-          <View className="grid grid-cols-4 gap-2 px-4 py-3 bg-white/20 border-b border-white/10">
-            <Text
-              className="block text-white text-sm font-semibold flex items-center"
-              onClick={() => handleSort('playerName')}
-            >
-              玩家
-              {sortField === 'playerName' && <ArrowUpDown size={14} className="ml-1" />}
-            </Text>
-            <Text
-              className="block text-white text-sm font-semibold flex items-center justify-center"
-              onClick={() => handleSort('totalMatches')}
-            >
-              场次
-              {sortField === 'totalMatches' && <ArrowUpDown size={14} className="ml-1" />}
-            </Text>
-            <Text
-              className="block text-white text-sm font-semibold flex items-center justify-center"
-              onClick={() => handleSort('wins')}
-            >
-              胜场
-              {sortField === 'wins' && <ArrowUpDown size={14} className="ml-1" />}
-            </Text>
-            <Text
-              className="block text-white text-sm font-semibold flex items-center justify-end"
-              onClick={() => handleSort('winRate')}
-            >
-              胜率
-              {sortField === 'winRate' && <ArrowUpDown size={14} className="ml-1" />}
-            </Text>
+      <View className="ranking-card">
+        <View className="table-header">
+          <View className="table-cell" onClick={() => handleSort('playerName')}>
+            <Text className="table-header-text">玩家</Text>
+            {sortField === 'playerName' && <ArrowUpDown size={14} className="sort-icon" />}
           </View>
+          <View className="table-cell table-cell-center" onClick={() => handleSort('totalMatches')}>
+            <Text className="table-header-text">场次</Text>
+            {sortField === 'totalMatches' && <ArrowUpDown size={14} className="sort-icon" />}
+          </View>
+          <View className="table-cell table-cell-center" onClick={() => handleSort('wins')}>
+            <Text className="table-header-text">胜场</Text>
+            {sortField === 'wins' && <ArrowUpDown size={14} className="sort-icon" />}
+          </View>
+          <View className="table-cell table-cell-right" onClick={() => handleSort('winRate')}>
+            <Text className="table-header-text">胜率</Text>
+            {sortField === 'winRate' && <ArrowUpDown size={14} className="sort-icon" />}
+          </View>
+        </View>
 
-          {loading ? (
-            <View className="flex items-center justify-center py-8">
-              <Text className="block text-white/60 text-sm">加载中...</Text>
-            </View>
-          ) : sortedStats.length === 0 ? (
-            <View className="flex flex-col items-center justify-center py-12">
-              <Text className="block text-white/60 text-base">暂无数据</Text>
-              <Text className="block text-white/60 text-sm mt-1">选择一个赛季查看统计</Text>
-            </View>
-          ) : (
-            sortedStats.map((stat, index) => (
+        {loading ? (
+          <View className="loading-container">
+            <Text className="loading-text">加载中...</Text>
+          </View>
+        ) : sortedStats.length === 0 ? (
+          <View className="empty-container">
+            <Text className="empty-text">暂无数据</Text>
+            <Text className="empty-hint">选择一个赛季查看统计</Text>
+          </View>
+        ) : (
+          <View>
+            {sortedStats.map((stat, index) => (
               <View
                 key={stat.id}
-                className={`grid grid-cols-4 gap-2 px-4 py-3 ${
-                  index !== sortedStats.length - 1 ? 'border-b border-white/10' : ''
-                }`}
+                className={`table-row ${index !== sortedStats.length - 1 ? 'table-row-bordered' : ''}`}
               >
-                <Text className="block text-white text-sm font-medium">{stat.playerName}</Text>
-                <Text className="block text-white text-sm text-center">{stat.totalMatches}</Text>
-                <Text className="block text-white text-sm text-center">{stat.wins}</Text>
-                <Text className="block text-white text-sm text-right">
-                  {parseFloat(stat.winRate).toFixed(2)}%
-                </Text>
+                <View className="table-cell">
+                  <Text className="table-cell-text">{stat.playerName}</Text>
+                </View>
+                <View className="table-cell table-cell-center">
+                  <Text className="table-cell-text">{stat.totalMatches}</Text>
+                </View>
+                <View className="table-cell table-cell-center">
+                  <Text className="table-cell-text">{stat.wins}</Text>
+                </View>
+                <View className="table-cell table-cell-right">
+                  <Text className="table-cell-text">{parseFloat(stat.winRate).toFixed(2)}%</Text>
+                </View>
               </View>
-            ))
-          )}
-        </View>
+            ))}
+          </View>
+        )}
       </View>
     </View>
   )

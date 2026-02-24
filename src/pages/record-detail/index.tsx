@@ -114,28 +114,32 @@ export default function RecordDetailPage() {
 
   if (loading) {
     return (
-      <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <Text className="block text-white/60 text-base">加载中...</Text>
+      <View className="detail-page">
+        <View className="loading-container">
+          <Text className="loading-text">加载中...</Text>
+        </View>
       </View>
     )
   }
 
   if (!match) {
     return (
-      <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <Text className="block text-white/60 text-base">战绩不存在</Text>
+      <View className="detail-page">
+        <View className="empty-container">
+          <Text className="empty-text">战绩不存在</Text>
+        </View>
       </View>
     )
   }
 
   return (
-    <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <View className="detail-page">
       {/* 头部导航 */}
-      <View className="bg-white/10 backdrop-blur-lg px-4 py-4 border-b border-white/20 flex items-center">
+      <View className="header">
         <View onClick={handleBack}>
           <ArrowLeft size={24} color="#ffffff" />
         </View>
-        <Text className="flex-1 text-center text-lg font-bold text-white">战绩详情</Text>
+        <Text className="header-title">战绩详情</Text>
         {!editing && (
           <View onClick={handleEdit}>
             <Edit size={24} color="#f472b6" />
@@ -148,122 +152,94 @@ export default function RecordDetailPage() {
         )}
       </View>
 
-      <View className="px-4 py-4">
+      <View className="content">
         {/* 基本信息 */}
-        <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-4 border border-white/20">
-          <View className="flex items-center mb-4">
+        <View className="card">
+          <View className="card-header">
             <Calendar size={20} color="#fbbf24" />
-            <Text className="block text-base text-white/60 ml-2">
+            <Text className="card-date">
               {new Date(match.createdAt).toLocaleString()}
             </Text>
           </View>
 
           {/* 队伍1 */}
-          <View
-            className={`rounded-xl p-4 mb-3 ${
-              match.winnerTeam === 1
-                ? 'bg-gradient-to-r from-pink-500/20 to-rose-600/20 border border-pink-500/30'
-                : 'bg-white/5'
-            }`}
-          >
-            <Text className="block text-pink-400 text-sm font-bold mb-2">队伍 1</Text>
-            <View className="flex items-center justify-between">
-              <View className="flex items-center gap-2">
-                <View className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
-                  <Text className="text-white text-lg font-bold">
-                    {getPlayerName(match.team1Player1Id).charAt(0)}
-                  </Text>
+          <View className={`team-card ${match.winnerTeam === 1 ? 'team-card-winner' : ''}`}>
+            <Text className="team-title team-title-1">队伍 1</Text>
+            <View className="team-players">
+              <View className="team-player">
+                <View className="player-avatar avatar-1">
+                  <Text className="avatar-text">{getPlayerName(match.team1Player1Id).charAt(0)}</Text>
                 </View>
-                <Text className="block text-white text-lg font-medium">
-                  {getPlayerName(match.team1Player1Id)}
-                </Text>
+                <Text className="player-name">{getPlayerName(match.team1Player1Id)}</Text>
               </View>
-              <Text className="block text-white/60 text-xl">+</Text>
-              <View className="flex items-center gap-2">
-                <View className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
-                  <Text className="text-white text-lg font-bold">
-                    {getPlayerName(match.team1Player2Id).charAt(0)}
-                  </Text>
+              <Text className="plus-sign">+</Text>
+              <View className="team-player">
+                <View className="player-avatar avatar-1">
+                  <Text className="avatar-text">{getPlayerName(match.team1Player2Id).charAt(0)}</Text>
                 </View>
-                <Text className="block text-white text-lg font-medium">
-                  {getPlayerName(match.team1Player2Id)}
-                </Text>
+                <Text className="player-name">{getPlayerName(match.team1Player2Id)}</Text>
               </View>
             </View>
             {match.winnerTeam === 1 && (
-              <Text className="block text-pink-400 text-sm font-bold mt-3">🏆 获胜队伍</Text>
+              <Text className="winner-badge">🏆 获胜队伍</Text>
             )}
           </View>
 
           {/* 队伍2 */}
-          <View
-            className={`rounded-xl p-4 ${
-              match.winnerTeam === 2
-                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border border-cyan-500/30'
-                : 'bg-white/5'
-            }`}
-          >
-            <Text className="block text-cyan-400 text-sm font-bold mb-2">队伍 2</Text>
-            <View className="flex items-center justify-between">
-              <View className="flex items-center gap-2">
-                <View className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                  <Text className="text-white text-lg font-bold">
-                    {getPlayerName(match.team2Player1Id).charAt(0)}
-                  </Text>
+          <View className={`team-card ${match.winnerTeam === 2 ? 'team-card-winner' : ''}`}>
+            <Text className="team-title team-title-2">队伍 2</Text>
+            <View className="team-players">
+              <View className="team-player">
+                <View className="player-avatar avatar-2">
+                  <Text className="avatar-text">{getPlayerName(match.team2Player1Id).charAt(0)}</Text>
                 </View>
-                <Text className="block text-white text-lg font-medium">
-                  {getPlayerName(match.team2Player1Id)}
-                </Text>
+                <Text className="player-name">{getPlayerName(match.team2Player1Id)}</Text>
               </View>
-              <Text className="block text-white/60 text-xl">+</Text>
-              <View className="flex items-center gap-2">
-                <View className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                  <Text className="text-white text-lg font-bold">
-                    {getPlayerName(match.team2Player2Id).charAt(0)}
-                  </Text>
+              <Text className="plus-sign">+</Text>
+              <View className="team-player">
+                <View className="player-avatar avatar-2">
+                  <Text className="avatar-text">{getPlayerName(match.team2Player2Id).charAt(0)}</Text>
                 </View>
-                <Text className="block text-white text-lg font-medium">
-                  {getPlayerName(match.team2Player2Id)}
-                </Text>
+                <Text className="player-name">{getPlayerName(match.team2Player2Id)}</Text>
               </View>
             </View>
             {match.winnerTeam === 2 && (
-              <Text className="block text-cyan-400 text-sm font-bold mt-3">🏆 获胜队伍</Text>
+              <Text className="winner-badge">🏆 获胜队伍</Text>
             )}
           </View>
         </View>
 
         {/* 比分 */}
-        <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-4 border border-white/20">
-          <Text className="block text-white/80 text-sm font-semibold mb-3">比分</Text>
+        <View className="card">
+          <Text className="section-title">比分</Text>
           {editing ? (
-            <View className="bg-white/10 rounded-lg px-4 py-3">
+            <View className="input-wrapper">
               <Input
-                className="w-full bg-transparent text-2xl font-bold text-white"
+                className="score-input"
                 value={editedScore}
                 onInput={(e) => setEditedScore(e.detail.value)}
                 placeholder="请输入比分，如：A1:J"
               />
             </View>
           ) : (
-            <Text className="block text-3xl font-bold text-white">{match.score}</Text>
+            <Text className="score-display">{match.score}</Text>
           )}
         </View>
 
         {/* 备注 */}
-        <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-4 border border-white/20">
-          <Text className="block text-white/80 text-sm font-semibold mb-3">备注</Text>
+        <View className="card">
+          <Text className="section-title">备注</Text>
           {editing ? (
-            <View className="bg-white/10 rounded-lg px-4 py-3">
+            <View className="input-wrapper">
               <Input
-                className="w-full bg-transparent text-white"
+                className="remark-input"
                 value={editedRemark}
                 onInput={(e) => setEditedRemark(e.detail.value)}
                 placeholder="添加备注信息..."
               />
             </View>
           ) : (
-            <Text className={`text-white/80 ${match.remark ? '' : 'italic'}`}>
+            <Text className={`remark-display ${match.remark ? '' : 'remark-empty'}`}>
               {match.remark || '暂无备注'}
             </Text>
           )}
@@ -271,18 +247,18 @@ export default function RecordDetailPage() {
 
         {/* 编辑历史 */}
         {match.editHistory && match.editHistory.length > 0 && (
-          <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
-            <View className="flex items-center mb-3">
+          <View className="card">
+            <View className="history-header">
               <History size={20} color="#fbbf24" />
-              <Text className="block text-white/80 text-sm font-semibold ml-2">编辑历史</Text>
+              <Text className="section-title">编辑历史</Text>
             </View>
-            <View className="space-y-2">
+            <View className="history-list">
               {match.editHistory.map((history, index) => (
-                <View key={index} className="bg-white/5 rounded-lg p-3">
-                  <Text className="block text-white/60 text-xs mb-1">
+                <View key={index} className="history-item">
+                  <Text className="history-time">
                     {new Date(history.timestamp).toLocaleString()}
                   </Text>
-                  <Text className="block text-white text-sm">{history.action}</Text>
+                  <Text className="history-action">{history.action}</Text>
                 </View>
               ))}
             </View>
@@ -291,11 +267,8 @@ export default function RecordDetailPage() {
 
         {/* 取消编辑按钮 */}
         {editing && (
-          <View
-            className="mt-4 bg-red-500/50 rounded-xl py-3 text-center"
-            onClick={handleCancel}
-          >
-            <Text className="block text-white font-bold">取消编辑</Text>
+          <View className="cancel-btn" onClick={handleCancel}>
+            <Text className="cancel-btn-text">取消编辑</Text>
           </View>
         )}
       </View>

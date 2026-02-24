@@ -146,8 +146,6 @@ export default function SeasonsPage() {
   }
 
   const handleStartDateChange = () => {
-    // 简化实现：使用系统默认日期选择器
-    // 注意：小程序中应该使用 Taro.showModal 让用户输入日期
     Taro.showModal({
       title: '开始日期',
       content: '请输入开始日期（YYYY-MM-DD）',
@@ -163,7 +161,6 @@ export default function SeasonsPage() {
 
   const handleEndDateInputDialog = () => {
     if (form.endDate) {
-      // 取消结束日期
       setForm({ ...form, endDate: null })
     } else {
       Taro.showModal({
@@ -184,31 +181,26 @@ export default function SeasonsPage() {
   const endedSeasons = seasons.filter(s => s.status === 'ended')
 
   return (
-    <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <View className="seasons-page">
       {/* 头部 */}
-      <View className="bg-white/10 backdrop-blur-lg px-4 py-4 border-b border-white/20 flex items-center justify-between">
-        <Text className="block text-white text-lg font-bold">赛季管理</Text>
-        <View
-          className="bg-gradient-to-r from-pink-500 to-rose-600 px-4 py-2 rounded-lg flex items-center shadow-lg"
-          onClick={handleCreate}
-        >
+      <View className="header">
+        <Text className="header-title">赛季管理</Text>
+        <View className="create-btn" onClick={handleCreate}>
           <Plus size={20} color="#ffffff" />
-          <Text className="block text-white font-bold ml-2">新建</Text>
+          <Text className="create-btn-text">新建</Text>
         </View>
       </View>
 
       {showForm && (
-        <View className="px-4 py-4 bg-white/10 border-b border-white/20">
-          <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
-            <Text className="block text-white text-lg font-bold mb-4">
-              {editingSeason ? '编辑赛季' : '新建赛季'}
-            </Text>
+        <View className="form-container">
+          <View className="form-card">
+            <Text className="form-title">{editingSeason ? '编辑赛季' : '新建赛季'}</Text>
 
             {/* 赛季名称 */}
-            <View className="mb-4">
-              <Text className="block text-white text-sm font-semibold mb-2">赛季名称</Text>
+            <View className="form-field">
+              <Text className="form-label">赛季名称</Text>
               <Input
-                className="w-full bg-white/10 text-white rounded-lg px-4 py-3"
+                className="form-input"
                 placeholder="例如：2024年春季赛"
                 value={form.name}
                 onInput={(e) => setForm({ ...form, name: e.detail.value })}
@@ -216,91 +208,75 @@ export default function SeasonsPage() {
             </View>
 
             {/* 开始日期 */}
-            <View className="mb-4">
-              <Text className="block text-white text-sm font-semibold mb-2">开始日期</Text>
-              <View
-                className="bg-white/10 rounded-lg px-4 py-3 flex items-center justify-between"
-                onClick={handleStartDateChange}
-              >
-                <Text className="block text-white">{form.startDate}</Text>
+            <View className="form-field">
+              <Text className="form-label">开始日期</Text>
+              <View className="date-picker" onClick={handleStartDateChange}>
+                <Text className="date-text">{form.startDate}</Text>
                 <Calendar size={20} color="#f472b6" />
               </View>
             </View>
 
             {/* 结束日期 */}
-            <View className="mb-4">
-              <Text className="block text-white text-sm font-semibold mb-2">结束日期 (可选)</Text>
+            <View className="form-field">
+              <Text className="form-label">结束日期 (可选)</Text>
               <View
-                className={`bg-white/10 rounded-lg px-4 py-3 flex items-center justify-between ${
-                  form.endDate ? '' : 'border-2 border-dashed border-white/20'
-                }`}
+                className={`date-picker ${form.endDate ? '' : 'date-picker-empty'}`}
                 onClick={handleEndDateInputDialog}
               >
-                <Text className={`block ${form.endDate ? 'text-white' : 'text-white/40'}`}>
+                <Text className={`date-text ${form.endDate ? '' : 'date-text-empty'}`}>
                   {form.endDate || '赛季进行中'}
                 </Text>
                 {form.endDate ? <X size={20} color="#ef4444" /> : <Check size={20} color="#22c55e" />}
               </View>
               {!form.endDate && activeSeasons.length > 0 && !editingSeason && (
-                <Text className="block text-amber-400 text-xs mt-1">
-                  ⚠️ 已有活跃赛季，建议先设置结束日期
-                </Text>
+                <Text className="warning-text">⚠️ 已有活跃赛季，建议先设置结束日期</Text>
               )}
             </View>
 
             {/* 按钮 */}
-            <View className="flex gap-3">
-              <View
-                className="flex-1 bg-white/20 rounded-lg py-3 text-center"
-                onClick={() => setShowForm(false)}
-              >
-                <Text className="block text-white font-medium">取消</Text>
+            <View className="form-actions">
+              <View className="form-btn form-btn-cancel" onClick={() => setShowForm(false)}>
+                <Text className="form-btn-text">取消</Text>
               </View>
-              <View
-                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg py-3 text-center"
-                onClick={handleSubmit}
-              >
-                <Text className="block text-white font-bold">保存</Text>
+              <View className="form-btn form-btn-submit" onClick={handleSubmit}>
+                <Text className="form-btn-text">保存</Text>
               </View>
             </View>
           </View>
         </View>
       )}
 
-      <View className="px-4 py-4">
+      <View className="content">
         {/* 活跃赛季 */}
         {activeSeasons.length > 0 && (
-          <View className="mb-6">
-            <Text className="block text-white/60 text-sm font-semibold mb-3">进行中</Text>
+          <View className="season-group">
+            <Text className="group-title">进行中</Text>
             {activeSeasons.map((season) => (
-              <View
-                key={season.id}
-                className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-3 border border-pink-500/30"
-              >
-                <View className="flex items-center justify-between mb-2">
-                  <Text className="block text-white text-lg font-bold">{season.name}</Text>
-                  <View className="bg-gradient-to-r from-pink-500 to-rose-600 px-3 py-1 rounded-full">
-                    <Text className="block text-white text-xs font-bold">进行中</Text>
+              <View key={season.id} className="season-card season-card-active">
+                <View className="season-header">
+                  <Text className="season-name">{season.name}</Text>
+                  <View className="season-badge season-badge-active">
+                    <Text className="season-badge-text">进行中</Text>
                   </View>
                 </View>
-                <View className="flex items-center text-white/60 text-sm mb-3">
-                  <Calendar size={16} className="mr-1" />
+                <View className="season-date">
+                  <Calendar size={16} />
                   <Text>{season.startDate} - 进行中</Text>
                 </View>
-                <View className="flex gap-2">
+                <View className="season-actions">
                   <View
-                    className="flex-1 bg-white/20 rounded-lg py-2 flex items-center justify-center"
+                    className="season-action"
                     onClick={() => handleEdit(season)}
                   >
                     <Edit size={16} color="#ffffff" />
-                    <Text className="block text-white text-sm ml-1">编辑</Text>
+                    <Text className="season-action-text">编辑</Text>
                   </View>
                   <View
-                    className="flex-1 bg-red-500/50 rounded-lg py-2 flex items-center justify-center"
+                    className="season-action season-action-delete"
                     onClick={() => handleDelete(season.id)}
                   >
                     <X size={16} color="#ffffff" />
-                    <Text className="block text-white text-sm ml-1">删除</Text>
+                    <Text className="season-action-text">删除</Text>
                   </View>
                 </View>
               </View>
@@ -310,37 +286,34 @@ export default function SeasonsPage() {
 
         {/* 已结束赛季 */}
         {endedSeasons.length > 0 && (
-          <View>
-            <Text className="block text-white/60 text-sm font-semibold mb-3">已结束</Text>
+          <View className="season-group">
+            <Text className="group-title">已结束</Text>
             {endedSeasons.map((season) => (
-              <View
-                key={season.id}
-                className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-3 border border-white/20"
-              >
-                <View className="flex items-center justify-between mb-2">
-                  <Text className="block text-white/80 text-lg font-bold">{season.name}</Text>
-                  <View className="bg-white/20 px-3 py-1 rounded-full">
-                    <Text className="block text-white/60 text-xs font-bold">已结束</Text>
+              <View key={season.id} className="season-card season-card-ended">
+                <View className="season-header">
+                  <Text className="season-name season-name-ended">{season.name}</Text>
+                  <View className="season-badge season-badge-ended">
+                    <Text className="season-badge-text">已结束</Text>
                   </View>
                 </View>
-                <View className="flex items-center text-white/40 text-sm mb-3">
-                  <Calendar size={16} className="mr-1" />
+                <View className="season-date season-date-ended">
+                  <Calendar size={16} />
                   <Text>{season.startDate} - {season.endDate}</Text>
                 </View>
-                <View className="flex gap-2">
+                <View className="season-actions">
                   <View
-                    className="flex-1 bg-white/20 rounded-lg py-2 flex items-center justify-center"
+                    className="season-action"
                     onClick={() => handleEdit(season)}
                   >
                     <Edit size={16} color="#ffffff" />
-                    <Text className="block text-white/60 text-sm ml-1">编辑</Text>
+                    <Text className="season-action-text">编辑</Text>
                   </View>
                   <View
-                    className="flex-1 bg-red-500/30 rounded-lg py-2 flex items-center justify-center"
+                    className="season-action season-action-delete"
                     onClick={() => handleDelete(season.id)}
                   >
                     <X size={16} color="#ffffff" />
-                    <Text className="block text-white/60 text-sm ml-1">删除</Text>
+                    <Text className="season-action-text">删除</Text>
                   </View>
                 </View>
               </View>
@@ -349,10 +322,10 @@ export default function SeasonsPage() {
         )}
 
         {seasons.length === 0 && !loading && (
-          <View className="flex flex-col items-center justify-center py-20">
-            <Calendar size={64} color="#ffffff/20" />
-            <Text className="block text-white/60 text-base mt-4">暂无赛季</Text>
-            <Text className="block text-white/40 text-sm mt-2">点击上方&quot;新建&quot;创建第一个赛季</Text>
+          <View className="empty-container">
+            <Calendar size={64} color="rgba(255,255,255,0.2)" />
+            <Text className="empty-text">暂无赛季</Text>
+            <Text className="empty-hint">点击上方&quot;新建&quot;创建第一个赛季</Text>
           </View>
         )}
       </View>
