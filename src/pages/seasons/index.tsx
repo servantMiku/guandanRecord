@@ -1,8 +1,8 @@
-import { View, Text } from '@tarojs/components'
+import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
-import { Plus, Calendar, CheckCircle, XCircle } from 'lucide-react'
+import { Plus, Calendar, Edit, Check, X } from 'lucide-react'
 import './index.css'
 
 type Season = {
@@ -10,20 +10,32 @@ type Season = {
   name: string
   startDate: string
   endDate: string | null
-  status: string
+  status: 'active' | 'ended'
   createdAt: string
+}
+
+type SeasonForm = {
+  name: string
+  startDate: string
+  endDate: string | null
 }
 
 export default function SeasonsPage() {
   const [seasons, setSeasons] = useState<Season[]>([])
   const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [editingSeason, setEditingSeason] = useState<Season | null>(null)
+  const [form, setForm] = useState<SeasonForm>({
+    name: '',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: null
+  })
 
   const fetchSeasons = async () => {
     try {
       const res = await Network.request({
         url: '/api/seasons'
       })
-
       if (res.data && res.data.data) {
         setSeasons(res.data.data)
       }
@@ -38,149 +50,311 @@ export default function SeasonsPage() {
     fetchSeasons()
   }, [])
 
-  const handleCreateSeason = () => {
-    // 使用 prompt 模拟输入（小程序端实际需要使用 Modal）
-    const seasonName = prompt('请输入赛季名称，如：2024年第一季度')
-    if (seasonName) {
-      const create = async () => {
-        try {
-          const today = new Date().toISOString().split('T')[0]
-          await Network.request({
-            url: '/api/seasons',
-            method: 'POST',
-            data: {
-              name: seasonName,
-              startDate: today
-            }
-          })
-          Taro.showToast({ title: '创建成功', icon: 'success' })
-          fetchSeasons()
-        } catch (error) {
-          Taro.showToast({ title: '创建失败', icon: 'none' })
-        }
+  const handleCreate = () => {
+    setEditingSeason(null)
+    setForm({
+      name: '',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: null
+    })
+    setShowForm(true)
+  }
+
+  const handleEdit = (season: Season) => {
+    setEditingSeason(season)
+    setForm({
+      name: season.name,
+      startDate: season.startDate,
+      endDate: season.endDate
+    })
+    setShowForm(true)
+  }
+
+  const handleSubmit = async () => {
+    // 验证表单
+    if (!form.name.trim()) {
+      Taro.showToast({ title: '请输入赛季名称', icon: 'none' })
+      return
+    }
+
+    if (!form.startDate) {
+      Taro.showToast({ title: '请选择开始日期', icon: 'none' })
+      return
+    }
+
+    // 如果是新赛季且没有设置结束日期，检查是否已有活跃赛季
+    const hasActiveSeason = seasons.some(s => s.status === 'active')
+    if (!editingSeason && !form.endDate && hasActiveSeason) {
+      Taro.showToast({ title: '已有活跃赛季，请先结束', icon: 'none' })
+      return
+    }
+
+    try {
+      if (editingSeason) {
+        // 编辑赛季
+        await Network.request({
+          url: `/api/seasons/${editingSeason.id}`,
+          method: 'PUT',
+          data: {
+            name: form.name,
+            startDate: form.startDate,
+            endDate: form.endDate
+          }
+        })
+        Taro.showToast({ title: '更新成功', icon: 'success' })
+      } else {
+        // 创建赛季
+        await Network.request({
+          url: '/api/seasons',
+          method: 'POST',
+          data: {
+            name: form.name,
+            startDate: form.startDate,
+            endDate: form.endDate
+          }
+        })
+        Taro.showToast({ title: '创建成功', icon: 'success' })
       }
-      create()
+
+      setShowForm(false)
+      fetchSeasons()
+    } catch (error) {
+      console.error('提交失败:', error)
+      Taro.showToast({ title: '提交失败', icon: 'none' })
     }
   }
 
-  const handleEndSeason = (seasonId: string, seasonName: string) => {
+  const handleDelete = async (seasonId: string) => {
+    try {
+      const res = await Taro.showModal({
+        title: '确认删除',
+        content: '确定要删除这个赛季吗？删除后无法恢复'
+      })
+
+      if (res.confirm) {
+        await Network.request({
+          url: `/api/seasons/${seasonId}`,
+          method: 'DELETE'
+        })
+        Taro.showToast({ title: '删除成功', icon: 'success' })
+        fetchSeasons()
+      }
+    } catch (error) {
+      console.error('删除失败:', error)
+      Taro.showToast({ title: '删除失败', icon: 'none' })
+    }
+  }
+
+  const handleStartDateChange = () => {
+    // 简化实现：使用系统默认日期选择器
+    // 注意：小程序中应该使用 Taro.showModal 让用户输入日期
     Taro.showModal({
-      title: '结束赛季',
-      content: `确定要结束"${seasonName}"吗？结束后将无法录入新战绩。`,
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            const today = new Date().toISOString().split('T')[0]
-            await Network.request({
-              url: `/api/seasons/${seasonId}/end`,
-              method: 'PUT',
-              data: { endDate: today }
-            })
-            Taro.showToast({ title: '已结束赛季', icon: 'success' })
-            fetchSeasons()
-          } catch (error) {
-            Taro.showToast({ title: '操作失败', icon: 'none' })
-          }
+      title: '开始日期',
+      content: '请输入开始日期（YYYY-MM-DD）',
+      editable: true as any,
+      placeholderText: form.startDate,
+      success: (res: any) => {
+        if (res.confirm && res.content) {
+          setForm({ ...form, startDate: res.content })
         }
       }
     })
   }
 
-  const handleAddRecord = () => {
-    if (!activeSeason) {
-      Taro.showToast({ title: '请先创建活跃赛季', icon: 'none' })
-      return
+  const handleEndDateInputDialog = () => {
+    if (form.endDate) {
+      // 取消结束日期
+      setForm({ ...form, endDate: null })
+    } else {
+      Taro.showModal({
+        title: '结束日期',
+        content: '请输入结束日期（YYYY-MM-DD），留空表示赛季进行中',
+        editable: true as any,
+        placeholderText: new Date().toISOString().split('T')[0],
+        success: (res: any) => {
+          if (res.confirm) {
+            setForm({ ...form, endDate: res.content || null })
+          }
+        }
+      })
     }
-    Taro.navigateTo({ url: `/pages/record-form/index?seasonId=${activeSeason.id}` })
   }
 
-  // 检查是否有活跃赛季
-  const activeSeason = seasons.find(s => s.status === 'active')
+  const activeSeasons = seasons.filter(s => s.status === 'active')
+  const endedSeasons = seasons.filter(s => s.status === 'ended')
 
   return (
-    <View className="min-h-screen bg-stone-50">
-      <View className="px-4 py-4">
-        {/* 快捷操作 */}
-        <View className="flex gap-3 mb-4">
-          <View
-            className="flex-1 bg-amber-500 rounded-xl py-3 flex items-center justify-center"
-            onClick={handleCreateSeason}
-          >
-            <Plus size={20} color="#ffffff" />
-            <Text className="text-white font-medium ml-2">创建赛季</Text>
-          </View>
-          {activeSeason && (
-            <View
-              className="flex-1 bg-green-500 rounded-xl py-3 flex items-center justify-center"
-              onClick={handleAddRecord}
-            >
-              <Calendar size={20} color="#ffffff" />
-              <Text className="text-white font-medium ml-2">录入战绩</Text>
-            </View>
-          )}
+    <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* 头部 */}
+      <View className="bg-white/10 backdrop-blur-lg px-4 py-4 border-b border-white/20 flex items-center justify-between">
+        <Text className="block text-white text-lg font-bold">赛季管理</Text>
+        <View
+          className="bg-gradient-to-r from-pink-500 to-rose-600 px-4 py-2 rounded-lg flex items-center shadow-lg"
+          onClick={handleCreate}
+        >
+          <Plus size={20} color="#ffffff" />
+          <Text className="block text-white font-bold ml-2">新建</Text>
         </View>
+      </View>
 
-        {/* 赛季列表 */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm">
-          <Text className="block text-lg font-semibold text-amber-950 mb-4">赛季列表</Text>
+      {showForm && (
+        <View className="px-4 py-4 bg-white/10 border-b border-white/20">
+          <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+            <Text className="block text-white text-lg font-bold mb-4">
+              {editingSeason ? '编辑赛季' : '新建赛季'}
+            </Text>
 
-          {loading ? (
-            <View className="flex items-center justify-center py-8">
-              <Text className="block text-stone-400 text-sm">加载中...</Text>
+            {/* 赛季名称 */}
+            <View className="mb-4">
+              <Text className="block text-white text-sm font-semibold mb-2">赛季名称</Text>
+              <Input
+                className="w-full bg-white/10 text-white rounded-lg px-4 py-3"
+                placeholder="例如：2024年春季赛"
+                value={form.name}
+                onInput={(e) => setForm({ ...form, name: e.detail.value })}
+              />
             </View>
-          ) : seasons.length === 0 ? (
-            <View className="flex flex-col items-center justify-center py-8">
-              <Text className="block text-stone-400 text-base">暂无赛季</Text>
-              <Text className="block text-stone-400 text-sm mt-1">点击上方按钮创建赛季</Text>
-            </View>
-          ) : (
-            <View>
-              {seasons.map((season) => (
-                <View key={season.id} className="mb-4 last:mb-0">
-                  <View className="flex items-center justify-between mb-3">
-                    <View className="flex items-center">
-                      {season.status === 'active' ? (
-                        <CheckCircle size={20} color="#22c55e" />
-                      ) : (
-                        <XCircle size={20} color="#a8a29e" />
-                      )}
-                      <Text className="block text-lg font-semibold text-amber-950 ml-2">
-                        {season.name}
-                      </Text>
-                    </View>
-                    {season.status === 'active' && (
-                      <Text
-                        className="text-amber-500 text-sm"
-                        onClick={() => handleEndSeason(season.id, season.name)}
-                      >
-                        结束赛季
-                      </Text>
-                    )}
-                  </View>
 
-                  <View className="pl-7">
-                    <View className="flex items-center mb-2">
-                      <Text className="block text-sm text-stone-400 mr-2">起止日期：</Text>
-                      <Text className="block text-sm text-stone-700">
-                        {season.startDate} - {season.endDate || '进行中'}
-                      </Text>
-                    </View>
-                    <View className="flex items-center">
-                      <Text className="block text-sm text-stone-400 mr-2">状态：</Text>
-                      <Text
-                        className={`text-sm ${
-                          season.status === 'active' ? 'text-green-500' : 'text-stone-500'
-                        }`}
-                      >
-                        {season.status === 'active' ? '进行中' : '已结束'}
-                      </Text>
-                    </View>
+            {/* 开始日期 */}
+            <View className="mb-4">
+              <Text className="block text-white text-sm font-semibold mb-2">开始日期</Text>
+              <View
+                className="bg-white/10 rounded-lg px-4 py-3 flex items-center justify-between"
+                onClick={handleStartDateChange}
+              >
+                <Text className="block text-white">{form.startDate}</Text>
+                <Calendar size={20} color="#f472b6" />
+              </View>
+            </View>
+
+            {/* 结束日期 */}
+            <View className="mb-4">
+              <Text className="block text-white text-sm font-semibold mb-2">结束日期 (可选)</Text>
+              <View
+                className={`bg-white/10 rounded-lg px-4 py-3 flex items-center justify-between ${
+                  form.endDate ? '' : 'border-2 border-dashed border-white/20'
+                }`}
+                onClick={handleEndDateInputDialog}
+              >
+                <Text className={`block ${form.endDate ? 'text-white' : 'text-white/40'}`}>
+                  {form.endDate || '赛季进行中'}
+                </Text>
+                {form.endDate ? <X size={20} color="#ef4444" /> : <Check size={20} color="#22c55e" />}
+              </View>
+              {!form.endDate && activeSeasons.length > 0 && !editingSeason && (
+                <Text className="block text-amber-400 text-xs mt-1">
+                  ⚠️ 已有活跃赛季，建议先设置结束日期
+                </Text>
+              )}
+            </View>
+
+            {/* 按钮 */}
+            <View className="flex gap-3">
+              <View
+                className="flex-1 bg-white/20 rounded-lg py-3 text-center"
+                onClick={() => setShowForm(false)}
+              >
+                <Text className="block text-white font-medium">取消</Text>
+              </View>
+              <View
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg py-3 text-center"
+                onClick={handleSubmit}
+              >
+                <Text className="block text-white font-bold">保存</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+
+      <View className="px-4 py-4">
+        {/* 活跃赛季 */}
+        {activeSeasons.length > 0 && (
+          <View className="mb-6">
+            <Text className="block text-white/60 text-sm font-semibold mb-3">进行中</Text>
+            {activeSeasons.map((season) => (
+              <View
+                key={season.id}
+                className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-3 border border-pink-500/30"
+              >
+                <View className="flex items-center justify-between mb-2">
+                  <Text className="block text-white text-lg font-bold">{season.name}</Text>
+                  <View className="bg-gradient-to-r from-pink-500 to-rose-600 px-3 py-1 rounded-full">
+                    <Text className="block text-white text-xs font-bold">进行中</Text>
                   </View>
                 </View>
-              ))}
-            </View>
-          )}
-        </View>
+                <View className="flex items-center text-white/60 text-sm mb-3">
+                  <Calendar size={16} className="mr-1" />
+                  <Text>{season.startDate} - 进行中</Text>
+                </View>
+                <View className="flex gap-2">
+                  <View
+                    className="flex-1 bg-white/20 rounded-lg py-2 flex items-center justify-center"
+                    onClick={() => handleEdit(season)}
+                  >
+                    <Edit size={16} color="#ffffff" />
+                    <Text className="block text-white text-sm ml-1">编辑</Text>
+                  </View>
+                  <View
+                    className="flex-1 bg-red-500/50 rounded-lg py-2 flex items-center justify-center"
+                    onClick={() => handleDelete(season.id)}
+                  >
+                    <X size={16} color="#ffffff" />
+                    <Text className="block text-white text-sm ml-1">删除</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* 已结束赛季 */}
+        {endedSeasons.length > 0 && (
+          <View>
+            <Text className="block text-white/60 text-sm font-semibold mb-3">已结束</Text>
+            {endedSeasons.map((season) => (
+              <View
+                key={season.id}
+                className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 mb-3 border border-white/20"
+              >
+                <View className="flex items-center justify-between mb-2">
+                  <Text className="block text-white/80 text-lg font-bold">{season.name}</Text>
+                  <View className="bg-white/20 px-3 py-1 rounded-full">
+                    <Text className="block text-white/60 text-xs font-bold">已结束</Text>
+                  </View>
+                </View>
+                <View className="flex items-center text-white/40 text-sm mb-3">
+                  <Calendar size={16} className="mr-1" />
+                  <Text>{season.startDate} - {season.endDate}</Text>
+                </View>
+                <View className="flex gap-2">
+                  <View
+                    className="flex-1 bg-white/20 rounded-lg py-2 flex items-center justify-center"
+                    onClick={() => handleEdit(season)}
+                  >
+                    <Edit size={16} color="#ffffff" />
+                    <Text className="block text-white/60 text-sm ml-1">编辑</Text>
+                  </View>
+                  <View
+                    className="flex-1 bg-red-500/30 rounded-lg py-2 flex items-center justify-center"
+                    onClick={() => handleDelete(season.id)}
+                  >
+                    <X size={16} color="#ffffff" />
+                    <Text className="block text-white/60 text-sm ml-1">删除</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {seasons.length === 0 && !loading && (
+          <View className="flex flex-col items-center justify-center py-20">
+            <Calendar size={64} color="#ffffff/20" />
+            <Text className="block text-white/60 text-base mt-4">暂无赛季</Text>
+            <Text className="block text-white/40 text-sm mt-2">点击上方&quot;新建&quot;创建第一个赛季</Text>
+          </View>
+        )}
       </View>
     </View>
   )

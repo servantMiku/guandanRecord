@@ -37,6 +37,7 @@ export const players = pgTable(
       .primaryKey()
       .default(sql`gen_random_uuid()`),
     name: varchar("name", { length: 50 }).notNull(),
+    avatar: text("avatar"), // 头像URL（可选）
     createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),

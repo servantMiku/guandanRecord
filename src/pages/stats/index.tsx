@@ -1,16 +1,18 @@
 import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import { Network } from '@/network'
-import { Trophy, TrendingUp, Calendar, Award } from 'lucide-react'
+import { ArrowUpDown, Trophy } from 'lucide-react'
 import './index.css'
 
 type Season = {
   id: string
   name: string
+  startDate: string
+  endDate: string | null
   status: string
 }
 
-type PlayerStats = {
+type PlayerStat = {
   id: string
   seasonId: string
   playerId: string
@@ -20,57 +22,57 @@ type PlayerStats = {
   winRate: string
 }
 
-type SeasonSummary = {
-  seasonId: string
-  seasonName: string
-  totalMatches: number
-  bestPlayer: string
-  bestWinRate: string
-}
+type SortField = 'playerName' | 'totalMatches' | 'wins' | 'winRate'
+type SortOrder = 'asc' | 'desc'
 
 export default function StatsPage() {
   const [seasons, setSeasons] = useState<Season[]>([])
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('')
-  const [playerStats, setPlayerStats] = useState<PlayerStats[]>([])
-  const [seasonSummary, setSeasonSummary] = useState<SeasonSummary | null>(null)
+  const [stats, setStats] = useState<PlayerStat[]>([])
+  const [summary, setSummary] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [sortBy, setSortBy] = useState<'winRate' | 'wins'>('winRate')
-
-  const fetchData = async () => {
-    try {
-      if (!selectedSeasonId) return
-
-      // 获取统计数据
-      const res = await Network.request({
-        url: '/api/stats/season',
-        data: { seasonId: selectedSeasonId }
-      })
-
-      if (res.data && res.data.data) {
-        setPlayerStats(res.data.data.playerStats || [])
-        setSeasonSummary(res.data.data.summary || null)
-      }
-    } catch (error) {
-      console.error('获取统计数据失败:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [sortField, setSortField] = useState<SortField>('wins')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
   const fetchSeasons = async () => {
     try {
       const res = await Network.request({
         url: '/api/seasons'
       })
+      if (res.data && res.data.data) {
+        const seasonList = res.data.data
+        setSeasons(seasonList)
 
-      if (res.data && res.data.data && res.data.data.length > 0) {
-        setSeasons(res.data.data)
-        // 默认选择活跃赛季或第一个赛季
-        const activeSeason = res.data.data.find((s: Season) => s.status === 'active') || res.data.data[0]
-        setSelectedSeasonId(activeSeason.id)
+        // 优先选择活跃赛季
+        const activeSeason = seasonList.find((s: Season) => s.status === 'active')
+        if (activeSeason) {
+          setSelectedSeasonId(activeSeason.id)
+        } else if (seasonList.length > 0) {
+          setSelectedSeasonId(seasonList[0].id)
+        }
       }
     } catch (error) {
       console.error('获取赛季列表失败:', error)
+    }
+  }
+
+  const fetchStats = async (seasonId: string) => {
+    if (!seasonId) return
+
+    try {
+      setLoading(true)
+      const res = await Network.request({
+        url: `/api/stats/season`,
+        data: { seasonId }
+      })
+      if (res.data && res.data.data) {
+        setStats(res.data.data.playerStats || [])
+        setSummary(res.data.data.summary)
+      }
+    } catch (error) {
+      console.error('获取统计数据失败:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -80,152 +82,159 @@ export default function StatsPage() {
 
   useEffect(() => {
     if (selectedSeasonId) {
-      setLoading(true)
-      fetchData()
+      fetchStats(selectedSeasonId)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSeasonId])
 
-  const handleSeasonChange = (seasonId: string) => {
-    setSelectedSeasonId(seasonId)
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // 切换排序方向
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      // 切换排序字段，默认降序
+      setSortField(field)
+      setSortOrder('desc')
+    }
   }
 
-  const sortedStats = [...playerStats].sort((a, b) => {
-    if (sortBy === 'winRate') {
-      return parseFloat(b.winRate) - parseFloat(a.winRate)
-    } else {
-      return b.wins - a.wins
-    }
-  })
+  const getSortedStats = () => {
+    return [...stats].sort((a, b) => {
+      let comparison = 0
+
+      switch (sortField) {
+        case 'playerName':
+          comparison = a.playerName.localeCompare(b.playerName, 'zh-CN')
+          break
+        case 'totalMatches':
+          comparison = a.totalMatches - b.totalMatches
+          break
+        case 'wins':
+          comparison = a.wins - b.wins
+          break
+        case 'winRate':
+          comparison = parseFloat(a.winRate) - parseFloat(b.winRate)
+          break
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+  }
+
+  const sortedStats = getSortedStats()
 
   return (
-    <View className="min-h-screen bg-stone-50">
+    <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* 赛季选择 */}
-      <View className="bg-white px-4 py-3 border-b border-stone-100">
-        <View className="flex items-center justify-between">
-          <Text className="block text-base font-medium text-amber-950">选择赛季</Text>
-          <View className="flex gap-2">
+      <View className="bg-white/10 backdrop-blur-lg px-4 py-4 border-b border-white/20">
+        <Text className="block text-white text-lg font-bold mb-3">选择赛季</Text>
+        {seasons.length === 0 ? (
+          <View className="bg-white/10 rounded-xl px-4 py-3 text-center">
+            <Text className="block text-white/60 text-sm">暂无赛季</Text>
+          </View>
+        ) : (
+          <View className="flex flex-wrap gap-2">
             {seasons.map((season) => (
-              <Text
+              <View
                 key={season.id}
-                className={`px-3 py-1 rounded-full text-sm ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${
                   selectedSeasonId === season.id
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-stone-100 text-stone-700'
+                    ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white'
+                    : 'bg-white/10 text-white/60'
                 }`}
-                onClick={() => handleSeasonChange(season.id)}
+                onClick={() => setSelectedSeasonId(season.id)}
               >
                 {season.name}
-              </Text>
+              </View>
             ))}
           </View>
-        </View>
+        )}
       </View>
 
-      <View className="px-4 py-4">
-        {/* 赛季概览 */}
-        {seasonSummary && (
-          <View className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-4 mb-4 text-white">
+      {/* 汇总信息 */}
+      {summary && (
+        <View className="px-4 py-4">
+          <View className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 shadow-lg">
             <View className="flex items-center mb-3">
-              <Calendar size={20} />
-              <Text className="text-lg font-bold ml-2">{seasonSummary.seasonName}</Text>
+              <Trophy size={24} color="#ffffff" />
+              <Text className="block text-white text-lg font-bold ml-2">赛季总结</Text>
             </View>
-
-            <View className="grid grid-cols-2 gap-4">
-              <View>
-                <Text className="block text-amber-100 text-sm mb-1">总场次</Text>
-                <Text className="block text-3xl font-bold">{seasonSummary.totalMatches}</Text>
+            <View className="flex justify-between text-white">
+              <View className="text-center">
+                <Text className="block text-2xl font-bold">{summary.totalMatches}</Text>
+                <Text className="block text-sm opacity-80">总场次</Text>
               </View>
-              <View>
-                <Text className="block text-amber-100 text-sm mb-1">最佳战绩</Text>
-                <View className="flex items-center">
-                  <Award size={20} />
-                  <Text className="block text-base font-bold ml-1">{seasonSummary.bestPlayer}</Text>
-                </View>
-                <Text className="block text-sm text-amber-100 mt-1">{seasonSummary.bestWinRate}</Text>
+              <View className="text-center">
+                <Text className="block text-2xl font-bold">{summary.bestPlayer}</Text>
+                <Text className="block text-sm opacity-80">最佳玩家</Text>
+              </View>
+              <View className="text-center">
+                <Text className="block text-2xl font-bold">{summary.bestWinRate}</Text>
+                <Text className="block text-sm opacity-80">最高胜率</Text>
               </View>
             </View>
-          </View>
-        )}
-
-        {/* 排序按钮 */}
-        <View className="flex gap-2 mb-4">
-          <View
-            className={`flex-1 py-2 rounded-lg text-center text-sm font-medium ${
-              sortBy === 'winRate' ? 'bg-amber-500 text-white' : 'bg-white text-stone-700'
-            }`}
-            onClick={() => setSortBy('winRate')}
-          >
-            <TrendingUp size={16} className="inline-block mr-1" />
-            按胜率
-          </View>
-          <View
-            className={`flex-1 py-2 rounded-lg text-center text-sm font-medium ${
-              sortBy === 'wins' ? 'bg-amber-500 text-white' : 'bg-white text-stone-700'
-            }`}
-            onClick={() => setSortBy('wins')}
-          >
-            <Trophy size={16} className="inline-block mr-1" />
-            按胜场
           </View>
         </View>
+      )}
 
-        {/* 玩家排名 */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm">
-          <Text className="block text-lg font-semibold text-amber-950 mb-4">玩家排名</Text>
+      {/* 排名表格 */}
+      <View className="px-4 pb-4">
+        <View className="bg-white/10 backdrop-blur-lg rounded-2xl overflow-hidden shadow-lg border border-white/20">
+          <View className="grid grid-cols-4 gap-2 px-4 py-3 bg-white/20 border-b border-white/10">
+            <Text
+              className="block text-white text-sm font-semibold flex items-center"
+              onClick={() => handleSort('playerName')}
+            >
+              玩家
+              {sortField === 'playerName' && <ArrowUpDown size={14} className="ml-1" />}
+            </Text>
+            <Text
+              className="block text-white text-sm font-semibold flex items-center justify-center"
+              onClick={() => handleSort('totalMatches')}
+            >
+              场次
+              {sortField === 'totalMatches' && <ArrowUpDown size={14} className="ml-1" />}
+            </Text>
+            <Text
+              className="block text-white text-sm font-semibold flex items-center justify-center"
+              onClick={() => handleSort('wins')}
+            >
+              胜场
+              {sortField === 'wins' && <ArrowUpDown size={14} className="ml-1" />}
+            </Text>
+            <Text
+              className="block text-white text-sm font-semibold flex items-center justify-end"
+              onClick={() => handleSort('winRate')}
+            >
+              胜率
+              {sortField === 'winRate' && <ArrowUpDown size={14} className="ml-1" />}
+            </Text>
+          </View>
 
           {loading ? (
             <View className="flex items-center justify-center py-8">
-              <Text className="block text-stone-400 text-sm">加载中...</Text>
+              <Text className="block text-white/60 text-sm">加载中...</Text>
             </View>
           ) : sortedStats.length === 0 ? (
-            <View className="flex flex-col items-center justify-center py-8">
-              <Text className="block text-stone-400 text-base">暂无统计数据</Text>
+            <View className="flex flex-col items-center justify-center py-12">
+              <Text className="block text-white/60 text-base">暂无数据</Text>
+              <Text className="block text-white/60 text-sm mt-1">选择一个赛季查看统计</Text>
             </View>
           ) : (
-            <View>
-              {sortedStats.map((stat, index) => (
-                <View key={stat.id} className="flex items-center justify-between py-3 border-b border-stone-100 last:border-0">
-                  <View className="flex items-center">
-                    {/* 排名 */}
-                    <View
-                      className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
-                        index === 0
-                          ? 'bg-amber-500 text-white'
-                          : index === 1
-                          ? 'bg-amber-400 text-white'
-                          : index === 2
-                          ? 'bg-amber-300 text-white'
-                          : 'bg-stone-100 text-stone-500'
-                      }`}
-                    >
-                      <Text className="block text-sm font-bold">{index + 1}</Text>
-                    </View>
-
-                    {/* 玩家名 */}
-                    <Text className="block text-base font-medium text-amber-950">
-                      {stat.playerName}
-                    </Text>
-                  </View>
-
-                  {/* 统计数据 */}
-                  <View className="flex items-center gap-4">
-                    <View className="text-right">
-                      <Text className="block text-xs text-stone-400">胜场</Text>
-                      <Text className="block text-lg font-bold text-amber-500">{stat.wins}</Text>
-                    </View>
-                    <View className="text-right">
-                      <Text className="block text-xs text-stone-400">胜率</Text>
-                      <Text className="block text-lg font-bold text-green-500">{stat.winRate}%</Text>
-                    </View>
-                    <View className="text-right">
-                      <Text className="block text-xs text-stone-400">场次</Text>
-                      <Text className="block text-base text-stone-700">{stat.totalMatches}</Text>
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
+            sortedStats.map((stat, index) => (
+              <View
+                key={stat.id}
+                className={`grid grid-cols-4 gap-2 px-4 py-3 ${
+                  index !== sortedStats.length - 1 ? 'border-b border-white/10' : ''
+                }`}
+              >
+                <Text className="block text-white text-sm font-medium">{stat.playerName}</Text>
+                <Text className="block text-white text-sm text-center">{stat.totalMatches}</Text>
+                <Text className="block text-white text-sm text-center">{stat.wins}</Text>
+                <Text className="block text-white text-sm text-right">
+                  {parseFloat(stat.winRate).toFixed(2)}%
+                </Text>
+              </View>
+            ))
           )}
         </View>
       </View>

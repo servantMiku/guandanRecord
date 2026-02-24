@@ -2,26 +2,37 @@ import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
-import { User, Save, Info } from 'lucide-react'
+import { Edit, Save, X } from 'lucide-react'
 import './index.css'
 
 type Player = {
   id: string
   name: string
+  avatar: string | null
   createdAt: string
+}
+
+type EditingPlayer = {
+  id: string
+  name: string
+  avatar: string | null
 }
 
 export default function ProfilePage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(false)
+  const [editingPlayer, setEditingPlayer] = useState<EditingPlayer | null>(null)
+  const [editingName, setEditingName] = useState('')
+
+  useEffect(() => {
+    fetchPlayers()
+  }, [])
 
   const fetchPlayers = async () => {
     try {
       const res = await Network.request({
         url: '/api/players'
       })
-
       if (res.data && res.data.data) {
         setPlayers(res.data.data)
       }
@@ -32,134 +43,139 @@ export default function ProfilePage() {
     }
   }
 
-  useEffect(() => {
-    fetchPlayers()
-  }, [])
-
-  const handleNameChange = (index: number, value: string) => {
-    const newPlayers = [...players]
-    newPlayers[index].name = value
-    setPlayers(newPlayers)
+  const handleStartEdit = (player: Player) => {
+    setEditingPlayer(player)
+    setEditingName(player.name)
   }
 
-  const handleSave = async () => {
-    try {
-      for (const player of players) {
-        await Network.request({
-          url: `/api/players/${player.id}`,
-          method: 'PUT',
-          data: { name: player.name }
-        })
-      }
+  const handleCancelEdit = () => {
+    setEditingPlayer(null)
+    setEditingName('')
+  }
 
-      Taro.showToast({ title: '保存成功', icon: 'success' })
-      setEditing(false)
+  const handleSaveEdit = async () => {
+    if (!editingPlayer) return
+
+    if (!editingName.trim()) {
+      Taro.showToast({ title: '玩家名称不能为空', icon: 'none' })
+      return
+    }
+
+    try {
+      await Network.request({
+        url: `/api/players/${editingPlayer.id}`,
+        method: 'PUT',
+        data: { name: editingName.trim() }
+      })
+
+      Taro.showToast({ title: '更新成功', icon: 'success' })
+      setEditingPlayer(null)
+      setEditingName('')
       fetchPlayers()
     } catch (error) {
-      Taro.showToast({ title: '保存失败', icon: 'none' })
+      console.error('更新玩家失败:', error)
+      Taro.showToast({ title: '更新失败', icon: 'none' })
     }
   }
 
-  const handleEdit = () => {
-    setEditing(true)
+  const getPlayerInitial = (name: string) => {
+    return name ? name.charAt(0).toUpperCase() : '?'
   }
 
-  const handleCancel = () => {
-    setEditing(false)
-    fetchPlayers()
+  const getAvatarColor = (index: number) => {
+    const colors = [
+      'from-pink-500 to-rose-600',
+      'from-purple-500 to-indigo-600',
+      'from-cyan-500 to-blue-600',
+      'from-green-500 to-emerald-600',
+      'from-amber-500 to-orange-600',
+      'from-red-500 to-pink-600'
+    ]
+    return colors[index % colors.length]
   }
 
   return (
-    <View className="min-h-screen bg-stone-50">
+    <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* 头部 */}
+      <View className="bg-white/10 backdrop-blur-lg px-4 py-4 border-b border-white/20">
+        <Text className="block text-white text-lg font-bold">玩家管理</Text>
+        <Text className="block text-white/60 text-sm mt-1">管理6位好友的信息</Text>
+      </View>
+
       <View className="px-4 py-4">
-        {/* 玩家管理 */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
-          <View className="flex items-center justify-between mb-4">
-            <View className="flex items-center">
-              <User size={20} color="#f59e0b" />
-              <Text className="block text-lg font-semibold text-amber-950 ml-2">玩家管理</Text>
-            </View>
-            {!editing && (
-              <Text className="text-amber-500 text-sm" onClick={handleEdit}>
-                编辑
-              </Text>
-            )}
+        {loading ? (
+          <View className="flex items-center justify-center py-20">
+            <Text className="block text-white/60 text-base">加载中...</Text>
           </View>
-
-          {loading ? (
-            <View className="flex items-center justify-center py-8">
-              <Text className="block text-stone-400 text-sm">加载中...</Text>
-            </View>
-          ) : (
-            <View>
-              {players.map((player, index) => (
-                <View key={player.id} className="flex items-center mb-3 last:mb-0">
-                  <View className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mr-3">
-                    <Text className="block text-amber-500 font-bold">{index + 1}</Text>
+        ) : (
+          <View className="space-y-4">
+            {players.map((player, index) => (
+              <View
+                key={player.id}
+                className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20"
+              >
+                <View className="flex items-center">
+                  {/* 头像 - 名字缩写 */}
+                  <View
+                    className={`w-16 h-16 rounded-full bg-gradient-to-br ${getAvatarColor(
+                      index
+                    )} flex items-center justify-center`}
+                  >
+                    <Text className="text-white text-2xl font-bold">
+                      {getPlayerInitial(player.name)}
+                    </Text>
                   </View>
-                  {editing ? (
-                    <View className="flex-1 bg-stone-50 rounded-lg px-4 py-3">
+
+                  {/* 玩家信息 */}
+                  <View className="flex-1 ml-4">
+                    {editingPlayer?.id === player.id ? (
                       <Input
-                        className="w-full bg-transparent text-base text-amber-950"
-                        value={player.name}
-                        onInput={(e) => handleNameChange(index, e.detail.value)}
-                        placeholder={`玩家 ${index + 1} 姓名`}
+                        className="bg-white/10 text-white rounded-lg px-3 py-2"
+                        placeholder="输入玩家名称"
+                        value={editingName}
+                        onInput={(e) => setEditingName(e.detail.value)}
                       />
-                    </View>
-                  ) : (
-                    <View className="flex-1">
-                      <Text className="block text-base text-amber-950">{player.name}</Text>
-                    </View>
-                  )}
-                </View>
-              ))}
-
-              {editing && (
-                <View className="flex gap-3 mt-4 pt-4 border-t border-stone-100">
-                  <View className="flex-1">
-                    <View
-                      className="w-full bg-stone-100 text-stone-700 rounded-xl py-3 flex items-center justify-center"
-                      onClick={handleCancel}
-                    >
-                      <Text className="block text-base font-medium">取消</Text>
-                    </View>
+                    ) : (
+                      <View>
+                        <Text className="block text-white text-xl font-bold">{player.name}</Text>
+                        <Text className="block text-white/60 text-sm mt-1">
+                          玩家 {index + 1}
+                        </Text>
+                      </View>
+                    )}
                   </View>
-                  <View className="flex-1">
-                    <View
-                      className="w-full bg-amber-500 text-white rounded-xl py-3 flex items-center justify-center"
-                      onClick={handleSave}
-                    >
-                      <Save size={18} color="#ffffff" />
-                      <Text className="block text-base font-medium ml-2">保存</Text>
-                    </View>
+
+                  {/* 编辑按钮 */}
+                  <View className="flex gap-2">
+                    {editingPlayer?.id === player.id ? (
+                      <>
+                        <View
+                          className="bg-green-500/50 px-3 py-2 rounded-lg flex items-center"
+                          onClick={handleSaveEdit}
+                        >
+                          <Save size={18} color="#ffffff" />
+                        </View>
+                        <View
+                          className="bg-red-500/50 px-3 py-2 rounded-lg flex items-center"
+                          onClick={handleCancelEdit}
+                        >
+                          <X size={18} color="#ffffff" />
+                        </View>
+                      </>
+                    ) : (
+                      <View
+                        className="bg-white/20 px-3 py-2 rounded-lg flex items-center"
+                        onClick={() => handleStartEdit(player)}
+                      >
+                        <Edit size={18} color="#ffffff" />
+                      </View>
+                    )}
                   </View>
                 </View>
-              )}
-            </View>
-          )}
-        </View>
-
-        {/* 关于 */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm">
-          <View className="flex items-center mb-3">
-            <Info size={20} color="#a8a29e" />
-            <Text className="block text-lg font-semibold text-amber-950 ml-2">关于</Text>
+              </View>
+            ))}
           </View>
-          <View className="space-y-3">
-            <View className="flex justify-between items-center py-2 border-b border-stone-100">
-              <Text className="block text-stone-600 text-base">版本</Text>
-              <Text className="block text-stone-400 text-base">1.0.0</Text>
-            </View>
-            <View className="flex justify-between items-center py-2 border-b border-stone-100">
-              <Text className="block text-stone-600 text-base">游戏类型</Text>
-              <Text className="block text-amber-500 text-base">掼蛋</Text>
-            </View>
-            <View className="flex justify-between items-center py-2">
-              <Text className="block text-stone-600 text-base">玩家数量</Text>
-              <Text className="block text-stone-400 text-base">6 人</Text>
-            </View>
-          </View>
-        </View>
+        )}
       </View>
     </View>
   )

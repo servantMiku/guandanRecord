@@ -2,7 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
-import { Trophy, Calendar, Users, TrendingUp } from 'lucide-react'
+import { Trophy, Calendar, Users, TrendingUp, Plus } from 'lucide-react'
 import './index.css'
 
 type Season = {
@@ -24,6 +24,7 @@ type Match = {
   score: string
   remark: string | null
   createdAt: string
+  seasons?: Season
 }
 
 export default function IndexPage() {
@@ -67,92 +68,104 @@ export default function IndexPage() {
     Taro.switchTab({ url })
   }
 
+  const handleAddRecord = () => {
+    if (!currentSeason) {
+      Taro.showToast({ title: '请先创建赛季', icon: 'none' })
+      return
+    }
+    navigateTo(`/pages/record-form/index?seasonId=${currentSeason.id}`)
+  }
+
   return (
-    <View className="min-h-screen bg-stone-50">
+    <View className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* 头部 - 当前赛季 */}
-      <View className="bg-amber-500 px-4 py-6">
-        <Text className="block text-white text-xl font-bold mb-2">掼蛋战绩</Text>
+      <View className="bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-6 shadow-lg">
+        <Text className="block text-white text-2xl font-bold mb-2">掼蛋战绩</Text>
         {currentSeason ? (
           <View>
             <Text className="block text-white text-lg mb-1">{currentSeason.name}</Text>
-            <Text className="block text-amber-100 text-sm">
+            <Text className="block text-violet-200 text-sm">
               {currentSeason.startDate} - {currentSeason.endDate || '进行中'}
             </Text>
           </View>
         ) : (
-          <Text className="block text-amber-100 text-base">暂无活跃赛季</Text>
+          <Text className="block text-violet-200 text-base">暂无活跃赛季</Text>
         )}
       </View>
 
-      {/* 快捷操作 */}
       <View className="px-4 py-4">
-        <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
-          <View className="flex justify-around">
-            <View className="flex flex-col items-center" onClick={() => navigateTo('/pages/seasons/index')}>
-              <View className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-2">
-                <Calendar size={24} color="#f59e0b" />
-              </View>
-              <Text className="block text-stone-700 text-sm">赛季管理</Text>
-            </View>
-            <View className="flex flex-col items-center" onClick={() => switchTab('/pages/records/index')}>
-              <View className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-2">
-                <Users size={24} color="#f59e0b" />
-              </View>
-              <Text className="block text-stone-700 text-sm">录入战绩</Text>
-            </View>
-            <View className="flex flex-col items-center" onClick={() => switchTab('/pages/stats/index')}>
-              <View className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-2">
-                <TrendingUp size={24} color="#f59e0b" />
-              </View>
-              <Text className="block text-stone-700 text-sm">统计分析</Text>
-            </View>
+        {/* 快捷操作 */}
+        <View className="flex gap-3 mb-4">
+          <View
+            className="flex-1 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl py-4 flex items-center justify-center shadow-lg"
+            onClick={handleAddRecord}
+          >
+            <Plus size={24} color="#ffffff" />
+            <Text className="text-white font-bold ml-2">录入战绩</Text>
+          </View>
+          <View
+            className="flex-1 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl py-4 flex items-center justify-center shadow-lg"
+            onClick={() => navigateTo('/pages/seasons/index')}
+          >
+            <Calendar size={24} color="#ffffff" />
+            <Text className="text-white font-bold ml-2">赛季管理</Text>
           </View>
         </View>
 
         {/* 最近战绩 */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm">
-          <View className="flex items-center justify-between mb-4">
-            <View className="flex items-center">
-              <Trophy size={20} color="#f59e0b" />
-              <Text className="block text-lg font-semibold text-amber-950 ml-2">最近战绩</Text>
-            </View>
-            <Text
-              className="text-amber-500 text-sm"
-              onClick={() => switchTab('/pages/records/index')}
-            >
-              查看全部
-            </Text>
+        <View className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 shadow-xl border border-white/20 mb-4">
+          <View className="flex items-center mb-4">
+            <Trophy size={24} color="#fbbf24" />
+            <Text className="block text-xl font-bold text-white ml-2">最近战绩</Text>
           </View>
 
           {loading ? (
             <View className="flex items-center justify-center py-8">
-              <Text className="block text-stone-400 text-sm">加载中...</Text>
+              <Text className="block text-white/60 text-sm">加载中...</Text>
             </View>
           ) : recentMatches.length === 0 ? (
             <View className="flex flex-col items-center justify-center py-8">
-              <Text className="block text-stone-400 text-base">暂无战绩记录</Text>
-              <Text className="block text-stone-400 text-sm mt-1">快去录入第一场战绩吧</Text>
+              <Text className="block text-white/60 text-base">暂无战绩记录</Text>
+              <Text className="block text-white/60 text-sm mt-1">快去录入第一场战绩吧</Text>
             </View>
           ) : (
             <View>
               {recentMatches.map((match) => (
-                <View key={match.id} className="border-b border-stone-100 py-3 last:border-0">
+                <View key={match.id} className="bg-white/10 rounded-xl p-4 mb-3 last:mb-0 border border-white/10">
                   <View className="flex items-center justify-between mb-2">
-                    <Text className="block text-sm text-stone-400">
+                    <Text className="block text-sm text-white/60">
                       {new Date(match.createdAt).toLocaleDateString()}
                     </Text>
-                    <Text className={`block text-sm font-medium ${match.winnerTeam === 1 ? 'text-green-500' : 'text-amber-500'}`}>
+                    <Text className={`text-sm font-bold ${match.winnerTeam === 1 ? 'text-green-400' : 'text-pink-400'}`}>
                       {match.winnerTeam === 1 ? '队伍1获胜' : '队伍2获胜'}
                     </Text>
                   </View>
-                  <Text className="block text-base text-amber-950 font-medium">{match.score}</Text>
+                  <Text className="block text-xl font-bold text-white mb-1">{match.score}</Text>
                   {match.remark && (
-                    <Text className="block text-sm text-stone-400 mt-1">{match.remark}</Text>
+                    <Text className="block text-sm text-white/60">{match.remark}</Text>
                   )}
                 </View>
               ))}
             </View>
           )}
+        </View>
+
+        {/* 快捷入口 */}
+        <View className="flex gap-3">
+          <View
+            className="flex-1 bg-white/10 backdrop-blur-lg rounded-2xl p-4 flex flex-col items-center border border-white/20"
+            onClick={() => switchTab('/pages/records/index')}
+          >
+            <Users size={32} color="#f472b6" />
+            <Text className="block text-white font-medium mt-2">战绩列表</Text>
+          </View>
+          <View
+            className="flex-1 bg-white/10 backdrop-blur-lg rounded-2xl p-4 flex flex-col items-center border border-white/20"
+            onClick={() => switchTab('/pages/stats/index')}
+          >
+            <TrendingUp size={32} color="#34d399" />
+            <Text className="block text-white font-medium mt-2">统计分析</Text>
+          </View>
         </View>
       </View>
     </View>

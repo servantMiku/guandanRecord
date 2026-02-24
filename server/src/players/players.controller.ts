@@ -23,14 +23,24 @@ export class PlayersController {
   }
 
   @Put(':id')
-  async updatePlayer(@Param('id') id: string, @Body() body: { name: string }) {
+  async updatePlayer(@Param('id') id: string, @Body() body: { name?: string; avatar?: string }) {
     const client = getSupabaseClient()
+
+    const updateData: any = {
+      updated_at: new Date().toISOString()
+    }
+
+    if (body.name !== undefined) {
+      updateData.name = body.name
+    }
+
+    if (body.avatar !== undefined) {
+      updateData.avatar = body.avatar
+    }
+
     const { data, error } = await client
       .from('players')
-      .update({
-        name: body.name,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
 
