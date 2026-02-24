@@ -13,12 +13,12 @@
 .filter-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .filter-title {
   color: #ffffff;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   margin-left: 8px;
 }
@@ -26,13 +26,13 @@
 .empty-season {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 12px 16px;
+  padding: 16px 20px;
   text-align: center;
 }
 
 .empty-text {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .season-tags {
@@ -41,9 +41,9 @@
 }
 
 .season-tag {
-  padding: 8px 16px;
-  border-radius: 8px;
-  margin: 0 8px 8px 0;
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin: 0 10px 10px 0;
 }
 
 .season-tag-active {
@@ -66,7 +66,7 @@
 
 /* 内容区域 */
 .content {
-  padding: 16px;
+  padding: 20px;
 }
 
 /* 加载状态 */
@@ -74,12 +74,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 0;
+  padding: 100px 0;
 }
 
 .loading-text {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 16px;
+  font-size: 18px;
 }
 
 /* 空状态 */
@@ -88,33 +88,33 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 16px;
+  padding: 100px 20px;
 }
 
 .empty-text {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 16px;
-  margin-top: 16px;
+  font-size: 18px;
+  margin-top: 20px;
 }
 
 .empty-hint {
   color: rgba(255, 255, 255, 0.4);
-  font-size: 14px;
-  margin-top: 8px;
+  font-size: 16px;
+  margin-top: 10px;
 }
 
 /* 战绩列表 */
 .match-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 /* 战绩卡片 */
 .match-card {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 16px;
+  padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
@@ -123,7 +123,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .match-date-wrapper {
@@ -133,13 +133,13 @@
 
 .match-date {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
-  margin-left: 4px;
+  font-size: 14px;
+  margin-left: 6px;
 }
 
 .match-winner-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
+  padding: 6px 16px;
+  border-radius: 24px;
 }
 
 .winner-team1 {
@@ -152,22 +152,54 @@
 
 .winner-text {
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
 }
 
 .match-score {
   display: block;
   color: #ffffff;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .match-remark {
   display: block;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 12px;
+  font-size: 14px;
   text-align: center;
+}
+
+/* 操作按钮 */
+.match-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.action-btn {
+  flex: 1;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn-edit {
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+}
+
+.action-btn-delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.action-btn-text {
+  display: block;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 6px;
 }

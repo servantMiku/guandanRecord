@@ -2,7 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
-import { Trophy, Calendar, Filter } from 'lucide-react'
+import { Trophy, Calendar, Filter, Trash2, Edit } from 'lucide-react'
 import './index.css'
 
 type Season = {
@@ -79,8 +79,36 @@ export default function RecordsPage() {
     }
   }, [selectedSeasonId])
 
-  const handleMatchClick = (matchId: string) => {
-    Taro.navigateTo({ url: `/pages/record-detail/index?id=${matchId}` })
+  const handleDeleteMatch = async (matchId: string, event: any) => {
+    event.stopPropagation() // 阻止事件冒泡，避免触发查看详情
+
+    Taro.showModal({
+      title: '确认删除',
+      content: '确定要删除这条战绩吗？删除后可在后台恢复。',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            await Network.request({
+              url: `/api/matches/${matchId}`,
+              method: 'DELETE'
+            })
+            Taro.showToast({ title: '删除成功', icon: 'success' })
+            // 重新加载战绩列表
+            if (selectedSeasonId) {
+              fetchMatches(selectedSeasonId)
+            }
+          } catch (error) {
+            console.error('删除战绩失败:', error)
+            Taro.showToast({ title: '删除失败', icon: 'none' })
+          }
+        }
+      }
+    })
+  }
+
+  const handleEditMatch = (matchId: string, seasonId: string, event: any) => {
+    event.stopPropagation() // 阻止事件冒泡
+    Taro.navigateTo({ url: `/pages/record-form/index?seasonId=${seasonId}&matchId=${matchId}` })
   }
 
   const formatDate = (dateString: string) => {
@@ -141,7 +169,6 @@ export default function RecordsPage() {
               <View
                 key={match.id}
                 className="match-card"
-                onClick={() => handleMatchClick(match.id)}
               >
                 {/* 日期和胜者 */}
                 <View className="match-header">
@@ -163,6 +190,24 @@ export default function RecordsPage() {
                 {match.remark && (
                   <Text className="match-remark">{match.remark}</Text>
                 )}
+
+                {/* 操作按钮 */}
+                <View className="match-actions">
+                  <View
+                    className="action-btn action-btn-edit"
+                    onClick={(e) => handleEditMatch(match.id, match.seasonId, e)}
+                  >
+                    <Edit size={16} color="#ffffff" />
+                    <Text className="action-btn-text">编辑</Text>
+                  </View>
+                  <View
+                    className="action-btn action-btn-delete"
+                    onClick={(e) => handleDeleteMatch(match.id, e)}
+                  >
+                    <Trash2 size={16} color="#ffffff" />
+                    <Text className="action-btn-text">删除</Text>
+                  </View>
+                </View>
               </View>
             ))}
           </View>

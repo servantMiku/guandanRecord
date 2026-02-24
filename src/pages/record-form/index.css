@@ -6,7 +6,7 @@
 /* 头部 */
 .header {
   background: rgba(255, 255, 255, 0.1);
-  padding: 16px;
+  padding: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
@@ -14,29 +14,29 @@
 
 .header-title {
   color: #ffffff;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
-  margin-left: 12px;
+  margin-left: 14px;
 }
 
 .header-season {
   color: #ec4899;
-  font-size: 14px;
+  font-size: 16px;
   margin-left: auto;
 }
 
 /* 内容区域 */
 .content {
-  padding: 16px;
-  padding-bottom: 32px;
+  padding: 20px;
+  padding-bottom: 40px;
 }
 
 /* 卡片 */
 .card {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
@@ -44,19 +44,19 @@
 .card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .card-title {
   color: #ffffff;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
-  margin-left: 8px;
+  margin-left: 10px;
 }
 
 .card-hint {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
+  font-size: 14px;
   margin-left: auto;
 }
 
@@ -65,26 +65,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 0;
+  padding: 100px 0;
 }
 
 .loading-text {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 16px;
+  font-size: 18px;
 }
 
 /* 玩家网格 - 使用 flex 布局 */
 .player-grid {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 -6px;
+  margin: 0 -8px;
 }
 
 .player-btn {
-  width: calc(33.333% - 12px);
-  margin: 6px;
+  width: calc(33.333% - 16px);
+  margin: 8px;
   aspect-ratio: 1;
-  border-radius: 12px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -104,9 +104,9 @@
 }
 
 .player-avatar {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .avatar-selected {
@@ -114,7 +114,7 @@
 }
 
 .player-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
 }
 
@@ -124,13 +124,13 @@
 
 /* 队伍容器 */
 .teams-container {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .team-card {
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 12px;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
 .team-card-1 {
@@ -145,9 +145,9 @@
 
 .team-title {
   color: #ec4899;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .team-card-2 .team-title {
@@ -161,9 +161,9 @@
 .team-player {
   flex: 1;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px;
-  margin: 0 4px;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0 6px;
   text-align: center;
   position: relative;
 }
@@ -171,23 +171,23 @@
 .team-player-label {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 10px;
-  margin-bottom: 4px;
+  font-size: 12px;
+  margin-bottom: 6px;
 }
 
 .team-player-name {
   display: block;
   color: #ffffff;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .clear-btn {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
   background: #ef4444;
   border-radius: 50%;
   display: flex;
@@ -209,9 +209,9 @@
 .score-label {
   display: block;
   color: #ec4899;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   text-align: center;
 }
 
@@ -221,8 +221,8 @@
 
 .input-wrapper {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px 16px;
+  border-radius: 12px;
+  padding: 16px 20px;
 }
 
 .score-input,
@@ -230,36 +230,36 @@
   background: transparent;
   color: #ffffff;
   text-align: center;
-  font-size: 18px;
+  font-size: 20px;
   width: 100%;
 }
 
 .remark-input {
   text-align: left;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .vs-text {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  margin: 0 12px;
+  margin: 0 16px;
 }
 
 /* 章节 */
 .section-title {
   display: block;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 /* 提交按钮 */
 .submit-btn {
   background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,6 +269,6 @@
 .submit-btn-text {
   color: #ffffff;
   font-weight: bold;
-  margin-left: 8px;
-  font-size: 18px;
+  margin-left: 10px;
+  font-size: 20px;
 }

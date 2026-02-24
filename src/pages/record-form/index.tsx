@@ -19,11 +19,12 @@ const RECORD_FORM_KEY = 'record_form_draft'
 
 export default function RecordFormPage() {
   const router = useRouter()
-  const { seasonId } = router.params
+  const { seasonId, matchId } = router.params
 
   const [season, setSeason] = useState<Season | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
+  const isEditMode = !!matchId // 是否为编辑模式
 
   // 表单状态
   const [team1Player1, setTeam1Player1] = useState<string>('')
@@ -51,12 +52,43 @@ export default function RecordFormPage() {
       if (playerRes.data && playerRes.data.data) {
         setPlayers(playerRes.data.data)
       }
+
+      // 如果是编辑模式，加载战绩详情
+      if (matchId) {
+        await loadMatchDetail(matchId)
+      }
     } catch (error) {
       console.error('获取数据失败:', error)
     } finally {
       setLoading(false)
     }
-  }, [seasonId])
+  }, [seasonId, matchId])
+
+  const loadMatchDetail = async (id: string) => {
+    try {
+      const res = await Network.request({
+        url: `/api/matches/${id}`
+      })
+      if (res.data && res.data.data) {
+        const match = res.data.data
+        setTeam1Player1(match.team1_player1_id)
+        setTeam1Player2(match.team1_player2_id)
+        setTeam2Player1(match.team2_player1_id)
+        setTeam2Player2(match.team2_player2_id)
+
+        // 解析比分（假设格式为 "X - Y"）
+        const scores = match.score.split(' - ')
+        if (scores.length === 2) {
+          setTeam1Score(scores[0])
+          setTeam2Score(scores[1])
+        }
+
+        setRemark(match.remark || '')
+      }
+    } catch (error) {
+      console.error('加载战绩详情失败:', error)
+    }
+  }
 
   const loadDraft = () => {
     try {
@@ -77,8 +109,11 @@ export default function RecordFormPage() {
 
   useEffect(() => {
     fetchData()
-    loadDraft()
-  }, [fetchData])
+    // 只在新增模式时加载草稿
+    if (!matchId) {
+      loadDraft()
+    }
+  }, [fetchData, matchId])
 
   const saveDraft = () => {
     const draft = {
@@ -197,23 +232,41 @@ export default function RecordFormPage() {
       const team2ScoreNum = parseInt(team2Score)
       const winnerTeam = team1ScoreNum > team2ScoreNum ? 1 : 2
 
-      await Network.request({
-        url: '/api/matches',
-        method: 'POST',
-        data: {
-          seasonId: seasonId,
-          team1Player1Id: team1Player1,
-          team1Player2Id: team1Player2,
-          team2Player1Id: team2Player1,
-          team2Player2Id: team2Player2,
-          winnerTeam,
-          score: `队伍1：${team1Score}，队伍2：${team2Score}`,
-          remark: remark || null
-        }
-      })
+      // 构造比分字符串
+      const scoreStr = `队伍1：${team1Score}，队伍2：${team2Score}`
 
-      clearDraft()
-      Taro.showToast({ title: '录入成功', icon: 'success' })
+      if (isEditMode && matchId) {
+        // 编辑模式
+        await Network.request({
+          url: `/api/matches/${matchId}`,
+          method: 'PUT',
+          data: {
+            winnerTeam,
+            score: scoreStr,
+            remark: remark || null
+          }
+        })
+        Taro.showToast({ title: '修改成功', icon: 'success' })
+      } else {
+        // 新增模式
+        await Network.request({
+          url: '/api/matches',
+          method: 'POST',
+          data: {
+            seasonId: seasonId,
+            team1Player1Id: team1Player1,
+            team1Player2Id: team1Player2,
+            team2Player1Id: team2Player1,
+            team2Player2Id: team2Player2,
+            winnerTeam,
+            score: scoreStr,
+            remark: remark || null
+          }
+        })
+        Taro.showToast({ title: '录入成功', icon: 'success' })
+        clearDraft()
+      }
+
       setTimeout(() => {
         Taro.navigateBack()
       }, 1500)
@@ -247,7 +300,7 @@ export default function RecordFormPage() {
       {/* 头部 */}
       <View className="header">
         <ArrowLeft size={24} color="#ffffff" onClick={() => Taro.navigateBack()} />
-        <Text className="header-title">录入战绩</Text>
+        <Text className="header-title">{isEditMode ? '编辑战绩' : '录入战绩'}</Text>
         {season && (
           <Text className="header-season">{season.name}</Text>
         )}

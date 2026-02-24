@@ -6,27 +6,28 @@
 /* 赛季选择 */
 .season-selector {
   background: rgba(255, 255, 255, 0.1);
-  padding: 16px;
+  padding: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .selector-title {
+  display: block;
   color: #ffffff;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .empty-season {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 12px 16px;
+  padding: 16px 20px;
   text-align: center;
 }
 
 .empty-text {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .season-tags {
@@ -35,9 +36,9 @@
 }
 
 .season-tag {
-  padding: 8px 16px;
-  border-radius: 8px;
-  margin: 0 8px 8px 0;
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin: 0 10px 10px 0;
 }
 
 .season-tag-active {
@@ -49,8 +50,9 @@
 }
 
 .season-tag-text {
+  display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
 }
 
@@ -60,8 +62,8 @@
 
 /* 汇总卡片 */
 .summary-card {
-  margin: 16px;
-  padding: 16px;
+  margin: 20px;
+  padding: 20px;
   background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   border-radius: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
@@ -70,14 +72,14 @@
 .summary-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .summary-title {
+  display: block;
   color: #ffffff;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
-  margin-left: 8px;
 }
 
 .summary-stats {
@@ -92,20 +94,20 @@
 .summary-value {
   display: block;
   color: #ffffff;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .summary-label {
   display: block;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* 排名卡片 */
 .ranking-card {
-  margin: 0 16px 16px;
+  margin: 0 20px 20px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   overflow: hidden;
@@ -116,7 +118,7 @@
 /* 表格头部 */
 .table-header {
   display: flex;
-  padding: 12px 16px;
+  padding: 16px 20px;
   background: rgba(255, 255, 255, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -136,19 +138,16 @@
 }
 
 .table-header-text {
+  display: block;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-}
-
-.sort-icon {
-  margin-left: 4px;
 }
 
 /* 表格行 */
 .table-row {
   display: flex;
-  padding: 12px 16px;
+  padding: 16px 20px;
 }
 
 .table-row-bordered {
@@ -156,8 +155,9 @@
 }
 
 .table-cell-text {
+  display: block;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
 }
 
@@ -168,17 +168,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 40px 20px;
 }
 
 .loading-text,
 .empty-text {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  font-size: 18px;
 }
 
 .empty-hint {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: 14px;
+  margin-top: 8px;
 }
