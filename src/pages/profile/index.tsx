@@ -18,12 +18,12 @@ export default function ProfilePage() {
 
   const fetchPlayers = async () => {
     try {
-      const { data } = await Network.request({
+      const res = await Network.request({
         url: '/api/players'
       })
 
-      if (data) {
-        setPlayers(data)
+      if (res.data && res.data.data) {
+        setPlayers(res.data.data)
       }
     } catch (error) {
       console.error('获取玩家列表失败:', error)

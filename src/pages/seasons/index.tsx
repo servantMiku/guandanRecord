@@ -20,12 +20,12 @@ export default function SeasonsPage() {
 
   const fetchSeasons = async () => {
     try {
-      const { data } = await Network.request({
+      const res = await Network.request({
         url: '/api/seasons'
       })
 
-      if (data) {
-        setSeasons(data)
+      if (res.data && res.data.data) {
+        setSeasons(res.data.data)
       }
     } catch (error) {
       console.error('获取赛季列表失败:', error)

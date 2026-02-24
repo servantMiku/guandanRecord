@@ -34,19 +34,19 @@ export default function IndexPage() {
   const fetchData = async () => {
     try {
       // 获取当前活跃赛季
-      const { data: seasons } = await Network.request({
+      const res = await Network.request({
         url: '/api/seasons/active'
       })
-      if (seasons && seasons.length > 0) {
-        setCurrentSeason(seasons[0])
+      if (res.data && res.data.data && res.data.data.length > 0) {
+        setCurrentSeason(res.data.data[0])
       }
 
       // 获取最近战绩
-      const { data: matches } = await Network.request({
+      const matchRes = await Network.request({
         url: '/api/matches/recent'
       })
-      if (matches) {
-        setRecentMatches(matches)
+      if (matchRes.data && matchRes.data.data) {
+        setRecentMatches(matchRes.data.data)
       }
     } catch (error) {
       console.error('获取数据失败:', error)

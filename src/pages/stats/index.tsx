@@ -41,14 +41,14 @@ export default function StatsPage() {
       if (!selectedSeasonId) return
 
       // 获取统计数据
-      const { data: stats } = await Network.request({
+      const res = await Network.request({
         url: '/api/stats/season',
         data: { seasonId: selectedSeasonId }
       })
 
-      if (stats) {
-        setPlayerStats(stats.playerStats || [])
-        setSeasonSummary(stats.summary || null)
+      if (res.data && res.data.data) {
+        setPlayerStats(res.data.data.playerStats || [])
+        setSeasonSummary(res.data.data.summary || null)
       }
     } catch (error) {
       console.error('获取统计数据失败:', error)
@@ -59,14 +59,14 @@ export default function StatsPage() {
 
   const fetchSeasons = async () => {
     try {
-      const { data } = await Network.request({
+      const res = await Network.request({
         url: '/api/seasons'
       })
 
-      if (data && data.length > 0) {
-        setSeasons(data)
+      if (res.data && res.data.data && res.data.data.length > 0) {
+        setSeasons(res.data.data)
         // 默认选择活跃赛季或第一个赛季
-        const activeSeason = data.find((s: Season) => s.status === 'active') || data[0]
+        const activeSeason = res.data.data.find((s: Season) => s.status === 'active') || res.data.data[0]
         setSelectedSeasonId(activeSeason.id)
       }
     } catch (error) {

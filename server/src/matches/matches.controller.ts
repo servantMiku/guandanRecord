@@ -9,9 +9,11 @@ export class MatchesController {
   @Get()
   async getAllMatches(@Query('limit') limit?: string) {
     const client = getSupabaseClient()
+
+    // 先获取战绩数据（不包含关联查询）
     let query = client
       .from('matches')
-      .select('*, seasons(*)')
+      .select('*')
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
 
@@ -19,22 +21,38 @@ export class MatchesController {
       query = query.limit(parseInt(limit))
     }
 
-    const { data, error } = await query
+    const { data: matches, error } = await query
 
     if (error) {
       console.error('获取战绩列表失败:', error)
       return { code: 500, msg: '获取战绩列表失败', data: null }
     }
 
-    return { code: 200, msg: 'success', data: data || [] }
+    // 获取所有赛季信息
+    const { data: seasons } = await client
+      .from('seasons')
+      .select('*')
+
+    // 在代码中关联数据
+    const matchesWithSeasons = (matches || []).map(match => {
+      const season = seasons?.find(s => s.id === match.season_id)
+      return {
+        ...match,
+        seasons: season || null
+      }
+    })
+
+    return { code: 200, msg: 'success', data: matchesWithSeasons || [] }
   }
 
   @Get('recent')
   async getRecentMatches(@Query('limit') limit: string = '5') {
     const client = getSupabaseClient()
-    const { data, error } = await client
+
+    // 获取最近战绩
+    const { data: matches, error } = await client
       .from('matches')
-      .select('*, seasons(*)')
+      .select('*')
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
       .limit(parseInt(limit))
@@ -44,7 +62,21 @@ export class MatchesController {
       return { code: 500, msg: '获取最近战绩失败', data: null }
     }
 
-    return { code: 200, msg: 'success', data: data || [] }
+    // 获取所有赛季信息
+    const { data: seasons } = await client
+      .from('seasons')
+      .select('*')
+
+    // 在代码中关联数据
+    const matchesWithSeasons = (matches || []).map(match => {
+      const season = seasons?.find(s => s.id === match.season_id)
+      return {
+        ...match,
+        seasons: season || null
+      }
+    })
+
+    return { code: 200, msg: 'success', data: matchesWithSeasons || [] }
   }
 
   @Get(':id')

@@ -39,22 +39,22 @@ export default function RecordDetailPage() {
   const fetchData = async () => {
     try {
       // 获取玩家列表
-      const { data: playerList } = await Network.request({
+      const playerRes = await Network.request({
         url: '/api/players'
       })
-      if (playerList) {
-        setPlayers(playerList)
+      if (playerRes.data && playerRes.data.data) {
+        setPlayers(playerRes.data.data)
       }
 
       // 获取战绩详情
-      const { data: matchData } = await Network.request({
+      const matchRes = await Network.request({
         url: `/api/matches/${matchId}`
       })
 
-      if (matchData) {
-        setMatch(matchData)
-        setEditedScore(matchData.score)
-        setEditedRemark(matchData.remark || '')
+      if (matchRes.data && matchRes.data.data) {
+        setMatch(matchRes.data.data)
+        setEditedScore(matchRes.data.data.score)
+        setEditedRemark(matchRes.data.data.remark || '')
       }
     } catch (error) {
       console.error('获取数据失败:', error)

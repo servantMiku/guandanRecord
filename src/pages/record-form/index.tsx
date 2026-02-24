@@ -45,13 +45,13 @@ export default function RecordFormPage() {
   const fetchData = async () => {
     try {
       // 获取赛季列表
-      const { data: seasonList } = await Network.request({
+      const seasonRes = await Network.request({
         url: '/api/seasons'
       })
-      if (seasonList && seasonList.length > 0) {
-        setSeasons(seasonList)
+      if (seasonRes.data && seasonRes.data.data && seasonRes.data.data.length > 0) {
+        setSeasons(seasonRes.data.data)
         if (!selectedSeasonId) {
-          const activeSeason = seasonList.find((s: Season) => s.status === 'active')
+          const activeSeason = seasonRes.data.data.find((s: Season) => s.status === 'active')
           if (activeSeason) {
             setSelectedSeasonId(activeSeason.id)
           }
@@ -59,11 +59,11 @@ export default function RecordFormPage() {
       }
 
       // 获取玩家列表
-      const { data: playerList } = await Network.request({
+      const playerRes = await Network.request({
         url: '/api/players'
       })
-      if (playerList) {
-        setPlayers(playerList)
+      if (playerRes.data && playerRes.data.data) {
+        setPlayers(playerRes.data.data)
       }
     } catch (error) {
       console.error('获取数据失败:', error)

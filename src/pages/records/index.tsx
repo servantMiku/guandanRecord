@@ -39,19 +39,19 @@ export default function RecordsPage() {
   const fetchData = async () => {
     try {
       // 获取玩家列表
-      const { data: playerList } = await Network.request({
+      const playerRes = await Network.request({
         url: '/api/players'
       })
-      if (playerList) {
-        setPlayers(playerList)
+      if (playerRes.data && playerRes.data.data) {
+        setPlayers(playerRes.data.data)
       }
 
       // 获取战绩列表
-      const { data: matchList } = await Network.request({
+      const matchRes = await Network.request({
         url: '/api/matches'
       })
-      if (matchList) {
-        setMatches(matchList)
+      if (matchRes.data && matchRes.data.data) {
+        setMatches(matchRes.data.data)
       }
     } catch (error) {
       console.error('获取数据失败:', error)
