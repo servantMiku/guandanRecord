@@ -106,29 +106,11 @@ export default function RecordFormPage() {
     }
   }
 
-  const loadDraft = () => {
-    try {
-      const draft = Taro.getStorageSync(RECORD_FORM_KEY)
-      if (draft) {
-        setTeam1Player1(draft.team1Player1 || '')
-        setTeam1Player2(draft.team1Player2 || '')
-        setTeam2Player1(draft.team2Player1 || '')
-        setTeam2Player2(draft.team2Player2 || '')
-        setTeam1Score(draft.team1Score || '')
-        setTeam2Score(draft.team2Score || '')
-        setMatchTime(draft.matchTime || '')
-        setRemark(draft.remark || '')
-      }
-    } catch (error) {
-      console.error('加载草稿失败:', error)
-    }
-  }
-
   useEffect(() => {
     fetchData()
-    // 只在新增模式时加载草稿
+    // 新增模式下清空草稿，确保空白状态
     if (!matchId) {
-      loadDraft()
+      clearDraft()
     }
   }, [fetchData, matchId])
 
