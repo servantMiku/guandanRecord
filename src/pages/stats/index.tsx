@@ -257,7 +257,7 @@ export default function StatsPage() {
             </View>
           </View>
           {/* 最佳搭档 */}
-          {summary.bestPartner && summary.bestPartner !== '暂无' && (
+          {summary.bestPartner && summary.bestPartner !== '' && summary.bestPartner !== '-' && (
             <View className="best-partner-section">
               <View className="best-partner-divider" />
               <View className="best-partner-header">
