@@ -38,7 +38,6 @@ export class StatsController {
       .from('player_stats')
       .select('*')
       .eq('season_id', seasonId)
-      .order('win_rate', { ascending: false })
 
     // 获取所有玩家信息
     const { data: players } = await client
@@ -48,34 +47,107 @@ export class StatsController {
     // 计算每个玩家的连胜/连败
     const streakMap = new Map<string, { streak: number; type: 'win' | 'lose' | 'none' }>()
     
+    // 计算搭档合作统计数据
+    // key: "playerAId_playerBId" (按字母顺序排序，确保唯一性)
+    const partnerStatsMap = new Map<string, {
+      player1Id: string
+      player2Id: string
+      player1Name: string
+      player2Name: string
+      totalMatches: number
+      wins: number
+      winRate: string
+    }>()
+
     if (matches && matches.length > 0) {
-      // 按时间顺序遍历战绩，计算连胜/连败
+      // 按时间顺序遍历战绩，计算连胜/连败和搭档统计
       for (const match of matches) {
-        // 处理胜方玩家
-        if (match.team1_players) {
-          for (const playerId of match.team1_players) {
-            const currentStreak = streakMap.get(playerId) || { streak: 0, type: 'none' }
-            if (currentStreak.type === 'win') {
-              streakMap.set(playerId, { streak: currentStreak.streak + 1, type: 'win' })
-            } else {
-              streakMap.set(playerId, { streak: 1, type: 'win' })
-            }
+        const team1Players = match.team1_players || []
+        const team2Players = match.team2_players || []
+        const isTeam1Win = match.winner_team === 1
+
+        // 处理胜方玩家连胜/连败
+        const winnerTeam = isTeam1Win ? team1Players : team2Players
+        const loserTeam = isTeam1Win ? team2Players : team1Players
+
+        for (const playerId of winnerTeam) {
+          const currentStreak = streakMap.get(playerId) || { streak: 0, type: 'none' }
+          if (currentStreak.type === 'win') {
+            streakMap.set(playerId, { streak: currentStreak.streak + 1, type: 'win' })
+          } else {
+            streakMap.set(playerId, { streak: 1, type: 'win' })
           }
         }
-        
-        // 处理败方玩家
-        if (match.team2_players) {
-          for (const playerId of match.team2_players) {
-            const currentStreak = streakMap.get(playerId) || { streak: 0, type: 'none' }
-            if (currentStreak.type === 'lose') {
-              streakMap.set(playerId, { streak: currentStreak.streak + 1, type: 'lose' })
-            } else {
-              streakMap.set(playerId, { streak: 1, type: 'lose' })
-            }
+
+        for (const playerId of loserTeam) {
+          const currentStreak = streakMap.get(playerId) || { streak: 0, type: 'none' }
+          if (currentStreak.type === 'lose') {
+            streakMap.set(playerId, { streak: currentStreak.streak + 1, type: 'lose' })
+          } else {
+            streakMap.set(playerId, { streak: 1, type: 'lose' })
           }
+        }
+
+        // 计算搭档统计
+        // 队伍1的搭档
+        if (team1Players.length >= 2) {
+          const p1 = team1Players[0]
+          const p2 = team1Players[1]
+          const key = [p1, p2].sort().join('_')
+          
+          const existing = partnerStatsMap.get(key) || {
+            player1Id: p1,
+            player2Id: p2,
+            player1Name: players?.find(p => p.id === p1)?.name || '未知',
+            player2Name: players?.find(p => p.id === p2)?.name || '未知',
+            totalMatches: 0,
+            wins: 0,
+            winRate: '0.00'
+          }
+          
+          existing.totalMatches += 1
+          if (isTeam1Win) {
+            existing.wins += 1
+          }
+          existing.winRate = ((existing.wins / existing.totalMatches) * 100).toFixed(2)
+          partnerStatsMap.set(key, existing)
+        }
+
+        // 队伍2的搭档
+        if (team2Players.length >= 2) {
+          const p1 = team2Players[0]
+          const p2 = team2Players[1]
+          const key = [p1, p2].sort().join('_')
+          
+          const existing = partnerStatsMap.get(key) || {
+            player1Id: p1,
+            player2Id: p2,
+            player1Name: players?.find(p => p.id === p1)?.name || '未知',
+            player2Name: players?.find(p => p.id === p2)?.name || '未知',
+            totalMatches: 0,
+            wins: 0,
+            winRate: '0.00'
+          }
+          
+          existing.totalMatches += 1
+          if (!isTeam1Win) {
+            existing.wins += 1
+          }
+          existing.winRate = ((existing.wins / existing.totalMatches) * 100).toFixed(2)
+          partnerStatsMap.set(key, existing)
         }
       }
     }
+
+    // 转换搭档统计为数组并按胜率、胜场排序
+    const partnerStats = Array.from(partnerStatsMap.values()).sort((a, b) => {
+      const winRateDiff = parseFloat(b.winRate) - parseFloat(a.winRate)
+      if (winRateDiff !== 0) return winRateDiff
+      return b.wins - a.wins
+    })
+
+    // 找出最佳搭档
+    const bestPartner = partnerStats.length > 0 ? partnerStats[0] : null
 
     // 合并玩家名称并转换字段名为 camelCase，添加连胜/连败数据
     const playerStatsWithNames = (playerStats || []).map((stat) => {
@@ -109,7 +181,10 @@ export class StatsController {
       seasonName: season.name,
       totalMatches: matches?.length || 0,
       bestPlayer: bestPlayer?.playerName || '暂无',
-      bestWinRate: bestPlayer ? `${bestPlayer.winRate}%` : '0.00%'
+      bestWinRate: bestPlayer ? `${bestPlayer.winRate}%` : '0.00%',
+      bestPartner: bestPartner ? `${bestPartner.player1Name} + ${bestPartner.player2Name}` : '暂无',
+      bestPartnerWinRate: bestPartner ? `${bestPartner.winRate}%` : '0.00%',
+      bestPartnerWins: bestPartner?.wins || 0
     }
 
     return {
@@ -117,7 +192,8 @@ export class StatsController {
       msg: 'success',
       data: {
         summary,
-        playerStats: playerStatsWithNames
+        playerStats: playerStatsWithNames,
+        partnerStats
       }
     }
   }

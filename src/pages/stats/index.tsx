@@ -2,7 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
-import { Trophy, Flame, TrendingDown, Crown, Medal } from 'lucide-react'
+import { Trophy, Flame, TrendingDown, Crown, Medal, Users } from 'lucide-react'
 import './index.css'
 
 type Season = {
@@ -23,6 +23,16 @@ type PlayerStat = {
   winRate: string
   streak: number
   streakType: 'win' | 'lose' | 'none'
+}
+
+type PartnerStat = {
+  player1Id: string
+  player2Id: string
+  player1Name: string
+  player2Name: string
+  totalMatches: number
+  wins: number
+  winRate: string
 }
 
 type SortField = 'playerName' | 'totalMatches' | 'wins' | 'winRate'
@@ -93,9 +103,10 @@ export default function StatsPage() {
   const [seasons, setSeasons] = useState<Season[]>([])
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('')
   const [stats, setStats] = useState<PlayerStat[]>([])
+  const [partnerStats, setPartnerStats] = useState<PartnerStat[]>([])
   const [summary, setSummary] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [sortField, setSortField] = useState<SortField>('wins')
+  const [sortField, setSortField] = useState<SortField>('winRate')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
   const fetchSeasons = async () => {
@@ -131,6 +142,7 @@ export default function StatsPage() {
       })
       if (res.data && res.data.data) {
         setStats(res.data.data.playerStats || [])
+        setPartnerStats(res.data.data.partnerStats || [])
         setSummary(res.data.data.summary)
       }
     } catch (error) {
@@ -167,22 +179,29 @@ export default function StatsPage() {
     }
   }
 
+  // 默认排序：胜率优先，胜场次之
   const getSortedStats = () => {
     return [...stats].sort((a, b) => {
-      let comparison = 0
+      // 首先按胜率排序
+      const winRateDiff = parseFloat(a.winRate) - parseFloat(b.winRate)
+      if (Math.abs(winRateDiff) > 0.01) {
+        return sortOrder === 'asc' ? winRateDiff : -winRateDiff
+      }
+      
+      // 胜率相同则按胜场排序
+      const winsDiff = a.wins - b.wins
+      if (winsDiff !== 0) {
+        return sortOrder === 'asc' ? winsDiff : -winsDiff
+      }
 
+      // 其他排序字段
+      let comparison = 0
       switch (sortField) {
         case 'playerName':
           comparison = a.playerName.localeCompare(b.playerName, 'zh-CN')
           break
         case 'totalMatches':
           comparison = a.totalMatches - b.totalMatches
-          break
-        case 'wins':
-          comparison = a.wins - b.wins
-          break
-        case 'winRate':
-          comparison = parseFloat(a.winRate) - parseFloat(b.winRate)
           break
       }
 
@@ -220,7 +239,7 @@ export default function StatsPage() {
       {summary && (
         <View className="summary-card">
           <View className="summary-header">
-            <Trophy size={24} color="#ffffff" />
+            <Trophy size={28} color="#ffffff" />
             <Text className="summary-title">赛季总结</Text>
           </View>
           <View className="summary-stats">
@@ -237,6 +256,23 @@ export default function StatsPage() {
               <Text className="summary-label">最高胜率</Text>
             </View>
           </View>
+          {/* 最佳搭档 */}
+          {summary.bestPartner && summary.bestPartner !== '暂无' && (
+            <View className="best-partner-section">
+              <View className="best-partner-divider" />
+              <View className="best-partner-header">
+                <Users size={24} color="#fbbf24" />
+                <Text className="best-partner-title">最佳搭档</Text>
+              </View>
+              <View className="best-partner-content">
+                <Text className="best-partner-name">{summary.bestPartner}</Text>
+                <View className="best-partner-stats">
+                  <Text className="best-partner-winrate">{summary.bestPartnerWinRate}</Text>
+                  <Text className="best-partner-wins">({summary.bestPartnerWins}胜)</Text>
+                </View>
+              </View>
+            </View>
+          )}
         </View>
       )}
 
@@ -315,6 +351,74 @@ export default function StatsPage() {
           </View>
         )}
       </View>
+
+      {/* 搭档统计表格 */}
+      {partnerStats.length > 0 && (
+        <View className="partner-card">
+          <View className="partner-header">
+            <Users size={28} color="#fbbf24" />
+            <Text className="partner-title">搭档统计</Text>
+          </View>
+          
+          {/* 搭档表头 */}
+          <View className="partner-table-header">
+            <View className="partner-cell partner-cell-rank">
+              <Text className="partner-header-text">排名</Text>
+            </View>
+            <View className="partner-cell">
+              <Text className="partner-header-text">搭档组合</Text>
+            </View>
+            <View className="partner-cell partner-cell-center">
+              <Text className="partner-header-text">场次</Text>
+            </View>
+            <View className="partner-cell partner-cell-center">
+              <Text className="partner-header-text">胜场</Text>
+            </View>
+            <View className="partner-cell partner-cell-right">
+              <Text className="partner-header-text">胜率</Text>
+            </View>
+          </View>
+
+          {/* 搭档列表 */}
+          <View>
+            {partnerStats.map((partner, index) => (
+              <View
+                key={`${partner.player1Id}_${partner.player2Id}`}
+                className={`partner-row ${index < 3 ? `partner-row-top${index + 1}` : ''} ${index !== partnerStats.length - 1 ? 'partner-row-bordered' : ''}`}
+              >
+                {/* 排名 */}
+                <View className="partner-cell partner-cell-rank">
+                  <RankIcon rank={index + 1} />
+                </View>
+                
+                {/* 搭档组合 */}
+                <View className="partner-cell">
+                  <Text className="partner-cell-text partner-names">
+                    {partner.player1Name} + {partner.player2Name}
+                  </Text>
+                </View>
+                
+                {/* 场次 */}
+                <View className="partner-cell partner-cell-center">
+                  <Text className="partner-cell-text">{partner.totalMatches}</Text>
+                </View>
+                
+                {/* 胜场 */}
+                <View className="partner-cell partner-cell-center">
+                  <Text className="partner-cell-text partner-wins">{partner.wins}</Text>
+                </View>
+                
+                {/* 胜率 */}
+                <View className="partner-cell partner-cell-right">
+                  <Text className={`partner-cell-text ${parseFloat(partner.winRate) >= 60 ? 'win-rate-high' : parseFloat(partner.winRate) >= 40 ? 'win-rate-medium' : 'win-rate-low'}`}>
+                    {parseFloat(partner.winRate).toFixed(1)}%
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
     </View>
   )
 }
