@@ -70,7 +70,16 @@ export default function IndexPage() {
 
   const handleAddRecord = () => {
     if (!currentSeason) {
-      Taro.showToast({ title: '请先创建赛季', icon: 'none' })
+      Taro.showModal({
+        title: '没有活跃赛季',
+        content: '请先前往"赛季"页面创建一个赛季',
+        confirmText: '去创建',
+        success: (res) => {
+          if (res.confirm) {
+            Taro.switchTab({ url: '/pages/seasons/index' })
+          }
+        }
+      })
       return
     }
     navigateTo(`/pages/record-form/index?seasonId=${currentSeason.id}`)
