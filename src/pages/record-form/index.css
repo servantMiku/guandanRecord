@@ -275,10 +275,11 @@
 .time-input {
   background: transparent;
   color: #ffffff;
-  font-size: 22px;
+  font-size: 28px;
   width: 100%;
   border: none;
   outline: none;
+  padding: 10px 0;
 }
 
 /* 提交按钮 */

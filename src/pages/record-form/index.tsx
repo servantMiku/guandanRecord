@@ -81,11 +81,11 @@ export default function RecordFormPage() {
         setTeam2Player1(match.team2_player1_id)
         setTeam2Player2(match.team2_player2_id)
 
-        // 解析比分（假设格式为 "X - Y"）
-        const scores = match.score.split(' - ')
-        if (scores.length === 2) {
-          setTeam1Score(scores[0])
-          setTeam2Score(scores[1])
+        // 解析比分（格式: "队伍1：A2，队伍2：6"）
+        const scoreMatch = match.score.match(/队伍1：(.+?)，队伍2：(.+)/)
+        if (scoreMatch) {
+          setTeam1Score(scoreMatch[1])
+          setTeam2Score(scoreMatch[2])
         }
 
         // 设置时间（如果有）
