@@ -15,12 +15,10 @@ export default {
     navigationBarTextStyle: 'black'
   },
   tabBar: {
-    custom: true,
     color: '#a8a29e',
     selectedColor: '#f59e0b',
     backgroundColor: '#1e293b',
     borderStyle: 'black',
-    fontSize: '14px',
     list: [
       { pagePath: 'pages/index/index', text: '🏠 首页' },
       { pagePath: 'pages/records/index', text: '🏆 战绩' },
