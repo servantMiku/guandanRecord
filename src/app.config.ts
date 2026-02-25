@@ -17,8 +17,9 @@ export default {
   tabBar: {
     color: '#a8a29e',
     selectedColor: '#f59e0b',
-    backgroundColor: '#ffffff',
-    borderStyle: 'white',
+    backgroundColor: '#1e293b',
+    borderStyle: 'black',
+    fontSize: '16px',
     list: [
       { pagePath: 'pages/index/index', text: '首页' },
       { pagePath: 'pages/records/index', text: '战绩' },

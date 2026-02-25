@@ -125,6 +125,25 @@ export class MatchesController {
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 
+  @Post('clear-all')
+  async clearAllData() {
+    const client = getSupabaseClient()
+
+    try {
+      // 清空战绩表
+      await client.from('matches').delete().neq('id', 0)
+      // 清空赛季表
+      await client.from('seasons').delete().neq('id', 0)
+      // 清空玩家统计表
+      await client.from('player_stats').delete().neq('id', 0)
+
+      return { code: 200, msg: '所有数据已清空', data: null }
+    } catch (error) {
+      console.error('清空数据失败:', error)
+      return { code: 500, msg: '清空数据失败', data: null }
+    }
+  }
+
   @Put(':id')
   async updateMatch(@Param('id') id: string, @Body() body: any) {
     const client = getSupabaseClient()

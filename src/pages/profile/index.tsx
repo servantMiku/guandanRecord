@@ -2,7 +2,7 @@ import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
-import { Edit, Save, X } from 'lucide-react'
+import { Edit, Save, X, Trash2 } from 'lucide-react'
 import './index.css'
 
 type Player = {
@@ -82,6 +82,29 @@ export default function ProfilePage() {
     return name ? name.charAt(0).toUpperCase() : '?'
   }
 
+  const handleClearAllData = () => {
+    Taro.showModal({
+      title: '危险操作',
+      content: '确定要清空所有数据吗？这将删除所有战绩和赛季，且无法恢复！',
+      confirmColor: '#ef4444',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            await Network.request({
+              url: '/api/matches/clear-all',
+              method: 'POST'
+            })
+            Taro.showToast({ title: '数据已清空', icon: 'success' })
+            fetchPlayers()
+          } catch (error) {
+            console.error('清空数据失败:', error)
+            Taro.showToast({ title: '清空失败', icon: 'none' })
+          }
+        }
+      }
+    })
+  }
+
   return (
     <View className="profile-page">
       {/* 头部 */}
@@ -153,6 +176,16 @@ export default function ProfilePage() {
             ))}
           </View>
         )}
+
+        {/* 清空数据区域 */}
+        <View className="clear-data-section">
+          <Text className="clear-data-title">⚠️ 危险区域</Text>
+          <Text className="clear-data-desc">清空所有战绩、赛季数据，从0开始</Text>
+          <View className="clear-data-btn" onClick={handleClearAllData}>
+            <Trash2 size={28} color="#ffffff" />
+            <Text className="clear-data-btn-text" style={{ marginLeft: '12px' }}>清空所有数据</Text>
+          </View>
+        </View>
       </View>
     </View>
   )

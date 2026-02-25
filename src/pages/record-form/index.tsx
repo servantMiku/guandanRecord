@@ -17,6 +17,9 @@ type Season = {
 
 const RECORD_FORM_KEY = 'record_form_draft'
 
+// 掼蛋牌级选项
+const CARD_LEVELS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A1', 'A2', 'A3']
+
 export default function RecordFormPage() {
   const router = useRouter()
   const { seasonId, matchId } = router.params
@@ -24,6 +27,7 @@ export default function RecordFormPage() {
   const [season, setSeason] = useState<Season | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false) // 防重复提交
   const isEditMode = !!matchId // 是否为编辑模式
 
   // 表单状态
@@ -207,6 +211,11 @@ export default function RecordFormPage() {
   }
 
   const handleSubmit = async () => {
+    // 防重复点击
+    if (submitting) {
+      return
+    }
+
     // 验证
     if (!team1Player1 || !team1Player2 || !team2Player1 || !team2Player2) {
       Taro.showToast({ title: '请选择4名玩家', icon: 'none' })
@@ -214,7 +223,7 @@ export default function RecordFormPage() {
     }
 
     if (!team1Score || !team2Score) {
-      Taro.showToast({ title: '请输入比分', icon: 'none' })
+      Taro.showToast({ title: '请选择比分', icon: 'none' })
       return
     }
 
@@ -226,11 +235,13 @@ export default function RecordFormPage() {
       return
     }
 
+    setSubmitting(true)
+
     try {
-      // 确定获胜队伍
-      const team1ScoreNum = parseInt(team1Score)
-      const team2ScoreNum = parseInt(team2Score)
-      const winnerTeam = team1ScoreNum > team2ScoreNum ? 1 : 2
+      // 确定获胜队伍（根据牌级索引，索引越大牌越大）
+      const team1ScoreIndex = CARD_LEVELS.indexOf(team1Score)
+      const team2ScoreIndex = CARD_LEVELS.indexOf(team2Score)
+      const winnerTeam = team1ScoreIndex > team2ScoreIndex ? 1 : 2
 
       // 构造比分字符串
       const scoreStr = `队伍1：${team1Score}，队伍2：${team2Score}`
@@ -273,6 +284,8 @@ export default function RecordFormPage() {
     } catch (error) {
       console.error('提交失败:', error)
       Taro.showToast({ title: '提交失败', icon: 'none' })
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -432,42 +445,53 @@ export default function RecordFormPage() {
           {/* 比分录入 */}
           <View className="card">
             <View className="card-header">
-              <Trophy size={24} color="#fbbf24" />
-              <Text className="card-title">比分录入</Text>
+              <Trophy size={32} color="#fbbf24" />
+              <Text className="card-title">比分录入（选择牌级）</Text>
             </View>
 
-            <View className="score-container">
-              <View className="score-input-wrapper">
-                <Text className="score-label">队伍1</Text>
-                <View className="input-wrapper">
-                  <Input
-                    className="score-input"
-                    type="number"
-                    placeholder="0"
-                    value={team1Score}
-                    onInput={(e) => {
-                      setTeam1Score(e.detail.value)
+            {/* 队伍1比分 */}
+            <View className="score-section">
+              <Text className="score-label">队伍1 (粉色)</Text>
+              <View className="score-options">
+                {CARD_LEVELS.map((level) => (
+                  <View
+                    key={`t1-${level}`}
+                    className={`score-option ${team1Score === level ? 'score-option-selected' : ''}`}
+                    onClick={() => {
+                      setTeam1Score(level)
                       saveDraft()
                     }}
-                  />
-                </View>
+                  >
+                    <Text className="score-option-text">{level}</Text>
+                  </View>
+                ))}
               </View>
-              <Text className="vs-text">VS</Text>
-              <View className="score-input-wrapper">
-                <Text className="score-label">队伍2</Text>
-                <View className="input-wrapper">
-                  <Input
-                    className="score-input"
-                    type="number"
-                    placeholder="0"
-                    value={team2Score}
-                    onInput={(e) => {
-                      setTeam2Score(e.detail.value)
+            </View>
+
+            {/* 队伍2比分 */}
+            <View className="score-section">
+              <Text className="score-label">队伍2 (蓝色)</Text>
+              <View className="score-options">
+                {CARD_LEVELS.map((level) => (
+                  <View
+                    key={`t2-${level}`}
+                    className={`score-option ${team2Score === level ? 'score-option-selected' : ''}`}
+                    onClick={() => {
+                      setTeam2Score(level)
                       saveDraft()
                     }}
-                  />
-                </View>
+                  >
+                    <Text className="score-option-text">{level}</Text>
+                  </View>
+                ))}
               </View>
+            </View>
+
+            {/* 当前选择显示 */}
+            <View className="score-display">
+              <Text className="score-display-text">
+                {team1Score || '?'} VS {team2Score || '?'}
+              </Text>
             </View>
           </View>
 
@@ -488,9 +512,12 @@ export default function RecordFormPage() {
           </View>
 
           {/* 提交按钮 */}
-          <View className="submit-btn" onClick={handleSubmit}>
-            <Save size={24} color="#ffffff" />
-            <Text className="submit-btn-text">保存战绩</Text>
+          <View
+            className={`submit-btn ${submitting ? 'submit-btn-disabled' : ''}`}
+            onClick={handleSubmit}
+          >
+            <Save size={28} color="#ffffff" />
+            <Text className="submit-btn-text">{submitting ? '保存中...' : '保存战绩'}</Text>
           </View>
         </View>
       )}

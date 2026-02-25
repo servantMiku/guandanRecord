@@ -6,47 +6,47 @@
 /* 头部 */
 .header {
   background: linear-gradient(90deg, #7c3aed 0%, #4f46e5 100%);
-  padding: 24px 16px;
+  padding: 32px 24px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 .header-title {
   display: block;
   color: #ffffff;
-  font-size: 24px;
+  font-size: 36px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .header-season-name {
   display: block;
   color: #ffffff;
-  font-size: 20px;
-  margin-bottom: 4px;
+  font-size: 28px;
+  margin-bottom: 6px;
 }
 
 .header-date {
   display: block;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 16px;
+  font-size: 20px;
 }
 
 /* 内容区域 */
 .content {
-  padding: 16px;
+  padding: 24px;
 }
 
 /* 快捷操作 */
 .quick-actions {
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .quick-btn {
   flex: 1;
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: 20px;
+  padding: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,18 +62,19 @@
 }
 
 .quick-btn-text {
+  display: block;
   color: #ffffff;
   font-weight: bold;
-  margin-left: 8px;
-  font-size: 18px;
+  margin-left: 12px;
+  font-size: 26px;
 }
 
 /* 卡片 */
 .card {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 28px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
@@ -81,14 +82,15 @@
 .card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .card-title {
+  display: block;
   color: #ffffff;
-  font-size: 24px;
+  font-size: 30px;
   font-weight: bold;
-  margin-left: 8px;
+  margin-left: 12px;
 }
 
 /* 加载状态 */
@@ -98,27 +100,29 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 0;
+  padding: 60px 0;
 }
 
 .loading-text,
 .empty-text {
+  display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 16px;
+  font-size: 22px;
 }
 
 .empty-hint {
+  display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  margin-top: 8px;
+  font-size: 18px;
+  margin-top: 12px;
 }
 
 /* 战绩项 */
 .match-item {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -126,16 +130,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .match-date {
+  display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  font-size: 18px;
 }
 
 .match-winner {
-  font-size: 14px;
+  display: block;
+  font-size: 18px;
   font-weight: bold;
 }
 
@@ -150,28 +156,28 @@
 .match-score {
   display: block;
   color: #ffffff;
-  font-size: 22px;
+  font-size: 30px;
   font-weight: bold;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .match-remark {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  font-size: 18px;
 }
 
 /* 快捷入口 */
 .shortcuts {
   display: flex;
-  gap: 16px;
+  gap: 20px;
 }
 
 .shortcut-item {
   flex: 1;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 20px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -179,8 +185,9 @@
 }
 
 .shortcut-text {
+  display: block;
   color: #ffffff;
   font-weight: 500;
-  margin-top: 10px;
-  font-size: 16px;
+  margin-top: 14px;
+  font-size: 22px;
 }

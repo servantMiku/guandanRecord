@@ -1,32 +1,33 @@
 .profile-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #1e293b 0%, #581c87 50%, #1e293b 100%);
+  padding-bottom: 100px;
 }
 
 /* 头部 */
 .header {
   background: rgba(255, 255, 255, 0.1);
-  padding: 20px;
+  padding: 28px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .header-title {
   display: block;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 36px;
   font-weight: bold;
 }
 
 .header-subtitle {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  margin-top: 6px;
+  font-size: 22px;
+  margin-top: 10px;
 }
 
 /* 内容区域 */
 .content {
-  padding: 20px;
+  padding: 28px;
 }
 
 /* 加载状态 */
@@ -34,49 +35,60 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 100px 0;
+  padding: 120px 0;
 }
 
 .loading-text {
+  display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 18px;
+  font-size: 26px;
 }
 
 /* 玩家列表 */
 .player-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
 /* 玩家卡片 */
 .player-card {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 20px;
+  padding: 28px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .player-info {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
-.player-avatar {
-  width: 64px;
-  height: 64px;
+/* 头像样式 */
+.avatar {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.avatar-0 { background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%); }
+.avatar-1 { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); }
+.avatar-2 { background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%); }
+.avatar-3 { background: linear-gradient(135deg, #22c55e 0%, #10b981 100%); }
+.avatar-4 { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); }
+.avatar-5 { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+
 .avatar-text {
   color: #ffffff;
-  font-size: 24px;
+  font-size: 36px;
   font-weight: bold;
 }
 
@@ -87,62 +99,89 @@
 .player-name {
   display: block;
   color: #ffffff;
-  font-size: 18px;
+  font-size: 28px;
   font-weight: bold;
-  margin-bottom: 6px;
 }
 
-.player-name-input-wrapper {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 12px 16px;
+.player-index {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  margin-top: 6px;
 }
 
 .player-name-input {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 20px;
   color: #ffffff;
-  font-size: 16px;
-  width: 100%;
+  font-size: 24px;
+  width: 300px;
 }
 
-.player-edit-actions {
+/* 操作按钮 */
+.player-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.save-btn {
-  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
-  padding: 8px 16px;
-  border-radius: 8px;
-}
-
-.cancel-btn {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
-  border-radius: 8px;
+  gap: 14px;
 }
 
 .action-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn-edit {
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+}
+
+.action-btn-save {
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+}
+
+.action-btn-cancel {
   background: rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
-  border-radius: 8px;
 }
 
-.action-btn-text {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
+/* 清空数据区域 */
+.clear-data-section {
+  margin-top: 40px;
+  padding: 28px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 20px;
+  border: 2px solid rgba(239, 68, 68, 0.3);
 }
 
-.delete-btn {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-/* 提示文字 */
-.hint-text {
+.clear-data-title {
   display: block;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 14px;
-  margin-top: 12px;
+  color: #ef4444;
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.clear-data-desc {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  margin-bottom: 24px;
+}
+
+.clear-data-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-data-btn-text {
+  display: block;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: bold;
 }

@@ -22,6 +22,7 @@ type Match = {
   score: string
   remark: string | null
   createdAt: string
+  created_at?: string
 }
 
 export default function RecordsPage() {
@@ -173,8 +174,8 @@ export default function RecordsPage() {
                 {/* 日期和胜者 */}
                 <View className="match-header">
                   <View className="match-date-wrapper">
-                    <Calendar size={16} color="#fbbf24" />
-                    <Text className="match-date">{formatDate(match.createdAt)}</Text>
+                    <Calendar size={20} color="#fbbf24" />
+                    <Text className="match-date">{formatDate(match.created_at || match.createdAt)}</Text>
                   </View>
                   <View
                     className={`match-winner-badge ${match.winnerTeam === 1 ? 'winner-team1' : 'winner-team2'}`}
