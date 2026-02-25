@@ -64,11 +64,11 @@ export default function IndexPage() {
         setCurrentSeason(activeSeason)
       }
 
-      // 获取最近战绩（按当前赛季筛选，限制5场）
+      // 获取最近战绩（按当前赛季筛选，限制3场）
       const matchRes = await Network.request({
         url: '/api/matches/recent',
         data: { 
-          limit: '5',
+          limit: '3',
           seasonId: activeSeason?.id 
         }
       })

@@ -21,9 +21,9 @@ export default {
     borderStyle: 'black',
     list: [
       { pagePath: 'pages/index/index', text: '🏠 首页' },
+      { pagePath: 'pages/stats/index', text: '📊 统计' },
       { pagePath: 'pages/records/index', text: '🏆 战绩' },
       { pagePath: 'pages/seasons/index', text: '🎯 赛季' },
-      { pagePath: 'pages/stats/index', text: '📊 统计' },
       { pagePath: 'pages/profile/index', text: '👤 我的' }
     ]
   }
