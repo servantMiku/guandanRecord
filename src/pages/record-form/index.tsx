@@ -38,6 +38,7 @@ export default function RecordFormPage() {
   const [team1Score, setTeam1Score] = useState<string>('')
   const [team2Score, setTeam2Score] = useState<string>('')
   const [remark, setRemark] = useState<string>('')
+  const [matchTime, setMatchTime] = useState<string>('') // 比赛时间
 
   const fetchData = useCallback(async () => {
     try {
@@ -87,6 +88,17 @@ export default function RecordFormPage() {
           setTeam2Score(scores[1])
         }
 
+        // 设置时间（如果有）
+        if (match.created_at) {
+          const date = new Date(match.created_at)
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, '0')
+          const day = String(date.getDate()).padStart(2, '0')
+          const hours = String(date.getHours()).padStart(2, '0')
+          const minutes = String(date.getMinutes()).padStart(2, '0')
+          setMatchTime(`${year}-${month}-${day}T${hours}:${minutes}`)
+        }
+
         setRemark(match.remark || '')
       }
     } catch (error) {
@@ -104,6 +116,7 @@ export default function RecordFormPage() {
         setTeam2Player2(draft.team2Player2 || '')
         setTeam1Score(draft.team1Score || '')
         setTeam2Score(draft.team2Score || '')
+        setMatchTime(draft.matchTime || '')
         setRemark(draft.remark || '')
       }
     } catch (error) {
@@ -127,6 +140,7 @@ export default function RecordFormPage() {
       team2Player2,
       team1Score,
       team2Score,
+      matchTime,
       remark
     }
     Taro.setStorageSync(RECORD_FORM_KEY, draft)
@@ -254,7 +268,8 @@ export default function RecordFormPage() {
           data: {
             winnerTeam,
             score: scoreStr,
-            remark: remark || null
+            remark: remark || null,
+            matchTime: matchTime || null
           }
         })
         Taro.showToast({ title: '修改成功', icon: 'success' })
@@ -271,7 +286,8 @@ export default function RecordFormPage() {
             team2Player2Id: team2Player2,
             winnerTeam,
             score: scoreStr,
-            remark: remark || null
+            remark: remark || null,
+            matchTime: matchTime || null
           }
         })
         Taro.showToast({ title: '录入成功', icon: 'success' })
@@ -489,6 +505,22 @@ export default function RecordFormPage() {
               <Text className="score-display-text">
                 {team1Score || '?'} VS {team2Score || '?'}
               </Text>
+            </View>
+          </View>
+
+          {/* 比赛时间 */}
+          <View className="card">
+            <Text className="section-title">比赛时间</Text>
+            <View className="input-wrapper">
+              <input
+                className="time-input"
+                type="datetime-local"
+                value={matchTime}
+                onChange={(e) => {
+                  setMatchTime(e.target.value)
+                  saveDraft()
+                }}
+              />
             </View>
           </View>
 

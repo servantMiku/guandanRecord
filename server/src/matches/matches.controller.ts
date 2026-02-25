@@ -112,19 +112,28 @@ export class MatchesController {
   @Post()
   async createMatch(@Body() body: any) {
     const client = getSupabaseClient()
+    
+    // 构建插入数据
+    const insertData: any = {
+      season_id: body.seasonId,
+      team1_player1_id: body.team1Player1Id,
+      team1_player2_id: body.team1Player2Id,
+      team2_player1_id: body.team2Player1Id,
+      team2_player2_id: body.team2Player2Id,
+      winner_team: body.winnerTeam,
+      score: body.score,
+      remark: body.remark,
+      is_deleted: false
+    }
+    
+    // 如果提供了时间，使用提供的时间
+    if (body.matchTime) {
+      insertData.created_at = new Date(body.matchTime).toISOString()
+    }
+    
     const { data, error } = await client
       .from('matches')
-      .insert({
-        season_id: body.seasonId,
-        team1_player1_id: body.team1Player1Id,
-        team1_player2_id: body.team1Player2Id,
-        team2_player1_id: body.team2Player1Id,
-        team2_player2_id: body.team2Player2Id,
-        winner_team: body.winnerTeam,
-        score: body.score,
-        remark: body.remark,
-        is_deleted: false
-      })
+      .insert(insertData)
       .select()
 
     if (error) {
@@ -184,16 +193,24 @@ export class MatchesController {
       }
     })
 
+    // 构建更新数据
+    const updateData: any = {
+      winner_team: body.winnerTeam !== undefined ? body.winnerTeam : oldData.winner_team,
+      score: body.score,
+      remark: body.remark,
+      edit_history: editHistory,
+      updated_at: new Date().toISOString()
+    }
+    
+    // 如果提供了时间，更新创建时间
+    if (body.matchTime) {
+      updateData.created_at = new Date(body.matchTime).toISOString()
+    }
+
     // 更新战绩
     const { data, error } = await client
       .from('matches')
-      .update({
-        winner_team: body.winnerTeam !== undefined ? body.winnerTeam : oldData.winner_team,
-        score: body.score,
-        remark: body.remark,
-        edit_history: editHistory,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
 
