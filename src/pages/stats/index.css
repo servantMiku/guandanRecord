@@ -121,7 +121,7 @@
 /* 表格头部 */
 .table-header {
   display: flex;
-  padding: 20px 24px;
+  padding: 20px 16px;
   background: rgba(255, 255, 255, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -130,6 +130,11 @@
   flex: 1;
   display: flex;
   align-items: center;
+}
+
+.table-cell-rank {
+  flex: 0.6;
+  justify-content: center;
 }
 
 .table-cell-center {
@@ -150,7 +155,8 @@
 /* 表格行 */
 .table-row {
   display: flex;
-  padding: 20px 24px;
+  padding: 18px 16px;
+  align-items: center;
 }
 
 /* 奇偶行不同颜色 */
@@ -162,10 +168,96 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* 前三名特殊背景 */
+.table-row-top1 {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+  border-left: 4px solid #fbbf24;
+}
+
+.table-row-top2 {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+  border-left: 4px solid #c0c0c0;
+}
+
+.table-row-top3 {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+  border-left: 4px solid #cd7f32;
+}
+
 .table-row-bordered {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* 排名徽章 */
+.rank-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rank-gold {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.5);
+}
+
+.rank-silver {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.5);
+}
+
+.rank-bronze {
+  background: linear-gradient(135deg, #d97706 0%, #92400e 100%);
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.5);
+}
+
+.rank-normal {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.rank-number {
+  display: block;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* 玩家信息 */
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.player-name {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* 连胜/连败信息 */
+.streak-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.streak-text {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.streak-win {
+  color: #ef4444;
+}
+
+.streak-lose {
+  color: #9ca3af;
+}
+
+/* 表格单元格文字 */
 .table-cell-text {
   display: block;
   color: #ffffff;
@@ -173,10 +265,27 @@
   font-weight: 500;
 }
 
-/* 排名数字 */
-.rank-1 { color: #fbbf24; font-weight: bold; font-size: 26px; }
-.rank-2 { color: #c0c0c0; font-weight: bold; font-size: 26px; }
-.rank-3 { color: #cd7f32; font-weight: bold; font-size: 26px; }
+/* 胜场文字 */
+.wins-text {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+/* 胜率颜色 */
+.win-rate-high {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.win-rate-medium {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.win-rate-low {
+  color: #f87171;
+  font-weight: 500;
+}
 
 /* 加载和空状态 */
 .loading-container,
@@ -198,6 +307,6 @@
 .empty-hint {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 20px;
+  font-size: 18px;
   margin-top: 12px;
 }

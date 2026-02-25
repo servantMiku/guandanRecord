@@ -7,7 +7,7 @@ export class MatchesController {
   constructor(private readonly matchesService: MatchesService) {}
 
   @Get()
-  async getAllMatches(@Query('limit') limit?: string) {
+  async getAllMatches(@Query('limit') limit?: string, @Query('seasonId') seasonId?: string) {
     const client = getSupabaseClient()
 
     // 先获取战绩数据（不包含关联查询）
@@ -16,6 +16,11 @@ export class MatchesController {
       .select('*')
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
+
+    // 按赛季筛选
+    if (seasonId) {
+      query = query.eq('season_id', seasonId)
+    }
 
     if (limit) {
       query = query.limit(parseInt(limit))
@@ -46,16 +51,24 @@ export class MatchesController {
   }
 
   @Get('recent')
-  async getRecentMatches(@Query('limit') limit: string = '5') {
+  async getRecentMatches(@Query('limit') limit: string = '5', @Query('seasonId') seasonId?: string) {
     const client = getSupabaseClient()
 
-    // 获取最近战绩
-    const { data: matches, error } = await client
+    // 构建查询
+    let query = client
       .from('matches')
       .select('*')
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
       .limit(parseInt(limit))
+
+    // 如果指定了赛季ID，按赛季筛选
+    if (seasonId) {
+      query = query.eq('season_id', seasonId)
+    }
+
+    // 获取最近战绩
+    const { data: matches, error } = await query
 
     if (error) {
       console.error('获取最近战绩失败:', error)

@@ -25,12 +25,13 @@ export class StatsController {
       return { code: 404, msg: '赛季不存在', data: null }
     }
 
-    // 获取该赛季所有未删除的战绩
+    // 获取该赛季所有未删除的战绩（按时间排序）
     const { data: matches } = await client
       .from('matches')
       .select('*')
       .eq('season_id', seasonId)
       .eq('is_deleted', false)
+      .order('created_at', { ascending: true })
 
     // 获取玩家统计数据
     const { data: playerStats } = await client
@@ -44,9 +45,42 @@ export class StatsController {
       .from('players')
       .select('*')
 
-    // 合并玩家名称并转换字段名为 camelCase
+    // 计算每个玩家的连胜/连败
+    const streakMap = new Map<string, { streak: number; type: 'win' | 'lose' | 'none' }>()
+    
+    if (matches && matches.length > 0) {
+      // 按时间顺序遍历战绩，计算连胜/连败
+      for (const match of matches) {
+        // 处理胜方玩家
+        if (match.team1_players) {
+          for (const playerId of match.team1_players) {
+            const currentStreak = streakMap.get(playerId) || { streak: 0, type: 'none' }
+            if (currentStreak.type === 'win') {
+              streakMap.set(playerId, { streak: currentStreak.streak + 1, type: 'win' })
+            } else {
+              streakMap.set(playerId, { streak: 1, type: 'win' })
+            }
+          }
+        }
+        
+        // 处理败方玩家
+        if (match.team2_players) {
+          for (const playerId of match.team2_players) {
+            const currentStreak = streakMap.get(playerId) || { streak: 0, type: 'none' }
+            if (currentStreak.type === 'lose') {
+              streakMap.set(playerId, { streak: currentStreak.streak + 1, type: 'lose' })
+            } else {
+              streakMap.set(playerId, { streak: 1, type: 'lose' })
+            }
+          }
+        }
+      }
+    }
+
+    // 合并玩家名称并转换字段名为 camelCase，添加连胜/连败数据
     const playerStatsWithNames = (playerStats || []).map((stat) => {
       const player = players?.find((p) => p.id === stat.player_id)
+      const streak = streakMap.get(stat.player_id) || { streak: 0, type: 'none' }
       return {
         id: stat.id,
         seasonId: stat.season_id,
@@ -54,7 +88,9 @@ export class StatsController {
         playerName: player?.name || '未知玩家',
         totalMatches: stat.total_matches || 0,
         wins: stat.wins || 0,
-        winRate: stat.win_rate || '0.00'
+        winRate: stat.win_rate || '0.00',
+        streak: streak.streak,
+        streakType: streak.type
       }
     })
 

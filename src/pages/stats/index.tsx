@@ -1,7 +1,7 @@
 import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import { Network } from '@/network'
-import { ArrowUpDown, Trophy } from 'lucide-react'
+import { Trophy, Flame, TrendingDown, Crown, Medal } from 'lucide-react'
 import './index.css'
 
 type Season = {
@@ -20,10 +20,73 @@ type PlayerStat = {
   totalMatches: number
   wins: number
   winRate: string
+  streak: number
+  streakType: 'win' | 'lose' | 'none'
 }
 
 type SortField = 'playerName' | 'totalMatches' | 'wins' | 'winRate'
 type SortOrder = 'asc' | 'desc'
+
+// 连胜/连败图标组件
+const StreakIcon = ({ streak, type }: { streak: number; type: string }) => {
+  if (streak === 0 || type === 'none') return null
+
+  if (type === 'win' && streak >= 3) {
+    return <Flame size={18} color="#ef4444" />
+  }
+  if (type === 'lose' && streak >= 3) {
+    return <TrendingDown size={18} color="#6b7280" />
+  }
+  return null
+}
+
+// 连胜/连败文字
+const StreakText = ({ streak, type }: { streak: number; type: string }) => {
+  if (streak === 0 || type === 'none') return null
+
+  if (type === 'win') {
+    return (
+      <Text className="streak-text streak-win">
+        {streak}连胜
+      </Text>
+    )
+  }
+  return (
+    <Text className="streak-text streak-lose">
+      {streak}连败
+    </Text>
+  )
+}
+
+// 排名图标
+const RankIcon = ({ rank }: { rank: number }) => {
+  if (rank === 1) {
+    return (
+      <View className="rank-badge rank-gold">
+        <Crown size={16} color="#ffffff" />
+      </View>
+    )
+  }
+  if (rank === 2) {
+    return (
+      <View className="rank-badge rank-silver">
+        <Medal size={16} color="#ffffff" />
+      </View>
+    )
+  }
+  if (rank === 3) {
+    return (
+      <View className="rank-badge rank-bronze">
+        <Medal size={16} color="#ffffff" />
+      </View>
+    )
+  }
+  return (
+    <View className="rank-badge rank-normal">
+      <Text className="rank-number">{rank}</Text>
+    </View>
+  )
+}
 
 export default function StatsPage() {
   const [seasons, setSeasons] = useState<Season[]>([])
@@ -88,10 +151,8 @@ export default function StatsPage() {
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      // 切换排序方向
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
     } else {
-      // 切换排序字段，默认降序
       setSortField(field)
       setSortOrder('desc')
     }
@@ -172,22 +233,22 @@ export default function StatsPage() {
 
       {/* 排名表格 */}
       <View className="ranking-card">
+        {/* 表头 */}
         <View className="table-header">
+          <View className="table-cell table-cell-rank">
+            <Text className="table-header-text">排名</Text>
+          </View>
           <View className="table-cell" onClick={() => handleSort('playerName')}>
             <Text className="table-header-text">玩家</Text>
-            {sortField === 'playerName' && <ArrowUpDown size={14} className="sort-icon" />}
           </View>
           <View className="table-cell table-cell-center" onClick={() => handleSort('totalMatches')}>
             <Text className="table-header-text">场次</Text>
-            {sortField === 'totalMatches' && <ArrowUpDown size={14} className="sort-icon" />}
           </View>
           <View className="table-cell table-cell-center" onClick={() => handleSort('wins')}>
             <Text className="table-header-text">胜场</Text>
-            {sortField === 'wins' && <ArrowUpDown size={14} className="sort-icon" />}
           </View>
           <View className="table-cell table-cell-right" onClick={() => handleSort('winRate')}>
             <Text className="table-header-text">胜率</Text>
-            {sortField === 'winRate' && <ArrowUpDown size={14} className="sort-icon" />}
           </View>
         </View>
 
@@ -205,19 +266,40 @@ export default function StatsPage() {
             {sortedStats.map((stat, index) => (
               <View
                 key={stat.id}
-                className={`table-row ${index !== sortedStats.length - 1 ? 'table-row-bordered' : ''}`}
+                className={`table-row ${index < 3 ? `table-row-top${index + 1}` : ''} ${index !== sortedStats.length - 1 ? 'table-row-bordered' : ''}`}
               >
-                <View className="table-cell">
-                  <Text className="table-cell-text">{stat.playerName}</Text>
+                {/* 排名 */}
+                <View className="table-cell table-cell-rank">
+                  <RankIcon rank={index + 1} />
                 </View>
+                
+                {/* 玩家信息 */}
+                <View className="table-cell">
+                  <View className="player-info">
+                    <Text className="table-cell-text player-name">{stat.playerName}</Text>
+                    {/* 连胜/连败 */}
+                    <View className="streak-info">
+                      <StreakIcon streak={stat.streak} type={stat.streakType} />
+                      <StreakText streak={stat.streak} type={stat.streakType} />
+                    </View>
+                  </View>
+                </View>
+                
+                {/* 场次 */}
                 <View className="table-cell table-cell-center">
                   <Text className="table-cell-text">{stat.totalMatches}</Text>
                 </View>
+                
+                {/* 胜场 */}
                 <View className="table-cell table-cell-center">
-                  <Text className="table-cell-text">{stat.wins}</Text>
+                  <Text className="table-cell-text wins-text">{stat.wins}</Text>
                 </View>
+                
+                {/* 胜率 */}
                 <View className="table-cell table-cell-right">
-                  <Text className="table-cell-text">{parseFloat(stat.winRate).toFixed(2)}%</Text>
+                  <Text className={`table-cell-text ${parseFloat(stat.winRate) >= 60 ? 'win-rate-high' : parseFloat(stat.winRate) >= 40 ? 'win-rate-medium' : 'win-rate-low'}`}>
+                    {parseFloat(stat.winRate).toFixed(1)}%
+                  </Text>
                 </View>
               </View>
             ))}

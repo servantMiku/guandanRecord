@@ -38,13 +38,19 @@ export default function IndexPage() {
       const res = await Network.request({
         url: '/api/seasons/active'
       })
+      let activeSeason: Season | null = null
       if (res.data && res.data.data && res.data.data.length > 0) {
-        setCurrentSeason(res.data.data[0])
+        activeSeason = res.data.data[0]
+        setCurrentSeason(activeSeason)
       }
 
-      // 获取最近战绩
+      // 获取最近战绩（按当前赛季筛选，限制5场）
       const matchRes = await Network.request({
-        url: '/api/matches/recent'
+        url: '/api/matches/recent',
+        data: { 
+          limit: '5',
+          seasonId: activeSeason?.id 
+        }
       })
       if (matchRes.data && matchRes.data.data) {
         setRecentMatches(matchRes.data.data)
