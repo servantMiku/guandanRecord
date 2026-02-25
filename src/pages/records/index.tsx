@@ -262,8 +262,10 @@ export default function RecordsPage() {
                       </View>
                     </View>
 
-                    {/* 分隔符 */}
-                    <Text className="match-vs">:</Text>
+                    {/* VS 分隔符 */}
+                    <View className="match-vs-wrapper">
+                      <Text className="match-vs">VS</Text>
+                    </View>
 
                     {/* 失败方 */}
                     <View className="match-team loser-team">

@@ -22,13 +22,19 @@ type Match = {
   id: string
   seasonId: string
   team1Player1Id: string
+  team1_player1_id: string
   team1Player2Id: string
+  team1_player2_id: string
   team2Player1Id: string
+  team2_player1_id: string
   team2Player2Id: string
+  team2_player2_id: string
   winnerTeam: number
+  winner_team: number
   score: string
   remark: string | null
   createdAt: string
+  created_at: string
   seasons?: Season
 }
 
@@ -195,19 +201,19 @@ export default function IndexPage() {
             <View>
               {recentMatches.map((match) => {
                 const score = parseScore(match.score)
-                const isTeam1Win = match.winnerTeam === 1
+                const isTeam1Win = (match.winner_team || match.winnerTeam) === 1
                 
-                // 获胜方和失败方的玩家
-                const winnerP1 = isTeam1Win ? match.team1Player1Id : match.team2Player1Id
-                const winnerP2 = isTeam1Win ? match.team1Player2Id : match.team2Player2Id
-                const loserP1 = isTeam1Win ? match.team2Player1Id : match.team1Player1Id
-                const loserP2 = isTeam1Win ? match.team2Player2Id : match.team1Player2Id
+                // 获胜方和失败方的玩家（使用下划线字段名）
+                const winnerP1 = isTeam1Win ? (match.team1_player1_id || match.team1Player1Id) : (match.team2_player1_id || match.team2Player1Id)
+                const winnerP2 = isTeam1Win ? (match.team1_player2_id || match.team1Player2Id) : (match.team2_player2_id || match.team2Player2Id)
+                const loserP1 = isTeam1Win ? (match.team2_player1_id || match.team2Player1Id) : (match.team1_player1_id || match.team1Player1Id)
+                const loserP2 = isTeam1Win ? (match.team2_player2_id || match.team2Player2Id) : (match.team1_player2_id || match.team1Player2Id)
                 const winnerScore = isTeam1Win ? score.team1 : score.team2
                 const loserScore = isTeam1Win ? score.team2 : score.team1
 
                 return (
                   <View key={match.id} className="match-item">
-                    <Text className="match-date">{formatDate(match.createdAt)}</Text>
+                    <Text className="match-date">{formatDate(match.created_at || match.createdAt)}</Text>
                     
                     <View className="match-teams">
                       {/* 获胜方 */}
@@ -222,8 +228,10 @@ export default function IndexPage() {
                         </View>
                       </View>
 
-                      {/* 分隔符 */}
-                      <Text className="match-vs">:</Text>
+                      {/* VS 分隔符 */}
+                      <View className="match-vs-wrapper">
+                        <Text className="match-vs">VS</Text>
+                      </View>
 
                       {/* 失败方 */}
                       <View className="match-team loser-team">
