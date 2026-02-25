@@ -146,8 +146,16 @@ export default function IndexPage() {
       if (Number.isNaN(date.getTime())) return '未知时间'
       
       const now = new Date()
-      const diff = now.getTime() - date.getTime()
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      
+      // 获取本地日期字符串（年月日）进行比较
+      const dateStr = date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
+      const nowStr = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
+      
+      // 计算日期差（通过比较年月日）
+      const dateObj = new Date(dateStr)
+      const nowObj = new Date(nowStr)
+      const diffTime = nowObj.getTime() - dateObj.getTime()
+      const days = Math.round(diffTime / (1000 * 60 * 60 * 24))
 
       if (days === 0) return '今天'
       if (days === 1) return '昨天'
