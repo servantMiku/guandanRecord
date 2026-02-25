@@ -477,3 +477,83 @@
   font-size: 18px;
   margin-top: 12px;
 }
+
+/* 玩家两两胜率矩阵 */
+.pair-matrix-card {
+  margin: 0 24px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.pair-matrix-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  background: rgba(59, 130, 246, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pair-matrix-title {
+  display: block;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.pair-matrix-row {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pair-matrix-row:last-child {
+  border-bottom: none;
+}
+
+.pair-matrix-player {
+  margin-bottom: 12px;
+}
+
+.pair-matrix-player-name {
+  display: block;
+  color: #fbbf24;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.pair-matrix-partners {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pair-matrix-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-width: 80px;
+  text-align: center;
+}
+
+.pair-matrix-partner-name {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.pair-matrix-winrate {
+  display: block;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.pair-matrix-matches {
+  display: block;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}

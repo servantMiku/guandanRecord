@@ -62,8 +62,9 @@ export class StatsController {
     if (matches && matches.length > 0) {
       // 按时间顺序遍历战绩，计算连胜/连败和搭档统计
       for (const match of matches) {
-        const team1Players = match.team1_players || []
-        const team2Players = match.team2_players || []
+        // 从独立字段构建玩家数组
+        const team1Players = [match.team1_player1_id, match.team1_player2_id].filter(Boolean)
+        const team2Players = [match.team2_player1_id, match.team2_player2_id].filter(Boolean)
         const isTeam1Win = match.winner_team === 1
 
         // 处理胜方玩家连胜/连败
@@ -149,6 +150,56 @@ export class StatsController {
     // 找出最佳搭档
     const bestPartner = partnerStats.length > 0 ? partnerStats[0] : null
 
+    // 构建玩家两两胜率矩阵
+    const playerPairMatrix: Array<{
+      playerId: string
+      playerName: string
+      partners: Array<{
+        partnerId: string
+        partnerName: string
+        totalMatches: number
+        wins: number
+        winRate: string
+      }>
+    }> = []
+
+    if (players && players.length > 0) {
+      for (const player of players) {
+        const partners: Array<{
+          partnerId: string
+          partnerName: string
+          totalMatches: number
+          wins: number
+          winRate: string
+        }> = []
+
+        for (const otherPlayer of players) {
+          if (player.id === otherPlayer.id) continue
+
+          // 查找这对搭档的统计数据
+          const key = [player.id, otherPlayer.id].sort().join('_')
+          const partnerStat = partnerStatsMap.get(key)
+
+          partners.push({
+            partnerId: otherPlayer.id,
+            partnerName: otherPlayer.name,
+            totalMatches: partnerStat?.totalMatches || 0,
+            wins: partnerStat?.wins || 0,
+            winRate: partnerStat?.winRate || '0.00'
+          })
+        }
+
+        // 按胜率排序
+        partners.sort((a, b) => parseFloat(b.winRate) - parseFloat(a.winRate))
+
+        playerPairMatrix.push({
+          playerId: player.id,
+          playerName: player.name,
+          partners
+        })
+      }
+    }
+
     // 合并玩家名称并转换字段名为 camelCase，添加连胜/连败数据
     const playerStatsWithNames = (playerStats || []).map((stat) => {
       const player = players?.find((p) => p.id === stat.player_id)
@@ -193,7 +244,8 @@ export class StatsController {
       data: {
         summary,
         playerStats: playerStatsWithNames,
-        partnerStats
+        partnerStats,
+        playerPairMatrix
       }
     }
   }

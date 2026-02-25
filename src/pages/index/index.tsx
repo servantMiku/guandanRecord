@@ -122,6 +122,12 @@ export default function IndexPage() {
     return player ? player.name.charAt(0).toUpperCase() : '?'
   }
 
+  // 获取玩家全名
+  const getPlayerName = (playerId: string) => {
+    const player = players.find(p => p.id === playerId)
+    return player ? player.name : '未知'
+  }
+
   // 解析比分
   const parseScore = (score: string) => {
     // 格式: "队伍1：A2，队伍2：6"
@@ -224,12 +230,18 @@ export default function IndexPage() {
                       {/* 获胜方 */}
                       <View className="match-team winner-team">
                         <View className="team-avatars">
-                          <View className="player-avatar winner-avatar">
-                            <Text className="avatar-text">{getPlayerInitial(winnerP1)}</Text>
+                          <View className="player-avatar-wrapper">
+                            <View className="player-avatar winner-avatar">
+                              <Text className="avatar-text">{getPlayerInitial(winnerP1)}</Text>
+                            </View>
+                            <Text className="avatar-name winner-name">{getPlayerName(winnerP1)}</Text>
                           </View>
                           <Text className="player-plus">+</Text>
-                          <View className="player-avatar winner-avatar">
-                            <Text className="avatar-text">{getPlayerInitial(winnerP2)}</Text>
+                          <View className="player-avatar-wrapper">
+                            <View className="player-avatar winner-avatar">
+                              <Text className="avatar-text">{getPlayerInitial(winnerP2)}</Text>
+                            </View>
+                            <Text className="avatar-name winner-name">{getPlayerName(winnerP2)}</Text>
                           </View>
                         </View>
                         <View className="team-score winner-score">
@@ -245,12 +257,18 @@ export default function IndexPage() {
                       {/* 失败方 */}
                       <View className="match-team loser-team">
                         <View className="team-avatars">
-                          <View className="player-avatar loser-avatar">
-                            <Text className="avatar-text">{getPlayerInitial(loserP1)}</Text>
+                          <View className="player-avatar-wrapper">
+                            <View className="player-avatar loser-avatar">
+                              <Text className="avatar-text">{getPlayerInitial(loserP1)}</Text>
+                            </View>
+                            <Text className="avatar-name loser-name">{getPlayerName(loserP1)}</Text>
                           </View>
                           <Text className="player-plus">+</Text>
-                          <View className="player-avatar loser-avatar">
-                            <Text className="avatar-text">{getPlayerInitial(loserP2)}</Text>
+                          <View className="player-avatar-wrapper">
+                            <View className="player-avatar loser-avatar">
+                              <Text className="avatar-text">{getPlayerInitial(loserP2)}</Text>
+                            </View>
+                            <Text className="avatar-name loser-name">{getPlayerName(loserP2)}</Text>
                           </View>
                         </View>
                         <View className="team-score loser-score">

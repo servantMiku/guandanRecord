@@ -35,6 +35,20 @@ type PartnerStat = {
   winRate: string
 }
 
+type PlayerPairStat = {
+  partnerId: string
+  partnerName: string
+  totalMatches: number
+  wins: number
+  winRate: string
+}
+
+type PlayerPairMatrixItem = {
+  playerId: string
+  playerName: string
+  partners: PlayerPairStat[]
+}
+
 type SortField = 'playerName' | 'totalMatches' | 'wins' | 'winRate'
 type SortOrder = 'asc' | 'desc'
 
@@ -104,6 +118,7 @@ export default function StatsPage() {
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('')
   const [stats, setStats] = useState<PlayerStat[]>([])
   const [partnerStats, setPartnerStats] = useState<PartnerStat[]>([])
+  const [playerPairMatrix, setPlayerPairMatrix] = useState<PlayerPairMatrixItem[]>([])
   const [summary, setSummary] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [sortField, setSortField] = useState<SortField>('winRate')
@@ -143,6 +158,7 @@ export default function StatsPage() {
       if (res.data && res.data.data) {
         setStats(res.data.data.playerStats || [])
         setPartnerStats(res.data.data.partnerStats || [])
+        setPlayerPairMatrix(res.data.data.playerPairMatrix || [])
         setSummary(res.data.data.summary)
       }
     } catch (error) {
@@ -417,6 +433,35 @@ export default function StatsPage() {
               </View>
             ))}
           </View>
+        </View>
+      )}
+
+      {/* 玩家两两胜率矩阵 */}
+      {playerPairMatrix.length > 0 && (
+        <View className="pair-matrix-card">
+          <View className="pair-matrix-header">
+            <Users size={28} color="#3b82f6" />
+            <Text className="pair-matrix-title">搭档胜率矩阵</Text>
+          </View>
+          
+          {playerPairMatrix.map((player) => (
+            <View key={player.playerId} className="pair-matrix-row">
+              <View className="pair-matrix-player">
+                <Text className="pair-matrix-player-name">{player.playerName}</Text>
+              </View>
+              <View className="pair-matrix-partners">
+                {player.partners.map((partner) => (
+                  <View key={partner.partnerId} className="pair-matrix-item">
+                    <Text className="pair-matrix-partner-name">{partner.partnerName}</Text>
+                    <Text className={`pair-matrix-winrate ${parseFloat(partner.winRate) >= 60 ? 'win-rate-high' : parseFloat(partner.winRate) >= 40 ? 'win-rate-medium' : 'win-rate-low'}`}>
+                      {parseFloat(partner.winRate).toFixed(0)}%
+                    </Text>
+                    <Text className="pair-matrix-matches">{partner.totalMatches}场</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
         </View>
       )}
     </View>
