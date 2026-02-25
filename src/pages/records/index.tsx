@@ -11,14 +11,25 @@ type Season = {
   status: string
 }
 
+type Player = {
+  id: string
+  name: string
+}
+
 type Match = {
   id: string
   seasonId: string
+  season_id: string
   team1Player1Id: string
+  team1_player1_id: string
   team1Player2Id: string
+  team1_player2_id: string
   team2Player1Id: string
+  team2_player1_id: string
   team2Player2Id: string
+  team2_player2_id: string
   winnerTeam: number
+  winner_team: number
   score: string
   remark: string | null
   createdAt: string
@@ -28,6 +39,7 @@ type Match = {
 export default function RecordsPage() {
   const [matches, setMatches] = useState<Match[]>([])
   const [seasons, setSeasons] = useState<Season[]>([])
+  const [players, setPlayers] = useState<Player[]>([])
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
@@ -48,6 +60,19 @@ export default function RecordsPage() {
       }
     } catch (error) {
       console.error('获取赛季列表失败:', error)
+    }
+  }
+
+  const fetchPlayers = async () => {
+    try {
+      const res = await Network.request({
+        url: '/api/players'
+      })
+      if (res.data && res.data.data) {
+        setPlayers(res.data.data)
+      }
+    } catch (error) {
+      console.error('获取玩家列表失败:', error)
     }
   }
 
@@ -72,6 +97,7 @@ export default function RecordsPage() {
 
   useEffect(() => {
     fetchSeasons()
+    fetchPlayers()
   }, [])
 
   useEffect(() => {
@@ -110,6 +136,30 @@ export default function RecordsPage() {
   const handleEditMatch = (matchId: string, seasonId: string, event: any) => {
     event.stopPropagation() // 阻止事件冒泡
     Taro.navigateTo({ url: `/pages/record-form/index?seasonId=${seasonId}&matchId=${matchId}` })
+  }
+
+  // 获取玩家名称
+  const getPlayerName = (playerId: string) => {
+    const player = players.find(p => p.id === playerId)
+    return player ? player.name : '未知'
+  }
+
+  // 格式化比分显示
+  const formatMatchScore = (match: Match) => {
+    // 解析比分字符串，格式为 "队伍1：A2，队伍2：6"
+    const scoreMatch = match.score.match(/队伍1：(.+?)，队伍2：(.+)/)
+    if (!scoreMatch) return match.score
+
+    const team1Score = scoreMatch[1]
+    const team2Score = scoreMatch[2]
+
+    // 使用后端返回的 snake_case 字段名
+    const team1Player1Name = getPlayerName(match.team1_player1_id || match.team1Player1Id)
+    const team1Player2Name = getPlayerName(match.team1_player2_id || match.team1Player2Id)
+    const team2Player1Name = getPlayerName(match.team2_player1_id || match.team2Player1Id)
+    const team2Player2Name = getPlayerName(match.team2_player2_id || match.team2Player2Id)
+
+    return `${team1Player1Name}+${team1Player2Name} (${team1Score}) : ${team2Player1Name}+${team2Player2Name} (${team2Score})`
   }
 
   const formatDate = (dateString: string) => {
@@ -184,8 +234,8 @@ export default function RecordsPage() {
                   </View>
                 </View>
 
-                {/* 比分 */}
-                <Text className="match-score">{match.score}</Text>
+                {/* 比分 - 新格式：A+B (A2) : C+D (6) */}
+                <Text className="match-score">{formatMatchScore(match)}</Text>
 
                 {/* 备注 */}
                 {match.remark && (
@@ -196,7 +246,7 @@ export default function RecordsPage() {
                 <View className="match-actions">
                   <View
                     className="action-btn action-btn-edit"
-                    onClick={(e) => handleEditMatch(match.id, match.seasonId, e)}
+                    onClick={(e) => handleEditMatch(match.id, match.season_id || match.seasonId, e)}
                   >
                     <Edit size={16} color="#ffffff" />
                     <Text className="action-btn-text">编辑</Text>

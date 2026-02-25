@@ -1,8 +1,8 @@
-import { View, Text, Input } from '@tarojs/components'
+import { View, Text, Input, Picker } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
-import { Plus, Calendar, Edit, Check, X } from 'lucide-react'
+import { Plus, Calendar, X, Trophy, Clock, Edit } from 'lucide-react'
 import './index.css'
 
 type Season = {
@@ -145,36 +145,16 @@ export default function SeasonsPage() {
     }
   }
 
-  const handleStartDateChange = () => {
-    Taro.showModal({
-      title: '开始日期',
-      content: '请输入开始日期（YYYY-MM-DD）',
-      editable: true as any,
-      placeholderText: form.startDate,
-      success: (res: any) => {
-        if (res.confirm && res.content) {
-          setForm({ ...form, startDate: res.content })
-        }
-      }
-    })
+  const handleStartDateChange = (e: any) => {
+    setForm({ ...form, startDate: e.detail.value })
   }
 
-  const handleEndDateInputDialog = () => {
-    if (form.endDate) {
-      setForm({ ...form, endDate: null })
-    } else {
-      Taro.showModal({
-        title: '结束日期',
-        content: '请输入结束日期（YYYY-MM-DD），留空表示赛季进行中',
-        editable: true as any,
-        placeholderText: new Date().toISOString().split('T')[0],
-        success: (res: any) => {
-          if (res.confirm) {
-            setForm({ ...form, endDate: res.content || null })
-          }
-        }
-      })
-    }
+  const handleEndDateChange = (e: any) => {
+    setForm({ ...form, endDate: e.detail.value || null })
+  }
+
+  const handleClearEndDate = () => {
+    setForm({ ...form, endDate: null })
   }
 
   const activeSeasons = seasons.filter(s => s.status === 'active')
@@ -209,27 +189,44 @@ export default function SeasonsPage() {
 
             {/* 开始日期 */}
             <View className="form-field">
-              <Text className="form-label">开始日期</Text>
-              <View className="date-picker" onClick={handleStartDateChange}>
-                <Text className="date-text">{form.startDate}</Text>
-                <Calendar size={20} color="#f472b6" />
-              </View>
+              <Text className="form-label">📅 开始日期</Text>
+              <Picker mode="date" value={form.startDate} onChange={handleStartDateChange}>
+                <View className="date-picker">
+                  <Text className="date-text">{form.startDate}</Text>
+                  <Calendar size={24} color="#f472b6" />
+                </View>
+              </Picker>
             </View>
 
             {/* 结束日期 */}
             <View className="form-field">
-              <Text className="form-label">结束日期 (可选)</Text>
-              <View
-                className={`date-picker ${form.endDate ? '' : 'date-picker-empty'}`}
-                onClick={handleEndDateInputDialog}
-              >
-                <Text className={`date-text ${form.endDate ? '' : 'date-text-empty'}`}>
-                  {form.endDate || '赛季进行中'}
-                </Text>
-                {form.endDate ? <X size={20} color="#ef4444" /> : <Check size={20} color="#22c55e" />}
+              <Text className="form-label">🏁 结束日期 (可选)</Text>
+              <View className="date-picker-row">
+                <Picker mode="date" value={form.endDate || ''} onChange={handleEndDateChange}>
+                  <View className={`date-picker ${form.endDate ? '' : 'date-picker-empty'}`}>
+                    <Text className={`date-text ${form.endDate ? '' : 'date-text-empty'}`}>
+                      {form.endDate || '点击选择日期'}
+                    </Text>
+                    <Calendar size={24} color="#f472b6" />
+                  </View>
+                </Picker>
+                {form.endDate && (
+                  <View className="clear-date-btn" onClick={handleClearEndDate}>
+                    <X size={20} color="#ffffff" />
+                  </View>
+                )}
               </View>
-              {!form.endDate && activeSeasons.length > 0 && !editingSeason && (
-                <Text className="warning-text">⚠️ 已有活跃赛季，建议先设置结束日期</Text>
+              {!form.endDate && (
+                <View className="status-badge status-active">
+                  <Clock size={16} color="#22c55e" />
+                  <Text className="status-text">赛季进行中</Text>
+                </View>
+              )}
+              {form.endDate && (
+                <View className="status-badge status-ended">
+                  <Trophy size={16} color="#f59e0b" />
+                  <Text className="status-text">已设置结束日期</Text>
+                </View>
               )}
             </View>
 

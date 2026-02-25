@@ -44,12 +44,17 @@ export class StatsController {
       .from('players')
       .select('*')
 
-    // 合并玩家名称
+    // 合并玩家名称并转换字段名为 camelCase
     const playerStatsWithNames = (playerStats || []).map((stat) => {
       const player = players?.find((p) => p.id === stat.player_id)
       return {
-        ...stat,
-        playerName: player?.name || '未知玩家'
+        id: stat.id,
+        seasonId: stat.season_id,
+        playerId: stat.player_id,
+        playerName: player?.name || '未知玩家',
+        totalMatches: stat.total_matches || 0,
+        wins: stat.wins || 0,
+        winRate: stat.win_rate || '0.00'
       }
     })
 

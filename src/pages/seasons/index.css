@@ -1,29 +1,30 @@
 .seasons-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #1e293b 0%, #581c87 50%, #1e293b 100%);
+  padding-bottom: 100px;
 }
 
 /* 头部 */
 .header {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(90deg, #7c3aed 0%, #4f46e5 100%);
+  padding: 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 .header-title {
   display: block;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 36px;
   font-weight: bold;
 }
 
 .create-btn {
   background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
-  padding: 10px 20px;
-  border-radius: 12px;
+  padding: 16px 28px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
@@ -34,80 +35,297 @@
   color: #ffffff;
   font-weight: bold;
   margin-left: 10px;
-  font-size: 16px;
+  font-size: 24px;
 }
 
 /* 表单容器 */
 .form-container {
-  padding: 20px;
+  padding: 24px;
   background: rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .form-card {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 32px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 .form-title {
   display: block;
   color: #ffffff;
-  font-size: 18px;
+  font-size: 32px;
   font-weight: bold;
-  margin-bottom: 16px;
+  margin-bottom: 28px;
+  text-align: center;
 }
 
-.input-wrapper {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px 20px;
-  margin-bottom: 16px;
+/* 表单字段 */
+.form-field {
+  margin-bottom: 28px;
+}
+
+.form-label {
+  display: block;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 14px;
 }
 
 .form-input {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px 24px;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 24px;
   width: 100%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* 日期选择器 */
+.date-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.date-picker {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.date-picker-empty {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.date-text {
+  display: block;
+  color: #ffffff;
+  font-size: 24px;
+}
+
+.date-text-empty {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.clear-date-btn {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 状态标签 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 12px;
+  margin-top: 16px;
+}
+
+.status-active {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.status-ended {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.status-text {
+  display: block;
+  color: #ffffff;
+  font-size: 20px;
+  margin-left: 10px;
+}
+
+/* 表单按钮 */
 .form-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 20px;
+  margin-top: 32px;
 }
 
-.btn {
+.form-btn {
   flex: 1;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
-.btn-primary {
+.form-btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-btn-submit {
   background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
 }
 
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.btn-text {
+.form-btn-text {
   display: block;
   color: #ffffff;
+  font-size: 26px;
   font-weight: bold;
-  margin-left: 8px;
-  font-size: 16px;
 }
 
 /* 内容区域 */
 .content {
-  padding: 20px;
+  padding: 24px;
+}
+
+/* 分组标题 */
+.section-title {
+  display: block;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.section-title:first-child {
+  margin-top: 0;
+}
+
+/* 赛季列表 */
+.season-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 赛季卡片 */
+.season-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.season-card-active {
+  border-color: #22c55e;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+}
+
+.season-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.season-name {
+  display: block;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.season-badge {
+  padding: 8px 20px;
+  border-radius: 24px;
+}
+
+.badge-active {
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+}
+
+.badge-ended {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.badge-text {
+  display: block;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.season-dates {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.season-date-item {
+  display: flex;
+  align-items: center;
+}
+
+.season-date-text {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  margin-left: 8px;
+}
+
+.season-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.season-btn {
+  flex: 1;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.season-btn-edit {
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+}
+
+.season-btn-end {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+}
+
+.season-btn-delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.season-btn-text {
+  display: block;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+/* 空状态 */
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+}
+
+.empty-text {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 24px;
 }
 
 /* 加载状态 */
@@ -119,127 +337,7 @@
 }
 
 .loading-text {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 18px;
-}
-
-/* 空状态 */
-.empty-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 100px 20px;
-}
-
-.empty-text {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 18px;
-}
-
-.empty-hint {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 16px;
-  margin-top: 10px;
-}
-
-/* 赛季列表 */
-.season-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* 赛季卡片 */
-.season-card {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.season-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.season-name {
-  display: block;
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.season-badge {
-  padding: 6px 16px;
-  border-radius: 20px;
-}
-
-.badge-active {
-  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
-}
-
-.badge-inactive {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.badge-text {
-  display: block;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.season-info {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 16px;
-}
-
-.season-info-item {
-  display: flex;
-  align-items: center;
-}
-
-.season-info-text {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  margin-left: 6px;
-}
-
-.season-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.action-btn {
-  flex: 1;
-  border-radius: 10px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-btn-activate {
-  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
-}
-
-.action-btn-deactivate {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.action-btn-delete {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-.action-btn-text {
-  display: block;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 26px;
 }
