@@ -2,7 +2,7 @@ import { View, Text, Input, Picker } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
-import { Plus, Calendar, X, Trophy, Clock, Edit } from 'lucide-react'
+import { Plus, Calendar, X, Trophy, Clock, Edit, CheckCircle } from 'lucide-react'
 import './index.css'
 
 type Season = {
@@ -145,6 +145,31 @@ export default function SeasonsPage() {
     }
   }
 
+  const handleEndSeason = async (season: Season) => {
+    const today = new Date().toISOString().split('T')[0]
+    const { confirm } = await Taro.showModal({
+      title: '结束赛季',
+      content: `确定要结束"${season.name}"吗？结束日期将设为今天(${today})`,
+      confirmText: '确认结束',
+      confirmColor: '#f59e0b'
+    })
+
+    if (confirm) {
+      try {
+        await Network.request({
+          url: `/api/seasons/${season.id}/end`,
+          method: 'PUT',
+          data: { endDate: today }
+        })
+        Taro.showToast({ title: '赛季已结束', icon: 'success' })
+        fetchSeasons()
+      } catch (error) {
+        console.error('结束赛季失败:', error)
+        Taro.showToast({ title: '结束赛季失败', icon: 'none' })
+      }
+    }
+  }
+
   const handleStartDateChange = (e: any) => {
     setForm({ ...form, startDate: e.detail.value })
   }
@@ -262,17 +287,24 @@ export default function SeasonsPage() {
                 </View>
                 <View className="season-actions">
                   <View
+                    className="season-action season-action-end"
+                    onClick={() => handleEndSeason(season)}
+                  >
+                    <CheckCircle size={20} color="#ffffff" />
+                    <Text className="season-action-text">结束</Text>
+                  </View>
+                  <View
                     className="season-action"
                     onClick={() => handleEdit(season)}
                   >
-                    <Edit size={16} color="#ffffff" />
+                    <Edit size={20} color="#ffffff" />
                     <Text className="season-action-text">编辑</Text>
                   </View>
                   <View
                     className="season-action season-action-delete"
                     onClick={() => handleDelete(season.id)}
                   >
-                    <X size={16} color="#ffffff" />
+                    <X size={20} color="#ffffff" />
                     <Text className="season-action-text">删除</Text>
                   </View>
                 </View>

@@ -314,6 +314,10 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
+.season-action-end {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+}
+
 .season-action-delete {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
