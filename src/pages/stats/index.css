@@ -14,7 +14,7 @@
 .selector-title {
   display: block;
   color: #ffffff;
-  font-size: 28px;
+  font-size: 30px;
   font-weight: bold;
   margin-bottom: 16px;
 }
@@ -29,7 +29,7 @@
 .empty-text {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 22px;
+  font-size: 24px;
 }
 
 .season-tags {
@@ -54,7 +54,7 @@
 .season-tag-text {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 500;
 }
 
@@ -80,7 +80,7 @@
 .summary-title {
   display: block;
   color: #ffffff;
-  font-size: 28px;
+  font-size: 30px;
   font-weight: bold;
 }
 
@@ -105,7 +105,7 @@
 .summary-label {
   display: block;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 18px;
+  font-size: 20px;
 }
 
 /* 排名卡片 */
@@ -148,7 +148,7 @@
 .table-header-text {
   display: block;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
 }
 
@@ -220,7 +220,7 @@
 .rank-number {
   display: block;
   color: #ffffff;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
 }
 
@@ -245,7 +245,7 @@
 
 .streak-text {
   display: block;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
 }
 
@@ -261,7 +261,7 @@
 .table-cell-text {
   display: block;
   color: #ffffff;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 500;
 }
 

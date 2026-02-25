@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
 import { Trophy, Calendar, Users, TrendingUp, Plus } from 'lucide-react'
 import './index.css'
@@ -85,6 +85,11 @@ export default function IndexPage() {
   useEffect(() => {
     fetchData()
   }, [])
+
+  // 页面显示时刷新数据
+  useDidShow(() => {
+    fetchData()
+  })
 
   const navigateTo = (url: string) => {
     Taro.navigateTo({ url })

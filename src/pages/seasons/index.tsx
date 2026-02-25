@@ -1,6 +1,6 @@
 import { View, Text, Input, Picker } from '@tarojs/components'
 import { useState, useEffect } from 'react'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
 import { Plus, Calendar, X, Trophy, Clock, Edit, CheckCircle } from 'lucide-react'
 import './index.css'
@@ -49,6 +49,11 @@ export default function SeasonsPage() {
   useEffect(() => {
     fetchSeasons()
   }, [])
+
+  // 页面显示时刷新数据
+  useDidShow(() => {
+    fetchSeasons()
+  })
 
   const handleCreate = () => {
     setEditingSeason(null)

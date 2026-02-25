@@ -19,7 +19,7 @@
 .filter-title {
   display: block;
   color: #ffffff;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
   margin-left: 12px;
 }
@@ -34,7 +34,7 @@
 .empty-text {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 22px;
+  font-size: 24px;
 }
 
 .season-tags {
@@ -59,7 +59,7 @@
 .season-tag-text {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 500;
 }
 
@@ -83,7 +83,7 @@
 .loading-text {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 26px;
+  font-size: 28px;
 }
 
 /* 空状态 */
@@ -98,14 +98,14 @@
 .empty-text {
   display: block;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 26px;
+  font-size: 28px;
   margin-top: 24px;
 }
 
 .empty-hint {
   display: block;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 22px;
+  font-size: 24px;
   margin-top: 14px;
 }
 
@@ -140,7 +140,7 @@
 .match-date {
   display: block;
   color: rgba(255, 255, 255, 0.5);
-  font-size: 18px;
+  font-size: 20px;
   margin-left: 8px;
 }
 
@@ -204,7 +204,7 @@
 
 .player-name {
   display: block;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
 }
 
@@ -219,7 +219,7 @@
 .player-plus {
   display: block;
   color: rgba(255, 255, 255, 0.5);
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .team-score {
@@ -253,7 +253,7 @@
 .match-vs {
   display: block;
   color: #1e293b;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 900;
   letter-spacing: 1px;
 }
@@ -269,6 +269,6 @@
 .match-remark {
   display: block;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1.5;
 }

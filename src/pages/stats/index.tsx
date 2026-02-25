@@ -1,5 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
+import { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
 import { Trophy, Flame, TrendingDown, Crown, Medal } from 'lucide-react'
 import './index.css'
@@ -142,6 +143,14 @@ export default function StatsPage() {
   useEffect(() => {
     fetchSeasons()
   }, [])
+
+  // 页面显示时刷新数据
+  useDidShow(() => {
+    fetchSeasons()
+    if (selectedSeasonId) {
+      fetchStats(selectedSeasonId)
+    }
+  })
 
   useEffect(() => {
     if (selectedSeasonId) {

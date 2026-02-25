@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
 import { Trophy, Calendar, Filter, Trash2, Edit } from 'lucide-react'
 import './index.css'
@@ -99,6 +99,15 @@ export default function RecordsPage() {
     fetchSeasons()
     fetchPlayers()
   }, [])
+
+  // 页面显示时刷新数据
+  useDidShow(() => {
+    fetchSeasons()
+    fetchPlayers()
+    if (selectedSeasonId) {
+      fetchMatches(selectedSeasonId)
+    }
+  })
 
   useEffect(() => {
     if (selectedSeasonId) {

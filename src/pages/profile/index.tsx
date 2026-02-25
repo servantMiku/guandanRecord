@@ -1,6 +1,6 @@
 import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect } from 'react'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
 import { Edit, Save, X, Trash2 } from 'lucide-react'
 import './index.css'
@@ -27,6 +27,11 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchPlayers()
   }, [])
+
+  // 页面显示时刷新数据
+  useDidShow(() => {
+    fetchPlayers()
+  })
 
   const fetchPlayers = async () => {
     try {
