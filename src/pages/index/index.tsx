@@ -116,10 +116,10 @@ export default function IndexPage() {
     navigateTo(`/pages/record-form/index?seasonId=${currentSeason.id}`)
   }
 
-  // 获取玩家名称
-  const getPlayerName = (playerId: string) => {
+  // 获取玩家名字缩写
+  const getPlayerInitial = (playerId: string) => {
     const player = players.find(p => p.id === playerId)
-    return player ? player.name : '未知'
+    return player ? player.name.charAt(0).toUpperCase() : '?'
   }
 
   // 解析比分
@@ -223,10 +223,14 @@ export default function IndexPage() {
                     <View className="match-teams">
                       {/* 获胜方 */}
                       <View className="match-team winner-team">
-                        <View className="team-players">
-                          <Text className="player-name winner-name">{getPlayerName(winnerP1)}</Text>
+                        <View className="team-avatars">
+                          <View className="player-avatar winner-avatar">
+                            <Text className="avatar-text">{getPlayerInitial(winnerP1)}</Text>
+                          </View>
                           <Text className="player-plus">+</Text>
-                          <Text className="player-name winner-name">{getPlayerName(winnerP2)}</Text>
+                          <View className="player-avatar winner-avatar">
+                            <Text className="avatar-text">{getPlayerInitial(winnerP2)}</Text>
+                          </View>
                         </View>
                         <View className="team-score winner-score">
                           <Text className="score-text">{winnerScore}</Text>
@@ -240,10 +244,14 @@ export default function IndexPage() {
 
                       {/* 失败方 */}
                       <View className="match-team loser-team">
-                        <View className="team-players">
-                          <Text className="player-name loser-name">{getPlayerName(loserP1)}</Text>
+                        <View className="team-avatars">
+                          <View className="player-avatar loser-avatar">
+                            <Text className="avatar-text">{getPlayerInitial(loserP1)}</Text>
+                          </View>
                           <Text className="player-plus">+</Text>
-                          <Text className="player-name loser-name">{getPlayerName(loserP2)}</Text>
+                          <View className="player-avatar loser-avatar">
+                            <Text className="avatar-text">{getPlayerInitial(loserP2)}</Text>
+                          </View>
                         </View>
                         <View className="team-score loser-score">
                           <Text className="score-text">{loserScore}</Text>

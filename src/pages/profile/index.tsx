@@ -143,10 +143,7 @@ export default function ProfilePage() {
                         onInput={(e) => setEditingName(e.detail.value)}
                       />
                     ) : (
-                      <View>
-                        <Text className="player-name">{player.name}</Text>
-                        <Text className="player-index">玩家 {index + 1}</Text>
-                      </View>
+                      <Text className="player-name">{player.name}</Text>
                     )}
                   </View>
                 </View>
