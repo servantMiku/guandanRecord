@@ -228,9 +228,12 @@ export default function RecordsPage() {
           </View>
         ) : (
           <View className="match-list">
-            {matches.map((match) => {
+            {matches.map((match, index) => {
               const score = parseScore(match.score)
               const isTeam1Win = (match.winner_team || match.winnerTeam) === 1
+              
+              // 计算场次序号：倒序列表中，总场数 - 当前索引 = 正序场次号
+              const matchNumber = matches.length - index
               
               const winnerP1 = isTeam1Win ? (match.team1_player1_id || match.team1Player1Id) : (match.team2_player1_id || match.team2Player1Id)
               const winnerP2 = isTeam1Win ? (match.team1_player2_id || match.team1Player2Id) : (match.team2_player2_id || match.team2Player2Id)
@@ -246,6 +249,7 @@ export default function RecordsPage() {
                     <View className="match-date-wrapper">
                       <Calendar size={18} color="#fbbf24" />
                       <Text className="match-date">{formatDate(match.created_at || match.createdAt)}</Text>
+                      <Text className="match-number">第{matchNumber}场</Text>
                     </View>
                     <View className="match-actions">
                       <View

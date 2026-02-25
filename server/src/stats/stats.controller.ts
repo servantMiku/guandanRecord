@@ -94,13 +94,18 @@ export class StatsController {
         if (team1Players.length >= 2) {
           const p1 = team1Players[0]
           const p2 = team1Players[1]
-          const key = [p1, p2].sort().join('_')
+          // 排序后生成key，确保A+B和B+A是同一个key
+          const sortedIds = [p1, p2].sort()
+          const key = sortedIds.join('_')
+          // 使用排序后的顺序存储，确保显示一致
+          const sortedP1 = sortedIds[0]
+          const sortedP2 = sortedIds[1]
           
           const existing = partnerStatsMap.get(key) || {
-            player1Id: p1,
-            player2Id: p2,
-            player1Name: players?.find(p => p.id === p1)?.name || '未知',
-            player2Name: players?.find(p => p.id === p2)?.name || '未知',
+            player1Id: sortedP1,
+            player2Id: sortedP2,
+            player1Name: players?.find(p => p.id === sortedP1)?.name || '未知',
+            player2Name: players?.find(p => p.id === sortedP2)?.name || '未知',
             totalMatches: 0,
             wins: 0,
             winRate: '0.00'
@@ -118,13 +123,18 @@ export class StatsController {
         if (team2Players.length >= 2) {
           const p1 = team2Players[0]
           const p2 = team2Players[1]
-          const key = [p1, p2].sort().join('_')
+          // 排序后生成key，确保A+B和B+A是同一个key
+          const sortedIds = [p1, p2].sort()
+          const key = sortedIds.join('_')
+          // 使用排序后的顺序存储，确保显示一致
+          const sortedP1 = sortedIds[0]
+          const sortedP2 = sortedIds[1]
           
           const existing = partnerStatsMap.get(key) || {
-            player1Id: p1,
-            player2Id: p2,
-            player1Name: players?.find(p => p.id === p1)?.name || '未知',
-            player2Name: players?.find(p => p.id === p2)?.name || '未知',
+            player1Id: sortedP1,
+            player2Id: sortedP2,
+            player1Name: players?.find(p => p.id === sortedP1)?.name || '未知',
+            player2Name: players?.find(p => p.id === sortedP2)?.name || '未知',
             totalMatches: 0,
             wins: 0,
             winRate: '0.00'

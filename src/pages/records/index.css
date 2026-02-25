@@ -144,6 +144,17 @@
   margin-left: 8px;
 }
 
+.match-number {
+  display: block;
+  color: #fbbf24;
+  font-size: 20px;
+  font-weight: 600;
+  margin-left: 12px;
+  padding: 2px 10px;
+  background: rgba(251, 191, 36, 0.15);
+  border-radius: 10px;
+}
+
 /* 操作按钮 - 右上角小按钮 */
 .match-actions {
   display: flex;
