@@ -19,7 +19,18 @@ export class SeasonsController {
       return { code: 500, msg: '获取赛季列表失败', data: null }
     }
 
-    return { code: 200, msg: 'success', data: data || [] }
+    // 转换字段名为 camelCase
+    const seasons = (data || []).map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      startDate: s.start_date,
+      endDate: s.end_date,
+      status: s.status,
+      createdAt: s.created_at,
+      updatedAt: s.updated_at
+    }))
+
+    return { code: 200, msg: 'success', data: seasons }
   }
 
   @Get('active')
@@ -37,19 +48,37 @@ export class SeasonsController {
       return { code: 500, msg: '获取活跃赛季失败', data: null }
     }
 
-    return { code: 200, msg: 'success', data: data || [] }
+    // 转换字段名为 camelCase
+    const seasons = (data || []).map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      startDate: s.start_date,
+      endDate: s.end_date,
+      status: s.status,
+      createdAt: s.created_at,
+      updatedAt: s.updated_at
+    }))
+
+    return { code: 200, msg: 'success', data: seasons }
   }
 
   @Post()
-  async createSeason(@Body() body: { name: string; startDate: string }) {
+  async createSeason(@Body() body: { name: string; startDate: string; endDate?: string | null }) {
     const client = getSupabaseClient()
+
+    const insertData: any = {
+      name: body.name,
+      start_date: body.startDate,
+      status: 'active'
+    }
+
+    if (body.endDate) {
+      insertData.end_date = body.endDate
+    }
+
     const { data, error } = await client
       .from('seasons')
-      .insert({
-        name: body.name,
-        start_date: body.startDate,
-        status: 'active'
-      })
+      .insert(insertData)
       .select()
 
     if (error) {
@@ -57,7 +86,19 @@ export class SeasonsController {
       return { code: 500, msg: '创建赛季失败', data: null }
     }
 
-    return { code: 200, msg: 'success', data: data?.[0] || null }
+    // 转换字段名为 camelCase
+    const season = data?.[0]
+    const result = season ? {
+      id: season.id,
+      name: season.name,
+      startDate: season.start_date,
+      endDate: season.end_date,
+      status: season.status,
+      createdAt: season.created_at,
+      updatedAt: season.updated_at
+    } : null
+
+    return { code: 200, msg: 'success', data: result }
   }
 
   @Put(':id/end')
@@ -78,7 +119,19 @@ export class SeasonsController {
       return { code: 500, msg: '结束赛季失败', data: null }
     }
 
-    return { code: 200, msg: 'success', data: data?.[0] || null }
+    // 转换字段名为 camelCase
+    const season = data?.[0]
+    const result = season ? {
+      id: season.id,
+      name: season.name,
+      startDate: season.start_date,
+      endDate: season.end_date,
+      status: season.status,
+      createdAt: season.created_at,
+      updatedAt: season.updated_at
+    } : null
+
+    return { code: 200, msg: 'success', data: result }
   }
 }
 
