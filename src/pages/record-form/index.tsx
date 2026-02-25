@@ -345,9 +345,6 @@ export default function RecordFormPage() {
                     className={`player-btn ${selected ? colorClass : ''}`}
                     onClick={() => handlePlayerClick(player.id)}
                   >
-                    <Text className={`player-avatar ${selected ? 'avatar-selected' : ''}`}>
-                      {player.name.charAt(0)}
-                    </Text>
                     <Text className={`player-name ${selected ? 'name-selected' : ''}`}>
                       {player.name}
                     </Text>

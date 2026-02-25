@@ -82,19 +82,18 @@
 .player-grid {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 -10px;
+  margin: 0 -8px;
 }
 
 .player-btn {
-  width: calc(33.333% - 20px);
-  margin: 10px;
-  aspect-ratio: 1;
-  border-radius: 20px;
+  width: calc(33.333% - 16px);
+  margin: 8px;
+  height: 80px;
+  border-radius: 16px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 3px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -108,19 +107,10 @@
   border-color: #06b6d4;
 }
 
-.player-avatar {
-  font-size: 36px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.avatar-selected {
-  color: #ffffff;
-}
-
 .player-name {
-  font-size: 22px;
-  font-weight: 500;
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
 }
 
 .name-selected {
