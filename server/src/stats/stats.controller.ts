@@ -61,8 +61,8 @@ export class StatsController {
     // 找出最佳战绩玩家
     const bestPlayer = playerStatsWithNames.length > 0
       ? playerStatsWithNames.reduce((best, current) => {
-          const currentWinRate = parseFloat(current.win_rate || '0')
-          const bestWinRate = parseFloat(best.win_rate || '0')
+          const currentWinRate = parseFloat(current.winRate || '0')
+          const bestWinRate = parseFloat(best.winRate || '0')
           return currentWinRate > bestWinRate ? current : best
         })
       : null
@@ -73,7 +73,7 @@ export class StatsController {
       seasonName: season.name,
       totalMatches: matches?.length || 0,
       bestPlayer: bestPlayer?.playerName || '暂无',
-      bestWinRate: bestPlayer ? `${bestPlayer.win_rate}%` : '0.00%'
+      bestWinRate: bestPlayer ? `${bestPlayer.winRate}%` : '0.00%'
     }
 
     return {
