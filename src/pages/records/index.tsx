@@ -107,7 +107,7 @@ export default function RecordsPage() {
   }, [selectedSeasonId])
 
   const handleDeleteMatch = async (matchId: string, event: any) => {
-    event.stopPropagation() // 阻止事件冒泡，避免触发查看详情
+    event.stopPropagation()
 
     Taro.showModal({
       title: '确认删除',
@@ -120,7 +120,6 @@ export default function RecordsPage() {
               method: 'DELETE'
             })
             Taro.showToast({ title: '删除成功', icon: 'success' })
-            // 重新加载战绩列表
             if (selectedSeasonId) {
               fetchMatches(selectedSeasonId)
             }
@@ -134,7 +133,7 @@ export default function RecordsPage() {
   }
 
   const handleEditMatch = (matchId: string, seasonId: string, event: any) => {
-    event.stopPropagation() // 阻止事件冒泡
+    event.stopPropagation()
     Taro.navigateTo({ url: `/pages/record-form/index?seasonId=${seasonId}&matchId=${matchId}` })
   }
 
@@ -144,35 +143,33 @@ export default function RecordsPage() {
     return player ? player.name : '未知'
   }
 
-  // 格式化比分显示
-  const formatMatchScore = (match: Match) => {
-    // 解析比分字符串，格式为 "队伍1：A2，队伍2：6"
-    const scoreMatch = match.score.match(/队伍1：(.+?)，队伍2：(.+)/)
-    if (!scoreMatch) return match.score
-
-    const team1Score = scoreMatch[1]
-    const team2Score = scoreMatch[2]
-
-    // 使用后端返回的 snake_case 字段名
-    const team1Player1Name = getPlayerName(match.team1_player1_id || match.team1Player1Id)
-    const team1Player2Name = getPlayerName(match.team1_player2_id || match.team1Player2Id)
-    const team2Player1Name = getPlayerName(match.team2_player1_id || match.team2Player1Id)
-    const team2Player2Name = getPlayerName(match.team2_player2_id || match.team2Player2Id)
-
-    return `${team1Player1Name}+${team1Player2Name} (${team1Score}) : ${team2Player1Name}+${team2Player2Name} (${team2Score})`
+  // 解析比分
+  const parseScore = (score: string) => {
+    const match = score.match(/队伍1：(.+?)，队伍2：(.+)/)
+    if (match) {
+      return { team1: match[1], team2: match[2] }
+    }
+    return { team1: '?', team2: '?' }
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    if (!dateString) return '未知时间'
+    try {
+      const date = new Date(dateString)
+      if (Number.isNaN(date.getTime())) return '未知时间'
+      
+      const now = new Date()
+      const diff = now.getTime() - date.getTime()
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
-    if (days === 0) return '今天'
-    if (days === 1) return '昨天'
-    if (days < 7) return `${days}天前`
+      if (days === 0) return '今天'
+      if (days === 1) return '昨天'
+      if (days < 7) return `${days}天前`
 
-    return `${date.getMonth() + 1}月${date.getDate()}日`
+      return `${date.getMonth() + 1}月${date.getDate()}日`
+    } catch {
+      return '未知时间'
+    }
   }
 
   return (
@@ -216,51 +213,80 @@ export default function RecordsPage() {
           </View>
         ) : (
           <View className="match-list">
-            {matches.map((match) => (
-              <View
-                key={match.id}
-                className="match-card"
-              >
-                {/* 日期和胜者 */}
-                <View className="match-header">
-                  <View className="match-date-wrapper">
-                    <Calendar size={20} color="#fbbf24" />
-                    <Text className="match-date">{formatDate(match.created_at || match.createdAt)}</Text>
+            {matches.map((match) => {
+              const score = parseScore(match.score)
+              const isTeam1Win = (match.winner_team || match.winnerTeam) === 1
+              
+              const winnerP1 = isTeam1Win ? (match.team1_player1_id || match.team1Player1Id) : (match.team2_player1_id || match.team2Player1Id)
+              const winnerP2 = isTeam1Win ? (match.team1_player2_id || match.team1Player2Id) : (match.team2_player2_id || match.team2Player2Id)
+              const loserP1 = isTeam1Win ? (match.team2_player1_id || match.team2Player1Id) : (match.team1_player1_id || match.team1Player1Id)
+              const loserP2 = isTeam1Win ? (match.team2_player2_id || match.team2Player2Id) : (match.team1_player2_id || match.team1Player2Id)
+              const winnerScore = isTeam1Win ? score.team1 : score.team2
+              const loserScore = isTeam1Win ? score.team2 : score.team1
+
+              return (
+                <View key={match.id} className="match-card">
+                  {/* 顶部：时间和操作按钮 */}
+                  <View className="match-header">
+                    <View className="match-date-wrapper">
+                      <Calendar size={18} color="#fbbf24" />
+                      <Text className="match-date">{formatDate(match.created_at || match.createdAt)}</Text>
+                    </View>
+                    <View className="match-actions">
+                      <View
+                        className="action-btn action-btn-edit"
+                        onClick={(e) => handleEditMatch(match.id, match.season_id || match.seasonId, e)}
+                      >
+                        <Edit size={16} color="#ffffff" />
+                      </View>
+                      <View
+                        className="action-btn action-btn-delete"
+                        onClick={(e) => handleDeleteMatch(match.id, e)}
+                      >
+                        <Trash2 size={16} color="#ffffff" />
+                      </View>
+                    </View>
                   </View>
-                  <View
-                    className={`match-winner-badge ${match.winnerTeam === 1 ? 'winner-team1' : 'winner-team2'}`}
-                  >
-                    <Text className="winner-text">队伍{match.winnerTeam}获胜</Text>
+
+                  {/* 对战双方 */}
+                  <View className="match-teams">
+                    {/* 获胜方 */}
+                    <View className="match-team winner-team">
+                      <View className="team-players">
+                        <Text className="player-name winner-name">{getPlayerName(winnerP1)}</Text>
+                        <Text className="player-plus">+</Text>
+                        <Text className="player-name winner-name">{getPlayerName(winnerP2)}</Text>
+                      </View>
+                      <View className="team-score winner-score">
+                        <Text className="score-text">{winnerScore}</Text>
+                      </View>
+                    </View>
+
+                    {/* 分隔符 */}
+                    <Text className="match-vs">:</Text>
+
+                    {/* 失败方 */}
+                    <View className="match-team loser-team">
+                      <View className="team-players">
+                        <Text className="player-name loser-name">{getPlayerName(loserP1)}</Text>
+                        <Text className="player-plus">+</Text>
+                        <Text className="player-name loser-name">{getPlayerName(loserP2)}</Text>
+                      </View>
+                      <View className="team-score loser-score">
+                        <Text className="score-text">{loserScore}</Text>
+                      </View>
+                    </View>
                   </View>
+
+                  {/* 备注 */}
+                  {match.remark && (
+                    <View className="match-remark-wrapper">
+                      <Text className="match-remark">{match.remark}</Text>
+                    </View>
+                  )}
                 </View>
-
-                {/* 比分 - 新格式：A+B (A2) : C+D (6) */}
-                <Text className="match-score">{formatMatchScore(match)}</Text>
-
-                {/* 备注 */}
-                {match.remark && (
-                  <Text className="match-remark">{match.remark}</Text>
-                )}
-
-                {/* 操作按钮 */}
-                <View className="match-actions">
-                  <View
-                    className="action-btn action-btn-edit"
-                    onClick={(e) => handleEditMatch(match.id, match.season_id || match.seasonId, e)}
-                  >
-                    <Edit size={16} color="#ffffff" />
-                    <Text className="action-btn-text">编辑</Text>
-                  </View>
-                  <View
-                    className="action-btn action-btn-delete"
-                    onClick={(e) => handleDeleteMatch(match.id, e)}
-                  >
-                    <Trash2 size={16} color="#ffffff" />
-                    <Text className="action-btn-text">删除</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
+              )
+            })}
           </View>
         )}
       </View>

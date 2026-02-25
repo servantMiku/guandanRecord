@@ -13,6 +13,11 @@ type Season = {
   status: string
 }
 
+type Player = {
+  id: string
+  name: string
+}
+
 type Match = {
   id: string
   seasonId: string
@@ -30,10 +35,19 @@ type Match = {
 export default function IndexPage() {
   const [currentSeason, setCurrentSeason] = useState<Season | null>(null)
   const [recentMatches, setRecentMatches] = useState<Match[]>([])
+  const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchData = async () => {
     try {
+      // 获取玩家列表
+      const playersRes = await Network.request({
+        url: '/api/players'
+      })
+      if (playersRes.data && playersRes.data.data) {
+        setPlayers(playersRes.data.data)
+      }
+
       // 获取当前活跃赛季
       const res = await Network.request({
         url: '/api/seasons/active'
@@ -91,6 +105,43 @@ export default function IndexPage() {
     navigateTo(`/pages/record-form/index?seasonId=${currentSeason.id}`)
   }
 
+  // 获取玩家名称
+  const getPlayerName = (playerId: string) => {
+    const player = players.find(p => p.id === playerId)
+    return player ? player.name : '未知'
+  }
+
+  // 解析比分
+  const parseScore = (score: string) => {
+    // 格式: "队伍1：A2，队伍2：6"
+    const match = score.match(/队伍1：(.+?)，队伍2：(.+)/)
+    if (match) {
+      return { team1: match[1], team2: match[2] }
+    }
+    return { team1: '?', team2: '?' }
+  }
+
+  // 格式化时间
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '未知时间'
+    try {
+      const date = new Date(dateString)
+      if (Number.isNaN(date.getTime())) return '未知时间'
+      
+      const now = new Date()
+      const diff = now.getTime() - date.getTime()
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+      if (days === 0) return '今天'
+      if (days === 1) return '昨天'
+      if (days < 7) return `${days}天前`
+
+      return `${date.getMonth() + 1}月${date.getDate()}日`
+    } catch {
+      return '未知时间'
+    }
+  }
+
   return (
     <View className="index-page">
       {/* 头部 - 当前赛季 */}
@@ -142,22 +193,55 @@ export default function IndexPage() {
             </View>
           ) : (
             <View>
-              {recentMatches.map((match) => (
-                <View key={match.id} className="match-item">
-                  <View className="match-header">
-                    <Text className="match-date">
-                      {new Date(match.createdAt).toLocaleDateString()}
-                    </Text>
-                    <Text
-                      className={`match-winner ${match.winnerTeam === 1 ? 'winner-team1' : 'winner-team2'}`}
-                    >
-                      {match.winnerTeam === 1 ? '队伍1获胜' : '队伍2获胜'}
-                    </Text>
+              {recentMatches.map((match) => {
+                const score = parseScore(match.score)
+                const isTeam1Win = match.winnerTeam === 1
+                
+                // 获胜方和失败方的玩家
+                const winnerP1 = isTeam1Win ? match.team1Player1Id : match.team2Player1Id
+                const winnerP2 = isTeam1Win ? match.team1Player2Id : match.team2Player2Id
+                const loserP1 = isTeam1Win ? match.team2Player1Id : match.team1Player1Id
+                const loserP2 = isTeam1Win ? match.team2Player2Id : match.team1Player2Id
+                const winnerScore = isTeam1Win ? score.team1 : score.team2
+                const loserScore = isTeam1Win ? score.team2 : score.team1
+
+                return (
+                  <View key={match.id} className="match-item">
+                    <Text className="match-date">{formatDate(match.createdAt)}</Text>
+                    
+                    <View className="match-teams">
+                      {/* 获胜方 */}
+                      <View className="match-team winner-team">
+                        <View className="team-players">
+                          <Text className="player-name winner-name">{getPlayerName(winnerP1)}</Text>
+                          <Text className="player-plus">+</Text>
+                          <Text className="player-name winner-name">{getPlayerName(winnerP2)}</Text>
+                        </View>
+                        <View className="team-score winner-score">
+                          <Text className="score-text">{winnerScore}</Text>
+                        </View>
+                      </View>
+
+                      {/* 分隔符 */}
+                      <Text className="match-vs">:</Text>
+
+                      {/* 失败方 */}
+                      <View className="match-team loser-team">
+                        <View className="team-players">
+                          <Text className="player-name loser-name">{getPlayerName(loserP1)}</Text>
+                          <Text className="player-plus">+</Text>
+                          <Text className="player-name loser-name">{getPlayerName(loserP2)}</Text>
+                        </View>
+                        <View className="team-score loser-score">
+                          <Text className="score-text">{loserScore}</Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    {match.remark && <Text className="match-remark">{match.remark}</Text>}
                   </View>
-                  <Text className="match-score">{match.score}</Text>
-                  {match.remark && <Text className="match-remark">{match.remark}</Text>}
-                </View>
-              ))}
+                )
+              })}
             </View>
           )}
         </View>

@@ -120,7 +120,7 @@
 .match-card {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 20px;
-  padding: 28px;
+  padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
@@ -129,7 +129,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .match-date-wrapper {
@@ -139,58 +139,21 @@
 
 .match-date {
   display: block;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 20px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
   margin-left: 8px;
 }
 
-.match-winner-badge {
-  padding: 10px 20px;
-  border-radius: 28px;
-}
-
-.winner-team1 {
-  background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
-}
-
-.winner-team2 {
-  background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
-}
-
-.winner-text {
-  display: block;
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.match-score {
-  display: block;
-  color: #ffffff;
-  font-size: 36px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 14px;
-}
-
-.match-remark {
-  display: block;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 20px;
-  text-align: center;
-}
-
-/* 操作按钮 */
+/* 操作按钮 - 右上角小按钮 */
 .match-actions {
   display: flex;
-  gap: 16px;
-  margin-top: 24px;
+  gap: 8px;
 }
 
 .action-btn {
-  flex: 1;
-  border-radius: 14px;
-  padding: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -204,10 +167,99 @@
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
-.action-btn-text {
+/* 对战双方容器 */
+.match-teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* 队伍样式 */
+.match-team {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 10px;
+  border-radius: 12px;
+}
+
+.winner-team {
+  background: rgba(34, 197, 94, 0.2);
+  border: 2px solid rgba(34, 197, 94, 0.5);
+}
+
+.loser-team {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-players {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-name {
+  display: block;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.winner-name {
+  color: #4ade80;
+}
+
+.loser-name {
+  color: #ffffff;
+}
+
+.player-plus {
+  display: block;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
+}
+
+.team-score {
+  padding: 6px 16px;
+  border-radius: 20px;
+}
+
+.winner-score {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.loser-score {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.score-text {
   display: block;
   color: #ffffff;
   font-size: 22px;
-  font-weight: 500;
-  margin-left: 10px;
+  font-weight: bold;
+}
+
+.match-vs {
+  display: block;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* 备注区域 */
+.match-remark-wrapper {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.match-remark {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 20px;
+  line-height: 1.5;
 }

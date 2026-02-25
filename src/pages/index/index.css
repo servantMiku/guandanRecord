@@ -121,50 +121,106 @@
 .match-item {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 28px;
+  padding: 24px;
   margin-bottom: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.match-header {
+.match-date {
+  display: block;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+/* 对战双方容器 */
+.match-teams {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  gap: 12px;
 }
 
-.match-date {
+/* 队伍样式 */
+.match-team {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 12px;
+  border-radius: 12px;
+}
+
+.winner-team {
+  background: rgba(34, 197, 94, 0.2);
+  border: 2px solid rgba(34, 197, 94, 0.5);
+}
+
+.loser-team {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-players {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-name {
   display: block;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 18px;
+  font-size: 24px;
+  font-weight: 600;
 }
 
-.match-winner {
+.winner-name {
+  color: #4ade80;
+}
+
+.loser-name {
+  color: #ffffff;
+}
+
+.player-plus {
   display: block;
-  font-size: 18px;
-  font-weight: bold;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20px;
 }
 
-.winner-team1 {
-  color: #22c55e;
+.team-score {
+  padding: 6px 16px;
+  border-radius: 20px;
 }
 
-.winner-team2 {
-  color: #ec4899;
+.winner-score {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
 }
 
-.match-score {
+.loser-score {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.score-text {
   display: block;
   color: #ffffff;
-  font-size: 30px;
+  font-size: 24px;
   font-weight: bold;
-  margin-bottom: 10px;
+}
+
+.match-vs {
+  display: block;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 28px;
+  font-weight: bold;
 }
 
 .match-remark {
   display: block;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 18px;
+  margin-top: 16px;
+  text-align: center;
 }
 
 /* 快捷入口 */
