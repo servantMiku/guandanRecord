@@ -329,22 +329,6 @@ export default function SeasonsPage() {
                   <Calendar size={20} color="rgba(255,255,255,0.7)" />
                   <Text className="season-date-text">{season.startDate} - {season.endDate}</Text>
                 </View>
-                <View className="season-actions">
-                  <View
-                    className="season-action"
-                    onClick={() => handleEdit(season)}
-                  >
-                    <Edit size={16} color="#ffffff" />
-                    <Text className="season-action-text">编辑</Text>
-                  </View>
-                  <View
-                    className="season-action season-action-delete"
-                    onClick={() => handleDelete(season.id)}
-                  >
-                    <X size={16} color="#ffffff" />
-                    <Text className="season-action-text">删除</Text>
-                  </View>
-                </View>
               </View>
             ))}
           </View>
