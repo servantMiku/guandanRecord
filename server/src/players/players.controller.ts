@@ -9,17 +9,43 @@ export class PlayersController {
   @Get()
   async getAllPlayers() {
     const client = getSupabaseClient()
-    const { data, error } = await client
+
+    // 先检查是否有玩家数据
+    const { data: existingPlayers, error: checkError } = await client
       .from('players')
       .select('*')
       .order('created_at', { ascending: true })
 
-    if (error) {
-      console.error('获取玩家列表失败:', error)
+    if (checkError) {
+      console.error('获取玩家列表失败:', checkError)
       return { code: 500, msg: '获取玩家列表失败', data: null }
     }
 
-    return { code: 200, msg: 'success', data: data || [] }
+    // 如果没有玩家数据，初始化6个默认玩家
+    if (!existingPlayers || existingPlayers.length === 0) {
+      console.log('初始化6个默认玩家')
+      const defaultPlayers = ['A', 'B', 'C', 'D', 'E', 'F'].map((name, index) => ({
+        name: `玩家${name}`,
+        avatar: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }))
+
+      const { data: insertedPlayers, error: insertError } = await client
+        .from('players')
+        .insert(defaultPlayers)
+        .select('*')
+
+      if (insertError) {
+        console.error('初始化玩家失败:', insertError)
+        return { code: 500, msg: '初始化玩家失败', data: null }
+      }
+
+      console.log('玩家初始化成功:', insertedPlayers)
+      return { code: 200, msg: 'success', data: insertedPlayers || [] }
+    }
+
+    return { code: 200, msg: 'success', data: existingPlayers || [] }
   }
 
   @Put(':id')

@@ -64,6 +64,7 @@ export class SeasonsController {
 
   @Post()
   async createSeason(@Body() body: { name: string; startDate: string; endDate?: string | null }) {
+    console.log('创建赛季请求:', body)
     const client = getSupabaseClient()
 
     const insertData: any = {
@@ -76,15 +77,19 @@ export class SeasonsController {
       insertData.end_date = body.endDate
     }
 
+    console.log('插入数据:', insertData)
+
     const { data, error } = await client
       .from('seasons')
       .insert(insertData)
-      .select()
+      .select('*')
 
     if (error) {
       console.error('创建赛季失败:', error)
-      return { code: 500, msg: '创建赛季失败', data: null }
+      return { code: 500, msg: '创建赛季失败: ' + error.message, data: null }
     }
+
+    console.log('插入结果:', data)
 
     // 转换字段名为 camelCase
     const season = data?.[0]
