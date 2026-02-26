@@ -454,7 +454,7 @@ export default function StatsPage() {
       {playerPairMatrix.length > 0 && (
         <View className="pair-matrix-card">
           <View className="pair-matrix-header">
-            <Users size={28} color="#3b82f6" />
+            <Icon name="Users" size={28} color="#3b82f6" />
             <Text className="pair-matrix-title">搭档胜率矩阵</Text>
           </View>
           

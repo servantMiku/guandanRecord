@@ -213,7 +213,7 @@ export default function RecordsPage() {
       {/* 赛季筛选 */}
       <View className="season-filter">
         <View className="filter-header">
-          <Filter size={20} color="#f472b6" />
+          <Icon name="Filter" size={20} color="#f472b6" />
           <Text className="filter-title">筛选赛季</Text>
         </View>
         {seasons.length === 0 ? (

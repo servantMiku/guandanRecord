@@ -323,7 +323,9 @@ export default function RecordFormPage() {
     <View className="record-form-page">
       {/* 头部 */}
       <View className="header">
-        <Icon name="ArrowLeft" size={24} color="#ffffff" onClick={() => Taro.navigateBack()} />
+        <View onClick={() => Taro.navigateBack()}>
+          <Icon name="ArrowLeft" size={24} color="#ffffff" />
+        </View>
         <Text className="header-title">{isEditMode ? '编辑战绩' : '录入战绩'}</Text>
         {season && (
           <Text className="header-season">{season.name}</Text>

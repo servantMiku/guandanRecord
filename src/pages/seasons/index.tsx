@@ -346,7 +346,7 @@ export default function SeasonsPage() {
                   </View>
                 </View>
                 <View className="season-date season-date-ended">
-                  <Calendar size={20} color="rgba(255,255,255,0.7)" />
+                  <Icon name="Calendar" size={20} color="rgba(255,255,255,0.7)" />
                   <Text className="season-date-text">{season.startDate} - {season.endDate}</Text>
                 </View>
               </View>

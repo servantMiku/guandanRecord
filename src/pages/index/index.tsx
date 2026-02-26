@@ -10,6 +10,8 @@ const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?:
     Trophy: '🏆',
     Calendar: '📅',
     Plus: '＋',
+    Users: '👥',
+    TrendingUp: '📈',
   }
   return (
     <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
@@ -310,14 +312,14 @@ export default function IndexPage() {
             className="shortcut-item shortcut-records"
             onClick={() => switchTab('/pages/records/index')}
           >
-            <Users size={32} color="#f472b6" />
+            <Icon name="Users" size={32} color="#f472b6" />
             <Text className="shortcut-text">战绩列表</Text>
           </View>
           <View
             className="shortcut-item shortcut-stats"
             onClick={() => switchTab('/pages/stats/index')}
           >
-            <TrendingUp size={32} color="#34d399" />
+            <Icon name="TrendingUp" size={32} color="#34d399" />
             <Text className="shortcut-text">统计分析</Text>
           </View>
         </View>
