@@ -1,4 +1,4 @@
-import { View, Text, Input } from '@tarojs/components'
+import { View, Text, Input, Picker } from '@tarojs/components'
 import { useState, useEffect, useCallback } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
 import { Network } from '@/network'
@@ -508,16 +508,25 @@ export default function RecordFormPage() {
           {/* 比赛时间 */}
           <View className="card">
             <Text className="section-title">比赛时间</Text>
-            <View className="input-wrapper">
-              <input
-                className="time-input"
-                type="datetime-local"
-                value={matchTime}
-                onChange={(e) => {
-                  setMatchTime(e.target.value)
-                  saveDraft()
-                }}
-              />
+            <View className="datetime-picker-row">
+              <Picker mode="date" value={matchTime.split('T')[0]} onChange={(e) => {
+                const time = matchTime.split('T')[1] || '12:00'
+                setMatchTime(`${e.detail.value}T${time}`)
+                saveDraft()
+              }}>
+                <View className="date-picker-btn">
+                  <Text className="date-picker-text">{matchTime ? matchTime.split('T')[0] : '选择日期'}</Text>
+                </View>
+              </Picker>
+              <Picker mode="time" value={matchTime.split('T')[1] || '12:00'} onChange={(e) => {
+                const date = matchTime.split('T')[0] || new Date().toISOString().split('T')[0]
+                setMatchTime(`${date}T${e.detail.value}`)
+                saveDraft()
+              }}>
+                <View className="time-picker-btn">
+                  <Text className="time-picker-text">{matchTime ? matchTime.split('T')[1] : '选择时间'}</Text>
+                </View>
+              </Picker>
             </View>
           </View>
 
