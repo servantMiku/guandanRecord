@@ -2,8 +2,20 @@ import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
-import { Edit, Save, X, Trash2 } from 'lucide-react'
 import './index.css'
+
+// 图标组件 - 使用 Unicode 字符
+const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?: string }) => {
+  const icons: Record<string, string> = {
+    Edit: '✎',
+    Save: '✓',
+    X: '✕',
+    Trash2: '🗑',
+  }
+  return (
+    <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
+  )
+}
 
 type Player = {
   id: string
@@ -156,13 +168,13 @@ export default function ProfilePage() {
                         className="action-btn action-btn-save"
                         onClick={handleSaveEdit}
                       >
-                        <Save size={18} color="#ffffff" />
+                        <Icon name="Save" size={18} color="#ffffff" />
                       </View>
                       <View
                         className="action-btn action-btn-cancel"
                         onClick={handleCancelEdit}
                       >
-                        <X size={18} color="#ffffff" />
+                        <Icon name="X" size={18} color="#ffffff" />
                       </View>
                     </>
                   ) : (
@@ -170,7 +182,7 @@ export default function ProfilePage() {
                       className="action-btn action-btn-edit"
                       onClick={() => handleStartEdit(player)}
                     >
-                      <Edit size={18} color="#ffffff" />
+                      <Icon name="Edit" size={18} color="#ffffff" />
                     </View>
                   )}
                 </View>
@@ -184,7 +196,7 @@ export default function ProfilePage() {
           <Text className="clear-data-title">⚠️ 危险区域</Text>
           <Text className="clear-data-desc">清空所有战绩、赛季数据，从0开始</Text>
           <View className="clear-data-btn" onClick={handleClearAllData}>
-            <Trash2 size={28} color="#ffffff" />
+            <Icon name="Trash2" size={28} color="#ffffff" />
             <Text className="clear-data-btn-text" style={{ marginLeft: '12px' }}>清空所有数据</Text>
           </View>
         </View>

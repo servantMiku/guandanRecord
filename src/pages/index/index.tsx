@@ -2,8 +2,19 @@ import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
-import { Trophy, Calendar, Users, TrendingUp, Plus } from 'lucide-react'
 import './index.css'
+
+// 图标组件 - 使用 Unicode 字符
+const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?: string }) => {
+  const icons: Record<string, string> = {
+    Trophy: '🏆',
+    Calendar: '📅',
+    Plus: '＋',
+  }
+  return (
+    <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
+  )
+}
 
 type Season = {
   id: string
@@ -188,14 +199,14 @@ export default function IndexPage() {
         {/* 快捷操作 */}
         <View className="quick-actions">
           <View className="quick-btn quick-btn-add" onClick={handleAddRecord}>
-            <Plus size={24} color="#ffffff" />
+            <Icon name="Plus" size={24} color="#ffffff" />
             <Text className="quick-btn-text">录入战绩</Text>
           </View>
           <View
             className="quick-btn quick-btn-season"
             onClick={() => navigateTo('/pages/seasons/index')}
           >
-            <Calendar size={24} color="#ffffff" />
+            <Icon name="Calendar" size={24} color="#ffffff" />
             <Text className="quick-btn-text">赛季管理</Text>
           </View>
         </View>
@@ -203,7 +214,7 @@ export default function IndexPage() {
         {/* 最近战绩 */}
         <View className="card">
           <View className="card-header">
-            <Trophy size={24} color="#fbbf24" />
+            <Icon name="Trophy" size={24} color="#fbbf24" />
             <Text className="card-title">最近战绩</Text>
           </View>
 

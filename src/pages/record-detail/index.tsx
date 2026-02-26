@@ -2,8 +2,21 @@ import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect, useCallback } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
 import { Network } from '@/network'
-import { Calendar, Edit, Save, ArrowLeft, History } from 'lucide-react'
 import './index.css'
+
+// 图标组件 - 使用 Unicode 字符
+const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?: string }) => {
+  const icons: Record<string, string> = {
+    Calendar: '📅',
+    Edit: '✎',
+    Save: '✓',
+    ArrowLeft: '←',
+    History: '⏱',
+  }
+  return (
+    <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
+  )
+}
 
 type Player = {
   id: string
@@ -137,17 +150,17 @@ export default function RecordDetailPage() {
       {/* 头部导航 */}
       <View className="header">
         <View onClick={handleBack}>
-          <ArrowLeft size={24} color="#ffffff" />
+          <Icon name="ArrowLeft" size={24} color="#ffffff" />
         </View>
         <Text className="header-title">战绩详情</Text>
         {!editing && (
           <View onClick={handleEdit}>
-            <Edit size={24} color="#f472b6" />
+            <Icon name="Edit" size={24} color="#f472b6" />
           </View>
         )}
         {editing && (
           <View onClick={handleSave}>
-            <Save size={24} color="#22c55e" />
+            <Icon name="Save" size={24} color="#22c55e" />
           </View>
         )}
       </View>
@@ -156,7 +169,7 @@ export default function RecordDetailPage() {
         {/* 基本信息 */}
         <View className="card">
           <View className="card-header">
-            <Calendar size={20} color="#fbbf24" />
+            <Icon name="Calendar" size={20} color="#fbbf24" />
             <Text className="card-date">
               {new Date(match.createdAt).toLocaleString()}
             </Text>
@@ -249,7 +262,7 @@ export default function RecordDetailPage() {
         {match.editHistory && match.editHistory.length > 0 && (
           <View className="card">
             <View className="history-header">
-              <History size={20} color="#fbbf24" />
+              <Icon name="History" size={20} color="#fbbf24" />
               <Text className="section-title">编辑历史</Text>
             </View>
             <View className="history-list">

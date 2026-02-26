@@ -2,8 +2,21 @@ import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect, useCallback } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
 import { Network } from '@/network'
-import { Users, Trophy, Save, ArrowLeft, X } from 'lucide-react'
 import './index.css'
+
+// 图标组件 - 使用 Unicode 字符
+const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?: string }) => {
+  const icons: Record<string, string> = {
+    Users: '👥',
+    Trophy: '🏆',
+    Save: '✓',
+    ArrowLeft: '←',
+    X: '✕',
+  }
+  return (
+    <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
+  )
+}
 
 type Player = {
   id: string
@@ -310,7 +323,7 @@ export default function RecordFormPage() {
     <View className="record-form-page">
       {/* 头部 */}
       <View className="header">
-        <ArrowLeft size={24} color="#ffffff" onClick={() => Taro.navigateBack()} />
+        <Icon name="ArrowLeft" size={24} color="#ffffff" onClick={() => Taro.navigateBack()} />
         <Text className="header-title">{isEditMode ? '编辑战绩' : '录入战绩'}</Text>
         {season && (
           <Text className="header-season">{season.name}</Text>
@@ -326,7 +339,7 @@ export default function RecordFormPage() {
           {/* 玩家选择 - 平铺显示 */}
           <View className="card">
             <View className="card-header">
-              <Users size={24} color="#f472b6" />
+              <Icon name="Users" size={24} color="#f472b6" />
               <Text className="card-title">选择玩家</Text>
               <Text className="card-hint">点击选择/取消</Text>
             </View>
@@ -370,7 +383,7 @@ export default function RecordFormPage() {
                           clearPlayer('team1Player1')
                         }}
                       >
-                        <X size={12} color="#ffffff" />
+                        <Icon name="X" size={12} color="#ffffff" />
                       </View>
                     )}
                   </View>
@@ -387,7 +400,7 @@ export default function RecordFormPage() {
                           clearPlayer('team1Player2')
                         }}
                       >
-                        <X size={12} color="#ffffff" />
+                        <Icon name="X" size={12} color="#ffffff" />
                       </View>
                     )}
                   </View>
@@ -411,7 +424,7 @@ export default function RecordFormPage() {
                           clearPlayer('team2Player1')
                         }}
                       >
-                        <X size={12} color="#ffffff" />
+                        <Icon name="X" size={12} color="#ffffff" />
                       </View>
                     )}
                   </View>
@@ -428,7 +441,7 @@ export default function RecordFormPage() {
                           clearPlayer('team2Player2')
                         }}
                       >
-                        <X size={12} color="#ffffff" />
+                        <Icon name="X" size={12} color="#ffffff" />
                       </View>
                     )}
                   </View>
@@ -440,7 +453,7 @@ export default function RecordFormPage() {
           {/* 比分录入 */}
           <View className="card">
             <View className="card-header">
-              <Trophy size={32} color="#fbbf24" />
+              <Icon name="Trophy" size={32} color="#fbbf24" />
               <Text className="card-title">比分录入（选择牌级）</Text>
             </View>
 
@@ -527,7 +540,7 @@ export default function RecordFormPage() {
             className={`submit-btn ${submitting ? 'submit-btn-disabled' : ''}`}
             onClick={handleSubmit}
           >
-            <Save size={28} color="#ffffff" />
+            <Icon name="Save" size={28} color="#ffffff" />
             <Text className="submit-btn-text">{submitting ? '保存中...' : '保存战绩'}</Text>
           </View>
         </View>

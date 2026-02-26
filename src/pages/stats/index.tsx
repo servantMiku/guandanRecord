@@ -2,8 +2,22 @@ import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
-import { Trophy, Flame, TrendingDown, Crown, Medal, Users } from 'lucide-react'
 import './index.css'
+
+// 图标组件 - 使用 Unicode 字符
+const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?: string }) => {
+  const icons: Record<string, string> = {
+    Trophy: '🏆',
+    Flame: '🔥',
+    TrendingDown: '📉',
+    Crown: '👑',
+    Medal: '🥇',
+    Users: '👥',
+  }
+  return (
+    <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
+  )
+}
 
 type Season = {
   id: string
@@ -57,10 +71,10 @@ const StreakIcon = ({ streak, type }: { streak: number; type: string }) => {
   if (streak === 0 || type === 'none') return null
 
   if (type === 'win' && streak >= 3) {
-    return <Flame size={18} color="#ef4444" />
+    return <Icon name="Flame" size={18} color="#ef4444" />
   }
   if (type === 'lose' && streak >= 3) {
-    return <TrendingDown size={18} color="#6b7280" />
+    return <Icon name="TrendingDown" size={18} color="#6b7280" />
   }
   return null
 }
@@ -88,21 +102,21 @@ const RankIcon = ({ rank }: { rank: number }) => {
   if (rank === 1) {
     return (
       <View className="rank-badge rank-gold">
-        <Crown size={16} color="#ffffff" />
+        <Icon name="Crown" size={16} color="#ffffff" />
       </View>
     )
   }
   if (rank === 2) {
     return (
       <View className="rank-badge rank-silver">
-        <Medal size={16} color="#ffffff" />
+        <Icon name="Medal" size={16} color="#ffffff" />
       </View>
     )
   }
   if (rank === 3) {
     return (
       <View className="rank-badge rank-bronze">
-        <Medal size={16} color="#ffffff" />
+        <Icon name="Medal" size={16} color="#ffffff" />
       </View>
     )
   }
@@ -255,7 +269,7 @@ export default function StatsPage() {
       {summary && (
         <View className="summary-card">
           <View className="summary-header">
-            <Trophy size={28} color="#ffffff" />
+            <Icon name="Trophy" size={28} color="#ffffff" />
             <Text className="summary-title">赛季总结</Text>
           </View>
           <View className="summary-stats">
@@ -277,7 +291,7 @@ export default function StatsPage() {
             <View className="best-partner-section">
               <View className="best-partner-divider" />
               <View className="best-partner-header">
-                <Users size={24} color="#fbbf24" />
+                <Icon name="Users" size={24} color="#fbbf24" />
                 <Text className="best-partner-title">最佳搭档</Text>
               </View>
               <View className="best-partner-content">
@@ -372,7 +386,7 @@ export default function StatsPage() {
       {partnerStats.length > 0 && (
         <View className="partner-card">
           <View className="partner-header">
-            <Users size={28} color="#fbbf24" />
+            <Icon name="Users" size={28} color="#fbbf24" />
             <Text className="partner-title">搭档统计</Text>
           </View>
           

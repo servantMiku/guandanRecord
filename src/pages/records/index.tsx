@@ -2,8 +2,21 @@ import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
-import { Trophy, Calendar, Filter, Trash2, Edit } from 'lucide-react'
 import './index.css'
+
+// 图标组件 - 使用 Unicode 字符
+const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?: string }) => {
+  const icons: Record<string, string> = {
+    Trophy: '🏆',
+    Calendar: '📅',
+    Filter: '🔍',
+    Trash2: '🗑',
+    Edit: '✎',
+  }
+  return (
+    <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
+  )
+}
 
 type Season = {
   id: string
@@ -230,7 +243,7 @@ export default function RecordsPage() {
           </View>
         ) : matches.length === 0 ? (
           <View className="empty-container">
-            <Trophy size={64} color="rgba(255,255,255,0.2)" />
+            <Icon name="Trophy" size={64} color="rgba(255,255,255,0.2)" />
             <Text className="empty-text">暂无战绩记录</Text>
             <Text className="empty-hint">选择一个赛季查看战绩</Text>
           </View>
@@ -255,7 +268,7 @@ export default function RecordsPage() {
                   {/* 顶部：时间和操作按钮 */}
                   <View className="match-header">
                     <View className="match-date-wrapper">
-                      <Calendar size={18} color="#fbbf24" />
+                      <Icon name="Calendar" size={18} color="#fbbf24" />
                       <Text className="match-date">{formatDate(match.created_at || match.createdAt)}</Text>
                       <Text className="match-number">第{matchNumber}场</Text>
                     </View>
@@ -264,13 +277,13 @@ export default function RecordsPage() {
                         className="action-btn action-btn-edit"
                         onClick={(e) => handleEditMatch(match.id, match.season_id || match.seasonId, e)}
                       >
-                        <Edit size={16} color="#ffffff" />
+                        <Icon name="Edit" size={16} color="#ffffff" />
                       </View>
                       <View
                         className="action-btn action-btn-delete"
                         onClick={(e) => handleDeleteMatch(match.id, e)}
                       >
-                        <Trash2 size={16} color="#ffffff" />
+                        <Icon name="Trash2" size={16} color="#ffffff" />
                       </View>
                     </View>
                   </View>

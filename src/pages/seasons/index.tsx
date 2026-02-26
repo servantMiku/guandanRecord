@@ -2,8 +2,23 @@ import { View, Text, Input, Picker } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
-import { Plus, Calendar, X, Trophy, Clock, Edit, CheckCircle } from 'lucide-react'
 import './index.css'
+
+// 图标组件 - 使用 Unicode 字符
+const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?: string }) => {
+  const icons: Record<string, string> = {
+    Plus: '＋',
+    Calendar: '📅',
+    X: '✕',
+    Trophy: '🏆',
+    Clock: '⏰',
+    Edit: '✎',
+    CheckCircle: '✓',
+  }
+  return (
+    <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
+  )
+}
 
 type Season = {
   id: string
@@ -196,7 +211,7 @@ export default function SeasonsPage() {
       <View className="header">
         <Text className="header-title">赛季管理</Text>
         <View className="create-btn" onClick={handleCreate}>
-          <Plus size={20} color="#ffffff" />
+          <Icon name="Plus" size={20} color="#ffffff" />
           <Text className="create-btn-text">新建</Text>
         </View>
       </View>
@@ -223,7 +238,7 @@ export default function SeasonsPage() {
               <Picker mode="date" value={form.startDate} onChange={handleStartDateChange}>
                 <View className="date-picker">
                   <Text className="date-text">{form.startDate}</Text>
-                  <Calendar size={24} color="#f472b6" />
+                  <Icon name="Calendar" size={24} color="#f472b6" />
                 </View>
               </Picker>
             </View>
@@ -237,24 +252,24 @@ export default function SeasonsPage() {
                     <Text className={`date-text ${form.endDate ? '' : 'date-text-empty'}`}>
                       {form.endDate || '点击选择日期'}
                     </Text>
-                    <Calendar size={24} color="#f472b6" />
+                    <Icon name="Calendar" size={24} color="#f472b6" />
                   </View>
                 </Picker>
                 {form.endDate && (
                   <View className="clear-date-btn" onClick={handleClearEndDate}>
-                    <X size={20} color="#ffffff" />
+                    <Icon name="X" size={20} color="#ffffff" />
                   </View>
                 )}
               </View>
               {!form.endDate && (
                 <View className="status-badge status-active">
-                  <Clock size={16} color="#22c55e" />
+                  <Icon name="Clock" size={16} color="#22c55e" />
                   <Text className="status-text">赛季进行中</Text>
                 </View>
               )}
               {form.endDate && (
                 <View className="status-badge status-ended">
-                  <Trophy size={16} color="#f59e0b" />
+                  <Icon name="Trophy" size={16} color="#f59e0b" />
                   <Text className="status-text">已设置结束日期</Text>
                 </View>
               )}
@@ -287,7 +302,7 @@ export default function SeasonsPage() {
                   </View>
                 </View>
                 <View className="season-date">
-                  <Calendar size={20} color="#ffffff" />
+                  <Icon name="Calendar" size={20} color="#ffffff" />
                   <Text className="season-date-text">{season.startDate} - 进行中</Text>
                 </View>
                 <View className="season-actions">
@@ -295,21 +310,21 @@ export default function SeasonsPage() {
                     className="season-action season-action-end"
                     onClick={() => handleEndSeason(season)}
                   >
-                    <CheckCircle size={20} color="#ffffff" />
+                    <Icon name="CheckCircle" size={20} color="#ffffff" />
                     <Text className="season-action-text">结束</Text>
                   </View>
                   <View
                     className="season-action"
                     onClick={() => handleEdit(season)}
                   >
-                    <Edit size={20} color="#ffffff" />
+                    <Icon name="Edit" size={20} color="#ffffff" />
                     <Text className="season-action-text">编辑</Text>
                   </View>
                   <View
                     className="season-action season-action-delete"
                     onClick={() => handleDelete(season.id)}
                   >
-                    <X size={20} color="#ffffff" />
+                    <Icon name="X" size={20} color="#ffffff" />
                     <Text className="season-action-text">删除</Text>
                   </View>
                 </View>
@@ -341,7 +356,7 @@ export default function SeasonsPage() {
 
         {seasons.length === 0 && !loading && (
           <View className="empty-container">
-            <Calendar size={64} color="rgba(255,255,255,0.2)" />
+            <Icon name="Calendar" size={64} color="rgba(255,255,255,0.2)" />
             <Text className="empty-text">暂无赛季</Text>
             <Text className="empty-hint">点击上方&quot;新建&quot;创建第一个赛季</Text>
           </View>
