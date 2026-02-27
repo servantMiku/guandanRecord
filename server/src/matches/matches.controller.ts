@@ -126,9 +126,12 @@ export class MatchesController {
       is_deleted: false
     }
     
-    // 如果提供了时间，使用提供的时间
+    // 如果提供了时间，使用提供的时间（将本地时间转换为带时区的 ISO 格式）
     if (body.matchTime) {
-      insertData.created_at = new Date(body.matchTime).toISOString()
+      // 前端发送的格式是 YYYY-MM-DDTHH:mm，需要确保按本地时间解析
+      // 通过添加秒和时区信息，确保正确转换为 UTC
+      const localDateTime = body.matchTime + ':00+08:00' // 假设是北京时间
+      insertData.created_at = new Date(localDateTime).toISOString()
     }
     
     const { data, error } = await client
@@ -202,9 +205,12 @@ export class MatchesController {
       updated_at: new Date().toISOString()
     }
     
-    // 如果提供了时间，更新创建时间
+    // 如果提供了时间，更新创建时间（将本地时间转换为带时区的 ISO 格式）
     if (body.matchTime) {
-      updateData.created_at = new Date(body.matchTime).toISOString()
+      // 前端发送的格式是 YYYY-MM-DDTHH:mm，需要确保按本地时间解析
+      // 通过添加秒和时区信息，确保正确转换为 UTC
+      const localDateTime = body.matchTime + ':00+08:00' // 假设是北京时间
+      updateData.created_at = new Date(localDateTime).toISOString()
     }
 
     // 更新战绩
