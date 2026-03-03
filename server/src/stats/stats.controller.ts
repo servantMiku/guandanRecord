@@ -7,16 +7,10 @@ export class StatsController {
   constructor(private readonly statsService: StatsService) {}
 
   @Get('season')
-  async getSeasonStats(
-    @Query('seasonId') seasonId: string,
-    @Query('minMatchesThreshold') minMatchesThreshold?: string
-  ) {
+  async getSeasonStats(@Query('seasonId') seasonId: string) {
     if (!seasonId) {
       return { code: 400, msg: '缺少 seasonId 参数', data: null }
     }
-    
-    // 解析最小场次门槛，默认值为3
-    const MIN_MATCHES_THRESHOLD = minMatchesThreshold ? parseInt(minMatchesThreshold, 10) : 3
 
     const client = getSupabaseClient()
 
@@ -158,9 +152,10 @@ export class StatsController {
 
     // 转换搭档统计为数组并排序
     // 排序规则：
-    // 1. 场次 >= minMatchesThreshold 的搭档优先（设置最小场次门槛，避免只合作1-2场的偶然高分）
+    // 1. 场次 >= 3 的搭档优先（设置最小场次门槛，避免只合作1-2场的偶然高分）
     // 2. 按胜率降序
     // 3. 胜率相同按胜场降序
+    const MIN_MATCHES_THRESHOLD = 3 // 最小场次门槛
     
     const partnerStats = Array.from(partnerStatsMap.values()).sort((a, b) => {
       // 先按是否达到门槛排序（达到门槛的优先）

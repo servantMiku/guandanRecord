@@ -62,57 +62,6 @@
   color: #ffffff;
 }
 
-/* 最小场次门槛设置 */
-.threshold-setting {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.threshold-label {
-  display: block;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 24px;
-  margin-bottom: 12px;
-}
-
-.threshold-input-row {
-  display: flex;
-  align-items: center;
-}
-
-.threshold-input {
-  width: 100px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  color: #ffffff;
-  font-size: 32px;
-  text-align: center;
-}
-
-.threshold-unit {
-  display: block;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 28px;
-  margin-left: 12px;
-  margin-right: 24px;
-}
-
-.threshold-apply-btn {
-  background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
-  padding: 16px 32px;
-  border-radius: 12px;
-}
-
-.threshold-apply-text {
-  display: block;
-  color: #ffffff;
-  font-size: 26px;
-  font-weight: 500;
-}
-
 /* 汇总卡片 */
 .summary-card {
   margin: 24px;
