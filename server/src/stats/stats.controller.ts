@@ -150,15 +150,30 @@ export class StatsController {
       }
     }
 
-    // 转换搭档统计为数组并按胜率、胜场排序
+    // 转换搭档统计为数组并排序
+    // 排序规则：
+    // 1. 场次 >= 3 的搭档优先（设置最小场次门槛，避免只合作1-2场的偶然高分）
+    // 2. 按胜率降序
+    // 3. 胜率相同按胜场降序
+    const MIN_MATCHES_THRESHOLD = 3 // 最小场次门槛
+    
     const partnerStats = Array.from(partnerStatsMap.values()).sort((a, b) => {
+      // 先按是否达到门槛排序（达到门槛的优先）
+      const aQualified = a.totalMatches >= MIN_MATCHES_THRESHOLD ? 1 : 0
+      const bQualified = b.totalMatches >= MIN_MATCHES_THRESHOLD ? 1 : 0
+      if (aQualified !== bQualified) return bQualified - aQualified
+      
+      // 再按胜率排序
       const winRateDiff = parseFloat(b.winRate) - parseFloat(a.winRate)
       if (winRateDiff !== 0) return winRateDiff
+      
+      // 胜率相同按胜场排序
       return b.wins - a.wins
     })
 
-    // 找出最佳搭档
-    const bestPartner = partnerStats.length > 0 ? partnerStats[0] : null
+    // 找出最佳搭档（必须达到最小场次门槛）
+    const qualifiedPartners = partnerStats.filter(p => p.totalMatches >= MIN_MATCHES_THRESHOLD)
+    const bestPartner = qualifiedPartners.length > 0 ? qualifiedPartners[0] : null
 
     // 构建玩家两两胜率矩阵
     const playerPairMatrix: Array<{
