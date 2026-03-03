@@ -1,4 +1,4 @@
-import { View, Text } from '@tarojs/components'
+import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
@@ -137,6 +137,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true)
   const [sortField, setSortField] = useState<SortField>('winRate')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [minMatchesThreshold, setMinMatchesThreshold] = useState<number>(3) // 最小场次门槛
 
   const fetchSeasons = async () => {
     try {
@@ -160,14 +161,17 @@ export default function StatsPage() {
     }
   }
 
-  const fetchStats = async (seasonId: string) => {
+  const fetchStats = async (seasonId: string, threshold?: number) => {
     if (!seasonId) return
 
     try {
       setLoading(true)
       const res = await Network.request({
         url: `/api/stats/season`,
-        data: { seasonId }
+        data: { 
+          seasonId,
+          minMatchesThreshold: threshold !== undefined ? threshold : minMatchesThreshold
+        }
       })
       if (res.data && res.data.data) {
         setStats(res.data.data.playerStats || [])
@@ -263,6 +267,31 @@ export default function StatsPage() {
             ))}
           </View>
         )}
+      </View>
+
+      {/* 最小场次门槛设置 */}
+      <View className="threshold-setting">
+        <Text className="threshold-label">最佳搭档最小场次门槛</Text>
+        <View className="threshold-input-row">
+          <Input
+            className="threshold-input"
+            type="number"
+            value={String(minMatchesThreshold)}
+            onInput={(e) => {
+              const value = parseInt(e.detail.value, 10)
+              if (!isNaN(value) && value >= 1 && value <= 20) {
+                setMinMatchesThreshold(value)
+              }
+            }}
+          />
+          <Text className="threshold-unit">场</Text>
+          <View 
+            className="threshold-apply-btn"
+            onClick={() => fetchStats(selectedSeasonId, minMatchesThreshold)}
+          >
+            <Text className="threshold-apply-text">应用</Text>
+          </View>
+        </View>
       </View>
 
       {/* 汇总信息 */}
