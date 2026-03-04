@@ -12,6 +12,7 @@ const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?:
     Plus: '＋',
     Users: '👥',
     TrendingUp: '📈',
+    Shuffle: '🔀',
   }
   return (
     <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
@@ -205,8 +206,15 @@ export default function IndexPage() {
             <Text className="quick-btn-text">录入战绩</Text>
           </View>
           <View
+            className="quick-btn quick-btn-arrange"
+            onClick={() => navigateTo('/pages/arrange/index')}
+          >
+            <Icon name="Shuffle" size={24} color="#ffffff" />
+            <Text className="quick-btn-text">安排对阵</Text>
+          </View>
+          <View
             className="quick-btn quick-btn-season"
-            onClick={() => navigateTo('/pages/seasons/index')}
+            onClick={() => switchTab('/pages/seasons/index')}
           >
             <Icon name="Calendar" size={24} color="#ffffff" />
             <Text className="quick-btn-text">赛季管理</Text>

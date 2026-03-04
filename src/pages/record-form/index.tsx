@@ -35,7 +35,7 @@ const CARD_LEVELS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'
 
 export default function RecordFormPage() {
   const router = useRouter()
-  const { seasonId, matchId } = router.params
+  const { seasonId, matchId, team1p1, team1p2, team2p1, team2p2 } = router.params
 
   const [season, setSeason] = useState<Season | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
@@ -44,10 +44,10 @@ export default function RecordFormPage() {
   const isEditMode = !!matchId // 是否为编辑模式
 
   // 表单状态
-  const [team1Player1, setTeam1Player1] = useState<string>('')
-  const [team1Player2, setTeam1Player2] = useState<string>('')
-  const [team2Player1, setTeam2Player1] = useState<string>('')
-  const [team2Player2, setTeam2Player2] = useState<string>('')
+  const [team1Player1, setTeam1Player1] = useState<string>(team1p1 || '')
+  const [team1Player2, setTeam1Player2] = useState<string>(team1p2 || '')
+  const [team2Player1, setTeam2Player1] = useState<string>(team2p1 || '')
+  const [team2Player2, setTeam2Player2] = useState<string>(team2p2 || '')
   const [team1Score, setTeam1Score] = useState<string>('')
   const [team2Score, setTeam2Score] = useState<string>('')
   const [remark, setRemark] = useState<string>('')
@@ -121,11 +121,11 @@ export default function RecordFormPage() {
 
   useEffect(() => {
     fetchData()
-    // 新增模式下清空草稿，确保空白状态
-    if (!matchId) {
+    // 新增模式下清空草稿，确保空白状态（但如果有URL参数预填充则不清空）
+    if (!matchId && !team1p1) {
       clearDraft()
     }
-  }, [fetchData, matchId])
+  }, [fetchData, matchId, team1p1])
 
   const saveDraft = () => {
     const draft = {
@@ -326,7 +326,7 @@ export default function RecordFormPage() {
         <View onClick={() => Taro.navigateBack()}>
           <Icon name="ArrowLeft" size={24} color="#ffffff" />
         </View>
-        <Text className="header-title">{isEditMode ? '编辑战绩' : '录入战绩'}</Text>
+        <Text className="header-title">{isEditMode ? '编辑战绩' : team1p1 ? '使用推荐对阵' : '录入战绩'}</Text>
         {season && (
           <Text className="header-season">{season.name}</Text>
         )}

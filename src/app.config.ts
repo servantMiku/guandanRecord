@@ -6,7 +6,8 @@ export default {
     'pages/profile/index',
     'pages/seasons/index',
     'pages/record-detail/index',
-    'pages/record-form/index'
+    'pages/record-form/index',
+    'pages/arrange/index'
   ],
   window: {
     backgroundTextStyle: 'light',
