@@ -65,6 +65,7 @@ export default function ArrangeMatchPage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [playerStats, setPlayerStats] = useState<PlayerStats[]>([])
   const [partnerStats, setPartnerStats] = useState<PartnerStats[]>([])
+  const [currentSeason, setCurrentSeason] = useState<{id: string; name: string} | null>(null)
   const [suggestion, setSuggestion] = useState<MatchSuggestion | null>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -81,6 +82,7 @@ export default function ArrangeMatchPage() {
       // 获取当前活跃赛季
       const seasonRes = await Network.request({ url: '/api/seasons/active' })
       const activeSeason = seasonRes.data?.data?.[0]
+      setCurrentSeason(activeSeason || null)
 
       if (!activeSeason) {
         Taro.showToast({ title: '没有活跃赛季', icon: 'none' })
@@ -283,16 +285,15 @@ export default function ArrangeMatchPage() {
     if (!suggestion) return
 
     const { team1, team2 } = suggestion
-    const seasonRes = Taro.getStorageSync('current_season')
-    
-    if (!seasonRes) {
+
+    if (!currentSeason) {
       Taro.showToast({ title: '没有活跃赛季', icon: 'none' })
       return
     }
 
     // 跳转到战绩录入页面，携带预设的玩家参数
     const params = new URLSearchParams({
-      seasonId: seasonRes.id,
+      seasonId: currentSeason.id,
       team1p1: team1.player1.id,
       team1p2: team1.player2.id,
       team2p1: team2.player1.id,
