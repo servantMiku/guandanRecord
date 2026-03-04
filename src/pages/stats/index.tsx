@@ -12,6 +12,8 @@ const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?:
     TrendingDown: '📉',
     Crown: '👑',
     Medal: '🥇',
+    MedalSilver: '🥈',
+    MedalBronze: '🥉',
     Users: '👥',
   }
   return (
@@ -109,14 +111,14 @@ const RankIcon = ({ rank }: { rank: number }) => {
   if (rank === 2) {
     return (
       <View className="rank-badge rank-silver">
-        <Icon name="Medal" size={16} color="#ffffff" />
+        <Icon name="MedalSilver" size={16} color="#ffffff" />
       </View>
     )
   }
   if (rank === 3) {
     return (
       <View className="rank-badge rank-bronze">
-        <Icon name="Medal" size={16} color="#ffffff" />
+        <Icon name="MedalBronze" size={16} color="#ffffff" />
       </View>
     )
   }
