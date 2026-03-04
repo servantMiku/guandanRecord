@@ -178,8 +178,8 @@ export default function ArrangeMatchPage() {
 
     // 模拟算法思考时间
     setTimeout(() => {
-      const suggestion = generateOptimalMatch()
-      setSuggestion(suggestion)
+      const newSuggestion = generateOptimalMatch()
+      setSuggestion(newSuggestion)
       setGenerating(false)
     }, 500)
   }
@@ -307,6 +307,7 @@ export default function ArrangeMatchPage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useDidShow(() => {
