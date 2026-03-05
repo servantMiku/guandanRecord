@@ -15,6 +15,7 @@ export class MatchesController {
       .from('matches')
       .select('*')
       .eq('is_deleted', false)
+      .order('match_time', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
 
     // 按赛季筛选
@@ -54,11 +55,12 @@ export class MatchesController {
   async getRecentMatches(@Query('limit') limit: string = '5', @Query('seasonId') seasonId?: string) {
     const client = getSupabaseClient()
 
-    // 构建查询
+    // 构建查询 - 先按比赛时间排序，再按录入时间排序
     let query = client
       .from('matches')
       .select('*')
       .eq('is_deleted', false)
+      .order('match_time', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       .limit(parseInt(limit))
 
@@ -126,12 +128,10 @@ export class MatchesController {
       is_deleted: false
     }
     
-    // 如果提供了时间，使用提供的时间（将本地时间转换为带时区的 ISO 格式）
+    // 如果提供了比赛时间，存储到 match_time 字段
     if (body.matchTime) {
-      // 前端发送的格式是 YYYY-MM-DDTHH:mm，需要确保按本地时间解析
-      // 通过添加秒和时区信息，确保正确转换为 UTC
-      const localDateTime = body.matchTime + ':00+08:00' // 假设是北京时间
-      insertData.created_at = new Date(localDateTime).toISOString()
+      const localDateTime = body.matchTime + ':00+08:00'
+      insertData.match_time = new Date(localDateTime).toISOString()
     }
     
     const { data, error } = await client
@@ -205,12 +205,10 @@ export class MatchesController {
       updated_at: new Date().toISOString()
     }
     
-    // 如果提供了时间，更新创建时间（将本地时间转换为带时区的 ISO 格式）
+    // 如果提供了比赛时间，更新 match_time 字段
     if (body.matchTime) {
-      // 前端发送的格式是 YYYY-MM-DDTHH:mm，需要确保按本地时间解析
-      // 通过添加秒和时区信息，确保正确转换为 UTC
-      const localDateTime = body.matchTime + ':00+08:00' // 假设是北京时间
-      updateData.created_at = new Date(localDateTime).toISOString()
+      const localDateTime = body.matchTime + ':00+08:00'
+      updateData.match_time = new Date(localDateTime).toISOString()
     }
 
     // 更新战绩
