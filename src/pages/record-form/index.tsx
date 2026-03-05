@@ -290,7 +290,8 @@ export default function RecordFormPage() {
       }
 
       setTimeout(() => {
-        Taro.navigateBack()
+        // 返回首页（避免返回安排对阵页面）
+        Taro.switchTab({ url: '/pages/index/index' })
       }, 1500)
     } catch (error) {
       console.error('提交失败:', error)
