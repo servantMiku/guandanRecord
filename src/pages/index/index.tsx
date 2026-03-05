@@ -92,11 +92,15 @@ export default function IndexPage() {
         }
       })
       if (matchRes.data && matchRes.data.data) {
-        // 按创建时间倒序排序，确保顺序一致
+        // 按创建时间倒序排序，时间相同则按id倒序（确保稳定性）
         const sortedMatches = matchRes.data.data.sort((a: Match, b: Match) => {
           const dateA = new Date(a.created_at || a.createdAt || 0).getTime()
           const dateB = new Date(b.created_at || b.createdAt || 0).getTime()
-          return dateB - dateA
+          if (dateB !== dateA) {
+            return dateB - dateA
+          }
+          // 时间相同则按id倒序
+          return (b.id || '').localeCompare(a.id || '')
         })
         setRecentMatches(sortedMatches)
       }
