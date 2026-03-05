@@ -92,7 +92,13 @@ export default function IndexPage() {
         }
       })
       if (matchRes.data && matchRes.data.data) {
-        setRecentMatches(matchRes.data.data)
+        // 按创建时间倒序排序，确保顺序一致
+        const sortedMatches = matchRes.data.data.sort((a: Match, b: Match) => {
+          const dateA = new Date(a.created_at || a.createdAt || 0).getTime()
+          const dateB = new Date(b.created_at || b.createdAt || 0).getTime()
+          return dateB - dateA
+        })
+        setRecentMatches(sortedMatches)
       }
     } catch (error) {
       console.error('获取数据失败:', error)

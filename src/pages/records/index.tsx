@@ -99,7 +99,13 @@ export default function RecordsPage() {
         data: { seasonId }
       })
       if (res.data && res.data.data) {
-        setMatches(res.data.data)
+        // 按创建时间倒序排序
+        const sortedMatches = res.data.data.sort((a: Match, b: Match) => {
+          const dateA = new Date(a.created_at || a.createdAt || 0).getTime()
+          const dateB = new Date(b.created_at || b.createdAt || 0).getTime()
+          return dateB - dateA
+        })
+        setMatches(sortedMatches)
       }
     } catch (error) {
       console.error('获取战绩列表失败:', error)
