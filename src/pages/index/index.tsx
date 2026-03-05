@@ -60,9 +60,12 @@ export default function IndexPage() {
 
   const fetchData = async () => {
     try {
+      setLoading(true)
+      
       // 获取玩家列表
       const playersRes = await Network.request({
-        url: '/api/players'
+        url: '/api/players',
+        data: { _t: Date.now() }
       })
       if (playersRes.data && playersRes.data.data) {
         setPlayers(playersRes.data.data)
@@ -70,7 +73,8 @@ export default function IndexPage() {
 
       // 获取当前活跃赛季
       const res = await Network.request({
-        url: '/api/seasons/active'
+        url: '/api/seasons/active',
+        data: { _t: Date.now() }
       })
       let activeSeason: Season | null = null
       if (res.data && res.data.data && res.data.data.length > 0) {
@@ -83,7 +87,8 @@ export default function IndexPage() {
         url: '/api/matches/recent',
         data: { 
           limit: '3',
-          seasonId: activeSeason?.id 
+          seasonId: activeSeason?.id,
+          _t: Date.now() // 添加时间戳避免缓存
         }
       })
       if (matchRes.data && matchRes.data.data) {
