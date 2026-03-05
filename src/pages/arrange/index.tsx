@@ -67,6 +67,7 @@ export default function ArrangeMatchPage() {
   const [partnerStats, setPartnerStats] = useState<PartnerStats[]>([])
   const [currentSeason, setCurrentSeason] = useState<{id: string; name: string} | null>(null)
   const [suggestion, setSuggestion] = useState<MatchSuggestion | null>(null)
+  const [isRestored, setIsRestored] = useState(false)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
 
@@ -180,6 +181,10 @@ export default function ArrangeMatchPage() {
     setTimeout(() => {
       const newSuggestion = generateOptimalMatch()
       setSuggestion(newSuggestion)
+      setIsRestored(false)
+      // 保存到本地存储，便于赛后录入战绩
+      Taro.setStorageSync('arrange_suggestion', newSuggestion)
+      Taro.setStorageSync('arrange_timestamp', Date.now())
       setGenerating(false)
     }, 500)
   }
@@ -291,6 +296,10 @@ export default function ArrangeMatchPage() {
       return
     }
 
+    // 清除暂存的对阵方案
+    Taro.removeStorageSync('arrange_suggestion')
+    Taro.removeStorageSync('arrange_timestamp')
+
     // 跳转到战绩录入页面，携带预设的玩家参数
     const params = new URLSearchParams({
       seasonId: currentSeason.id,
@@ -312,6 +321,12 @@ export default function ArrangeMatchPage() {
 
   useDidShow(() => {
     fetchData()
+    // 恢复暂存的对阵方案
+    const savedSuggestion = Taro.getStorageSync('arrange_suggestion')
+    if (savedSuggestion) {
+      setSuggestion(savedSuggestion)
+      setIsRestored(true)
+    }
   })
 
   if (loading) {
@@ -391,6 +406,11 @@ export default function ArrangeMatchPage() {
             <View className="suggestion-header">
               <Icon name="Users" size={24} color="#8b5cf6" />
               <Text className="suggestion-title">推荐对阵</Text>
+              {isRestored && (
+                <View className="restored-badge">
+                  <Text className="restored-text">已暂存</Text>
+                </View>
+              )}
             </View>
 
             <View className="match-preview">
