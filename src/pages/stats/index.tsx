@@ -309,35 +309,23 @@ export default function StatsPage() {
               </View>
             </View>
           )}
-        </View>
-      )}
-
-      {/* 最长连胜统计 */}
-      {summary && summary.longestWinStreak && (
-        <View className="streak-card">
-          <View className="streak-header">
-            <Icon name="Flame" size={28} color="#ef4444" />
-            <Text className="streak-title">最长连胜纪录</Text>
-          </View>
           
-          <View className="streak-content">
-            {/* 最长连胜 */}
-            {summary.longestWinStreak && (
-              <View className="streak-item streak-win-item">
-                <View className="streak-badge win-badge">
-                  <Icon name="Flame" size={20} color="#ffffff" />
-                </View>
-                <View className="streak-info-content">
-                  <Text className="streak-label">最长连胜</Text>
-                  <Text className="streak-player">{summary.longestWinStreak.playerName}</Text>
-                </View>
-                <View className="streak-count">
-                  <Text className="streak-number win-number">{summary.longestWinStreak.streak}</Text>
-                  <Text className="streak-unit">场</Text>
+          {/* 最长连胜 */}
+          {summary.longestWinStreak && summary.longestWinStreak.streak > 0 && (
+            <View className="longest-streak-section">
+              <View className="best-partner-divider" />
+              <View className="best-partner-header">
+                <Icon name="Flame" size={24} color="#ef4444" />
+                <Text className="best-partner-title">最长连胜</Text>
+              </View>
+              <View className="best-partner-content">
+                <Text className="best-partner-name">{summary.longestWinStreak.playerName}</Text>
+                <View className="best-partner-stats">
+                  <Text className="best-partner-winrate" style={{ color: '#ef4444' }}>{summary.longestWinStreak.streak}场</Text>
                 </View>
               </View>
-            )}
-          </View>
+            </View>
+          )}
         </View>
       )}
 

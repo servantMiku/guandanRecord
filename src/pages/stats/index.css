@@ -304,6 +304,12 @@
   padding-top: 20px;
 }
 
+/* 最长连胜展示 */
+.longest-streak-section {
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
 .best-partner-divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.3);
