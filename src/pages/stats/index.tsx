@@ -41,6 +41,8 @@ type PlayerStat = {
   winRate: string
   streak: number
   streakType: 'win' | 'lose' | 'none'
+  maxWinStreak: number
+  maxLoseStreak: number
 }
 
 type PartnerStat = {
@@ -141,7 +143,6 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true)
   const [sortField, setSortField] = useState<SortField>('winRate')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
-  const [showLoseStreak, setShowLoseStreak] = useState(false)
 
   const fetchSeasons = async () => {
     try {
@@ -311,20 +312,12 @@ export default function StatsPage() {
         </View>
       )}
 
-      {/* 最长连胜/连败统计 */}
-      {summary && (summary.longestWinStreak || summary.longestLoseStreak) && (
+      {/* 最长连胜统计 */}
+      {summary && summary.longestWinStreak && (
         <View className="streak-card">
           <View className="streak-header">
             <Icon name="Flame" size={28} color="#ef4444" />
-            <Text className="streak-title">连胜/连败纪录</Text>
-            {/* 切换显示/隐藏连败 */}
-            <View 
-              className="toggle-lose-streak"
-              onClick={() => setShowLoseStreak(!showLoseStreak)}
-            >
-              <Icon name={showLoseStreak ? 'EyeOff' : 'Eye'} size={20} color="#9ca3af" />
-              <Text className="toggle-text">{showLoseStreak ? '隐藏' : '显示'}连败</Text>
-            </View>
+            <Text className="streak-title">最长连胜纪录</Text>
           </View>
           
           <View className="streak-content">
@@ -340,23 +333,6 @@ export default function StatsPage() {
                 </View>
                 <View className="streak-count">
                   <Text className="streak-number win-number">{summary.longestWinStreak.streak}</Text>
-                  <Text className="streak-unit">场</Text>
-                </View>
-              </View>
-            )}
-            
-            {/* 最长连败 */}
-            {showLoseStreak && summary.longestLoseStreak && (
-              <View className="streak-item streak-lose-item">
-                <View className="streak-badge lose-badge">
-                  <Icon name="TrendingDown" size={20} color="#ffffff" />
-                </View>
-                <View className="streak-info-content">
-                  <Text className="streak-label">最长连败</Text>
-                  <Text className="streak-player">{summary.longestLoseStreak.playerName}</Text>
-                </View>
-                <View className="streak-count">
-                  <Text className="streak-number lose-number">{summary.longestLoseStreak.streak}</Text>
                   <Text className="streak-unit">场</Text>
                 </View>
               </View>
@@ -383,6 +359,12 @@ export default function StatsPage() {
           </View>
           <View className="table-cell table-cell-right" onClick={() => handleSort('winRate')}>
             <Text className="table-header-text">胜率</Text>
+          </View>
+          <View className="table-cell table-cell-center">
+            <Text className="table-header-text">最长连胜</Text>
+          </View>
+          <View className="table-cell table-cell-center">
+            <Text className="table-header-text">最长连败</Text>
           </View>
         </View>
 
@@ -433,6 +415,20 @@ export default function StatsPage() {
                 <View className="table-cell table-cell-right">
                   <Text className={`table-cell-text ${parseFloat(stat.winRate) >= 60 ? 'win-rate-high' : parseFloat(stat.winRate) >= 40 ? 'win-rate-medium' : 'win-rate-low'}`}>
                     {parseFloat(stat.winRate).toFixed(1)}%
+                  </Text>
+                </View>
+                
+                {/* 最长连胜 */}
+                <View className="table-cell table-cell-center">
+                  <Text className={`table-cell-text ${stat.maxWinStreak >= 3 ? 'streak-highlight-win' : ''}`}>
+                    {stat.maxWinStreak > 0 ? stat.maxWinStreak : '-'}
+                  </Text>
+                </View>
+                
+                {/* 最长连败 */}
+                <View className="table-cell table-cell-center">
+                  <Text className={`table-cell-text ${stat.maxLoseStreak >= 3 ? 'streak-highlight-lose' : ''}`}>
+                    {stat.maxLoseStreak > 0 ? stat.maxLoseStreak : '-'}
                   </Text>
                 </View>
               </View>

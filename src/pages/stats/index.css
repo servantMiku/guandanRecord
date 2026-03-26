@@ -287,6 +287,17 @@
   font-weight: 500;
 }
 
+/* 连胜连败高亮 */
+.streak-highlight-win {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.streak-highlight-lose {
+  color: #6b7280;
+  font-weight: 700;
+}
+
 /* 最佳搭档展示 */
 .best-partner-section {
   margin-top: 24px;

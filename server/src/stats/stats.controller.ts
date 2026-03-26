@@ -45,7 +45,13 @@ export class StatsController {
       .select('*')
 
     // 计算每个玩家的连胜/连败
-    const streakMap = new Map<string, { streak: number; type: 'win' | 'lose' | 'none' }>()
+    // 记录当前状态和最长记录
+    const streakMap = new Map<string, { 
+      currentStreak: number
+      currentType: 'win' | 'lose' | 'none'
+      maxWinStreak: number
+      maxLoseStreak: number
+    }>()
     
     // 计算搭档合作统计数据
     // key: "playerAId_playerBId" (按字母顺序排序，确保唯一性)
@@ -72,21 +78,51 @@ export class StatsController {
         const loserTeam = isTeam1Win ? team2Players : team1Players
 
         for (const playerId of winnerTeam) {
-          const currentStreak = streakMap.get(playerId) || { streak: 0, type: 'none' }
-          if (currentStreak.type === 'win') {
-            streakMap.set(playerId, { streak: currentStreak.streak + 1, type: 'win' })
-          } else {
-            streakMap.set(playerId, { streak: 1, type: 'win' })
+          const current = streakMap.get(playerId) || { 
+            currentStreak: 0, 
+            currentType: 'none' as const,
+            maxWinStreak: 0,
+            maxLoseStreak: 0
           }
+          if (current.currentType === 'win') {
+            current.currentStreak += 1
+          } else {
+            // 连胜中断，更新最大连败记录
+            if (current.currentType === 'lose' && current.currentStreak > current.maxLoseStreak) {
+              current.maxLoseStreak = current.currentStreak
+            }
+            current.currentStreak = 1
+            current.currentType = 'win'
+          }
+          // 更新最大连胜记录
+          if (current.currentStreak > current.maxWinStreak) {
+            current.maxWinStreak = current.currentStreak
+          }
+          streakMap.set(playerId, current)
         }
 
         for (const playerId of loserTeam) {
-          const currentStreak = streakMap.get(playerId) || { streak: 0, type: 'none' }
-          if (currentStreak.type === 'lose') {
-            streakMap.set(playerId, { streak: currentStreak.streak + 1, type: 'lose' })
-          } else {
-            streakMap.set(playerId, { streak: 1, type: 'lose' })
+          const current = streakMap.get(playerId) || { 
+            currentStreak: 0, 
+            currentType: 'none' as const,
+            maxWinStreak: 0,
+            maxLoseStreak: 0
           }
+          if (current.currentType === 'lose') {
+            current.currentStreak += 1
+          } else {
+            // 连败中断，更新最大连胜记录
+            if (current.currentType === 'win' && current.currentStreak > current.maxWinStreak) {
+              current.maxWinStreak = current.currentStreak
+            }
+            current.currentStreak = 1
+            current.currentType = 'lose'
+          }
+          // 更新最大连败记录
+          if (current.currentStreak > current.maxLoseStreak) {
+            current.maxLoseStreak = current.currentStreak
+          }
+          streakMap.set(playerId, current)
         }
 
         // 计算搭档统计
@@ -228,7 +264,12 @@ export class StatsController {
     // 合并玩家名称并转换字段名为 camelCase，添加连胜/连败数据
     const playerStatsWithNames = (playerStats || []).map((stat) => {
       const player = players?.find((p) => p.id === stat.player_id)
-      const streak = streakMap.get(stat.player_id) || { streak: 0, type: 'none' }
+      const streak = streakMap.get(stat.player_id) || { 
+        currentStreak: 0, 
+        currentType: 'none' as const,
+        maxWinStreak: 0,
+        maxLoseStreak: 0
+      }
       return {
         id: stat.id,
         seasonId: stat.season_id,
@@ -237,8 +278,10 @@ export class StatsController {
         totalMatches: stat.total_matches || 0,
         wins: stat.wins || 0,
         winRate: stat.win_rate || '0.00',
-        streak: streak.streak,
-        streakType: streak.type
+        streak: streak.currentStreak,
+        streakType: streak.currentType,
+        maxWinStreak: streak.maxWinStreak,
+        maxLoseStreak: streak.maxLoseStreak
       }
     })
 
@@ -257,11 +300,11 @@ export class StatsController {
     
     for (const [playerId, streakInfo] of streakMap.entries()) {
       const playerName = players?.find(p => p.id === playerId)?.name || '未知'
-      if (streakInfo.type === 'win' && streakInfo.streak > longestWinStreak.streak) {
-        longestWinStreak = { playerName, streak: streakInfo.streak }
+      if (streakInfo.maxWinStreak > longestWinStreak.streak) {
+        longestWinStreak = { playerName, streak: streakInfo.maxWinStreak }
       }
-      if (streakInfo.type === 'lose' && streakInfo.streak > longestLoseStreak.streak) {
-        longestLoseStreak = { playerName, streak: streakInfo.streak }
+      if (streakInfo.maxLoseStreak > longestLoseStreak.streak) {
+        longestLoseStreak = { playerName, streak: streakInfo.maxLoseStreak }
       }
     }
 
