@@ -294,7 +294,7 @@ export default function StatsPage() {
                   </View>
                 )}
               </View>
-              <Text className="summary-label">{selectedSeasonId === 'all' ? 'GOAT' : '最佳玩家'}</Text>
+              <Text className="summary-label">最佳玩家</Text>
             </View>
             <View className="summary-stat">
               <Text className="summary-value">{summary.bestWinRate}</Text>
