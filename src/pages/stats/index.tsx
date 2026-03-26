@@ -321,7 +321,7 @@ export default function StatsPage() {
               <View className="best-partner-content">
                 <Text className="best-partner-name">{summary.longestWinStreak.playerName}</Text>
                 <View className="best-partner-stats">
-                  <Text className="best-partner-winrate" style={{ color: '#ef4444' }}>{summary.longestWinStreak.streak}场</Text>
+                  <Text className="best-partner-winrate" style={{ color: '#ffffff' }}>{summary.longestWinStreak.streak}场</Text>
                 </View>
               </View>
             </View>
