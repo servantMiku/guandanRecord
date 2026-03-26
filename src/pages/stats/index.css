@@ -327,6 +327,23 @@
   letter-spacing: 1px;
 }
 
+/* 小尺寸GOAT徽章 */
+.goat-badge-small {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-left: 8px;
+  box-shadow: 0 2px 6px rgba(251, 191, 36, 0.3);
+}
+
+.goat-text-small {
+  display: block;
+  color: #1e293b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
 .best-partner-divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.3);
