@@ -251,6 +251,20 @@ export class StatsController {
         })
       : null
 
+    // 找出最长连胜和最长连败
+    let longestWinStreak = { playerName: '', streak: 0 }
+    let longestLoseStreak = { playerName: '', streak: 0 }
+    
+    for (const [playerId, streakInfo] of streakMap.entries()) {
+      const playerName = players?.find(p => p.id === playerId)?.name || '未知'
+      if (streakInfo.type === 'win' && streakInfo.streak > longestWinStreak.streak) {
+        longestWinStreak = { playerName, streak: streakInfo.streak }
+      }
+      if (streakInfo.type === 'lose' && streakInfo.streak > longestLoseStreak.streak) {
+        longestLoseStreak = { playerName, streak: streakInfo.streak }
+      }
+    }
+
     // 赛季概览
     const summary = {
       seasonId: season.id,
@@ -260,7 +274,9 @@ export class StatsController {
       bestWinRate: bestPlayer ? `${bestPlayer.winRate}%` : '0.00%',
       bestPartner: bestPartner ? `${bestPartner.player1Name} + ${bestPartner.player2Name}` : '暂无',
       bestPartnerWinRate: bestPartner ? `${bestPartner.winRate}%` : '0.00%',
-      bestPartnerWins: bestPartner?.wins || 0
+      bestPartnerWins: bestPartner?.wins || 0,
+      longestWinStreak: longestWinStreak.streak > 0 ? longestWinStreak : null,
+      longestLoseStreak: longestLoseStreak.streak > 0 ? longestLoseStreak : null
     }
 
     return {

@@ -15,6 +15,8 @@ const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?:
     MedalSilver: '🥈',
     MedalBronze: '🥉',
     Users: '👥',
+    Eye: '👁',
+    EyeOff: '🙈',
   }
   return (
     <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
@@ -139,6 +141,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true)
   const [sortField, setSortField] = useState<SortField>('winRate')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [showLoseStreak, setShowLoseStreak] = useState(false)
 
   const fetchSeasons = async () => {
     try {
@@ -383,6 +386,60 @@ export default function StatsPage() {
           </View>
         )}
       </View>
+
+      {/* 最长连胜/连败统计 */}
+      {summary && (summary.longestWinStreak || summary.longestLoseStreak) && (
+        <View className="streak-card">
+          <View className="streak-header">
+            <Icon name="Flame" size={28} color="#ef4444" />
+            <Text className="streak-title">连胜/连败纪录</Text>
+            {/* 切换显示/隐藏连败 */}
+            <View 
+              className="toggle-lose-streak"
+              onClick={() => setShowLoseStreak(!showLoseStreak)}
+            >
+              <Icon name={showLoseStreak ? 'EyeOff' : 'Eye'} size={20} color="#9ca3af" />
+              <Text className="toggle-text">{showLoseStreak ? '隐藏' : '显示'}连败</Text>
+            </View>
+          </View>
+          
+          <View className="streak-content">
+            {/* 最长连胜 */}
+            {summary.longestWinStreak && (
+              <View className="streak-item streak-win-item">
+                <View className="streak-badge win-badge">
+                  <Icon name="Flame" size={20} color="#ffffff" />
+                </View>
+                <View className="streak-info-content">
+                  <Text className="streak-label">最长连胜</Text>
+                  <Text className="streak-player">{summary.longestWinStreak.playerName}</Text>
+                </View>
+                <View className="streak-count">
+                  <Text className="streak-number win-number">{summary.longestWinStreak.streak}</Text>
+                  <Text className="streak-unit">场</Text>
+                </View>
+              </View>
+            )}
+            
+            {/* 最长连败 */}
+            {showLoseStreak && summary.longestLoseStreak && (
+              <View className="streak-item streak-lose-item">
+                <View className="streak-badge lose-badge">
+                  <Icon name="TrendingDown" size={20} color="#ffffff" />
+                </View>
+                <View className="streak-info-content">
+                  <Text className="streak-label">最长连败</Text>
+                  <Text className="streak-player">{summary.longestLoseStreak.playerName}</Text>
+                </View>
+                <View className="streak-count">
+                  <Text className="streak-number lose-number">{summary.longestLoseStreak.streak}</Text>
+                  <Text className="streak-unit">场</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
 
       {/* 搭档统计表格 */}
       {partnerStats.length > 0 && (
