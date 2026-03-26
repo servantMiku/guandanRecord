@@ -307,7 +307,7 @@ export default function StatsPage() {
               <View className="best-partner-divider" />
               <View className="best-partner-header">
                 <Icon name="Users" size={24} color="#fbbf24" />
-                <Text className="best-partner-title">最佳搭档</Text>
+                <Text className="best-partner-title">{selectedSeasonId === 'all' ? '黄金搭档' : '最佳搭档'}</Text>
                 {selectedSeasonId === 'all' && (
                   <View className="goat-badge-small">
                     <Text className="goat-text-small">GOAT</Text>
@@ -324,13 +324,13 @@ export default function StatsPage() {
             </View>
           )}
           
-          {/* 常胜将军 */}
+          {/* 最长连胜/常胜将军 */}
           {summary.longestWinStreak && summary.longestWinStreak.streak > 0 && (
             <View className="longest-streak-section">
               <View className="best-partner-divider" />
               <View className="best-partner-header">
                 <Icon name="Flame" size={24} color="#ef4444" />
-                <Text className="best-partner-title">常胜将军</Text>
+                <Text className="best-partner-title">{selectedSeasonId === 'all' ? '常胜将军' : '最长连胜'}</Text>
                 {selectedSeasonId === 'all' && (
                   <View className="goat-badge-small">
                     <Text className="goat-text-small">GOAT</Text>
