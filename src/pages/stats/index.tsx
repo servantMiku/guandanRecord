@@ -153,13 +153,8 @@ export default function StatsPage() {
         const seasonList = res.data.data
         setSeasons(seasonList)
 
-        // 优先选择活跃赛季
-        const activeSeason = seasonList.find((s: Season) => s.status === 'active')
-        if (activeSeason) {
-          setSelectedSeasonId(activeSeason.id)
-        } else if (seasonList.length > 0) {
-          setSelectedSeasonId(seasonList[0].id)
-        }
+        // 默认选择累计（全量统计）
+        setSelectedSeasonId('all')
       }
     } catch (error) {
       console.error('获取赛季列表失败:', error)
@@ -258,6 +253,13 @@ export default function StatsPage() {
           </View>
         ) : (
           <View className="season-tags">
+            {/* 累计选项 */}
+            <View
+              className={`season-tag ${selectedSeasonId === 'all' ? 'season-tag-active' : ''}`}
+              onClick={() => setSelectedSeasonId('all')}
+            >
+              <Text className="season-tag-text">累计</Text>
+            </View>
             {seasons.map((season) => (
               <View
                 key={season.id}
@@ -284,8 +286,15 @@ export default function StatsPage() {
               <Text className="summary-label">总场次</Text>
             </View>
             <View className="summary-stat">
-              <Text className="summary-value">{summary.bestPlayer}</Text>
-              <Text className="summary-label">最佳玩家</Text>
+              <View className="best-player-wrapper">
+                <Text className="summary-value">{summary.bestPlayer}</Text>
+                {selectedSeasonId === 'all' && summary.bestPlayer && summary.bestPlayer !== '暂无' && (
+                  <View className="goat-badge">
+                    <Text className="goat-text">GOAT</Text>
+                  </View>
+                )}
+              </View>
+              <Text className="summary-label">{selectedSeasonId === 'all' ? 'GOAT' : '最佳玩家'}</Text>
             </View>
             <View className="summary-stat">
               <Text className="summary-value">{summary.bestWinRate}</Text>

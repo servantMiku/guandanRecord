@@ -8,41 +8,80 @@ export class StatsController {
 
   @Get('season')
   async getSeasonStats(@Query('seasonId') seasonId: string) {
-    if (!seasonId) {
-      return { code: 400, msg: '缺少 seasonId 参数', data: null }
-    }
-
     const client = getSupabaseClient()
+    
+    // 判断是否全量统计（不传 seasonId 或传 'all'）
+    const isAllTime = !seasonId || seasonId === 'all'
 
-    // 获取赛季信息
-    const { data: season } = await client
-      .from('seasons')
-      .select('*')
-      .eq('id', seasonId)
-      .single()
-
-    if (!season) {
-      return { code: 404, msg: '赛季不存在', data: null }
+    // 获取赛季信息（全量统计时获取所有赛季）
+    let season: any = null
+    if (!isAllTime) {
+      const { data: seasonData } = await client
+        .from('seasons')
+        .select('*')
+        .eq('id', seasonId)
+        .single()
+      
+      if (!seasonData) {
+        return { code: 404, msg: '赛季不存在', data: null }
+      }
+      season = seasonData
+    } else {
+      season = { id: 'all', name: '累计', status: 'all' }
     }
 
-    // 获取该赛季所有未删除的战绩（按时间排序）
-    const { data: matches } = await client
+    // 获取战绩（按时间排序）
+    let matchesQuery = client
       .from('matches')
       .select('*')
-      .eq('season_id', seasonId)
       .eq('is_deleted', false)
-      .order('created_at', { ascending: true })
+      
+    if (!isAllTime) {
+      matchesQuery = matchesQuery.eq('season_id', seasonId)
+    }
+    
+    const { data: matches } = await matchesQuery.order('created_at', { ascending: true })
 
     // 获取玩家统计数据
-    const { data: playerStats } = await client
+    let playerStatsQuery = client
       .from('player_stats')
       .select('*')
-      .eq('season_id', seasonId)
+      
+    if (!isAllTime) {
+      playerStatsQuery = playerStatsQuery.eq('season_id', seasonId)
+    }
+    
+    const { data: playerStatsRaw } = await playerStatsQuery
 
     // 获取所有玩家信息
     const { data: players } = await client
       .from('players')
       .select('*')
+
+    // 全量统计时，需要合并各赛季的玩家统计数据
+    let playerStats: any[] = []
+    if (isAllTime && playerStatsRaw) {
+      // 按 player_id 合并数据
+      const playerStatsMap = new Map<string, any>()
+      for (const stat of playerStatsRaw) {
+        const existing = playerStatsMap.get(stat.player_id)
+        if (existing) {
+          existing.total_matches += stat.total_matches || 0
+          existing.wins += stat.wins || 0
+        } else {
+          playerStatsMap.set(stat.player_id, { ...stat })
+        }
+      }
+      // 重新计算胜率
+      playerStats = Array.from(playerStatsMap.values()).map((stat: any) => ({
+        ...stat,
+        win_rate: stat.total_matches > 0 
+          ? ((stat.wins / stat.total_matches) * 100).toFixed(2) 
+          : '0.00'
+      }))
+    } else {
+      playerStats = playerStatsRaw || []
+    }
 
     // 计算每个玩家的连胜/连败
     // 记录当前状态和最长记录
