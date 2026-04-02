@@ -421,16 +421,20 @@ export class StatsController {
 
       // 导入数据（按依赖顺序反向）
       if (players && players.length > 0) {
-        await client.from('players').insert(players.map((p: any) => ({
+        const { error: playersError } = await client.from('players').insert(players.map((p: any) => ({
           id: p.id,
           name: p.name,
           avatar: p.avatar,
           created_at: p.created_at
         })))
+        if (playersError) {
+          console.error('导入 players 失败:', playersError)
+          throw playersError
+        }
       }
 
       if (seasons && seasons.length > 0) {
-        await client.from('seasons').insert(seasons.map((s: any) => ({
+        const { error: seasonsError } = await client.from('seasons').insert(seasons.map((s: any) => ({
           id: s.id,
           name: s.name,
           start_date: s.start_date,
@@ -438,10 +442,14 @@ export class StatsController {
           status: s.status,
           created_at: s.created_at
         })))
+        if (seasonsError) {
+          console.error('导入 seasons 失败:', seasonsError)
+          throw seasonsError
+        }
       }
 
       if (matches && matches.length > 0) {
-        await client.from('matches').insert(matches.map((m: any) => ({
+        const { error: matchesError } = await client.from('matches').insert(matches.map((m: any) => ({
           id: m.id,
           season_id: m.season_id,
           team1_player1_id: m.team1_player1_id,
@@ -451,16 +459,20 @@ export class StatsController {
           winner_team: m.winner_team,
           score: m.score,
           remark: m.remark,
-          match_time: m.match_time,
-          is_deleted: m.is_deleted,
+          is_deleted: m.is_deleted ?? false,
+          deleted_at: m.deleted_at,
           edit_history: m.edit_history,
           created_at: m.created_at,
           updated_at: m.updated_at
         })))
+        if (matchesError) {
+          console.error('导入 matches 失败:', matchesError)
+          throw matchesError
+        }
       }
 
       if (playerStats && playerStats.length > 0) {
-        await client.from('player_stats').insert(playerStats.map((s: any) => ({
+        const { error: statsError } = await client.from('player_stats').insert(playerStats.map((s: any) => ({
           id: s.id,
           season_id: s.season_id,
           player_id: s.player_id,
@@ -470,12 +482,16 @@ export class StatsController {
           created_at: s.created_at,
           updated_at: s.updated_at
         })))
+        if (statsError) {
+          console.error('导入 player_stats 失败:', statsError)
+          throw statsError
+        }
       }
 
       return { code: 200, msg: '数据导入成功', data: null }
     } catch (error) {
       console.error('导入数据失败:', error)
-      return { code: 500, msg: '导入数据失败', data: null }
+      return { code: 500, msg: '导入数据失败: ' + (error as Error).message, data: null }
     }
   }
 }
