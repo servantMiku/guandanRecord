@@ -59,30 +59,38 @@ export default function IndexPage() {
   const [loading, setLoading] = useState(true)
 
   const fetchData = async () => {
+    console.log('首页开始获取数据...')
     try {
       setLoading(true)
       
       // 获取玩家列表
+      console.log('正在获取玩家列表...')
       const playersRes = await Network.request({
         url: '/api/players',
         data: { _t: Date.now() }
       })
+      console.log('玩家列表响应:', playersRes)
       if (playersRes.data && playersRes.data.data) {
         setPlayers(playersRes.data.data)
+        console.log('玩家列表设置成功，数量:', playersRes.data.data.length)
       }
 
       // 获取当前活跃赛季
+      console.log('正在获取活跃赛季...')
       const res = await Network.request({
         url: '/api/seasons/active',
         data: { _t: Date.now() }
       })
+      console.log('活跃赛季响应:', res)
       let activeSeason: Season | null = null
       if (res.data && res.data.data && res.data.data.length > 0) {
         activeSeason = res.data.data[0]
         setCurrentSeason(activeSeason)
+        console.log('活跃赛季设置成功:', activeSeason.name)
       }
 
       // 获取最近战绩（按当前赛季筛选，限制3场）
+      console.log('正在获取最近战绩...')
       const matchRes = await Network.request({
         url: '/api/matches/recent',
         data: { 
@@ -91,13 +99,16 @@ export default function IndexPage() {
           _t: Date.now() // 添加时间戳避免缓存
         }
       })
+      console.log('最近战绩响应:', matchRes)
       if (matchRes.data && matchRes.data.data) {
         setRecentMatches(matchRes.data.data)
+        console.log('最近战绩设置成功，数量:', matchRes.data.data.length)
       }
     } catch (error) {
       console.error('获取数据失败:', error)
     } finally {
       setLoading(false)
+      console.log('首页数据获取完成，loading:', false)
     }
   }
 
