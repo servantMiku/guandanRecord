@@ -146,6 +146,64 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* 数据备份区域 */
+.data-backup-section {
+  margin-top: 40px;
+  padding: 28px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 20px;
+  border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.data-backup-title {
+  display: block;
+  color: #10b981;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.data-backup-desc {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 22px;
+  margin-bottom: 24px;
+}
+
+.data-backup-btns {
+  display: flex;
+  gap: 20px;
+}
+
+.backup-btn {
+  flex: 1;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.backup-btn-export {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.backup-btn-import {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+}
+
+.backup-btn-icon {
+  font-size: 40px;
+}
+
+.backup-btn-text {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 600;
+}
+
 /* 清空数据区域 */
 .clear-data-section {
   margin-top: 40px;

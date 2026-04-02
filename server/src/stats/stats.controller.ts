@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Controller, Get, Query, Post, Body } from '@nestjs/common'
 import { StatsService } from './stats.service'
 import { getSupabaseClient } from '../storage/database/supabase-client'
 
@@ -370,6 +370,112 @@ export class StatsController {
         partnerStats,
         playerPairMatrix
       }
+    }
+  }
+
+  @Get('export')
+  async exportAllData() {
+    const client = getSupabaseClient()
+
+    try {
+      // 获取所有表数据
+      const [{ data: players }, { data: seasons }, { data: matches }, { data: playerStats }] = await Promise.all([
+        client.from('players').select('*'),
+        client.from('seasons').select('*'),
+        client.from('matches').select('*'),
+        client.from('player_stats').select('*')
+      ])
+
+      const exportData = {
+        version: '1.0',
+        exportTime: new Date().toISOString(),
+        players: players || [],
+        seasons: seasons || [],
+        matches: matches || [],
+        playerStats: playerStats || []
+      }
+
+      return {
+        code: 200,
+        msg: 'success',
+        data: exportData
+      }
+    } catch (error) {
+      console.error('导出数据失败:', error)
+      return { code: 500, msg: '导出数据失败', data: null }
+    }
+  }
+
+  @Post('import')
+  async importAllData(@Body() body: { data: any }) {
+    const client = getSupabaseClient()
+
+    try {
+      const { players, seasons, matches, playerStats } = body.data
+
+      // 清空现有数据（按依赖顺序）
+      await client.from('player_stats').delete().neq('id', '0')
+      await client.from('matches').delete().neq('id', '0')
+      await client.from('seasons').delete().neq('id', '0')
+      await client.from('players').delete().neq('id', '0')
+
+      // 导入数据（按依赖顺序反向）
+      if (players && players.length > 0) {
+        await client.from('players').insert(players.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          avatar: p.avatar,
+          created_at: p.created_at
+        })))
+      }
+
+      if (seasons && seasons.length > 0) {
+        await client.from('seasons').insert(seasons.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          start_date: s.start_date,
+          end_date: s.end_date,
+          status: s.status,
+          created_at: s.created_at
+        })))
+      }
+
+      if (matches && matches.length > 0) {
+        await client.from('matches').insert(matches.map((m: any) => ({
+          id: m.id,
+          season_id: m.season_id,
+          team1_player1_id: m.team1_player1_id,
+          team1_player2_id: m.team1_player2_id,
+          team2_player1_id: m.team2_player1_id,
+          team2_player2_id: m.team2_player2_id,
+          winner_team: m.winner_team,
+          score: m.score,
+          remark: m.remark,
+          match_time: m.match_time,
+          is_deleted: m.is_deleted,
+          edit_history: m.edit_history,
+          created_at: m.created_at,
+          updated_at: m.updated_at
+        })))
+      }
+
+      if (playerStats && playerStats.length > 0) {
+        await client.from('player_stats').insert(playerStats.map((s: any) => ({
+          id: s.id,
+          season_id: s.season_id,
+          player_id: s.player_id,
+          total_matches: s.total_matches,
+          wins: s.wins,
+          win_rate: s.win_rate,
+          created_at: s.created_at,
+          updated_at: s.updated_at
+        })))
+      }
+
+      return { code: 200, msg: '数据导入成功', data: null }
+    } catch (error) {
+      console.error('导入数据失败:', error)
+      return { code: 500, msg: '导入数据失败', data: null }
     }
   }
 }

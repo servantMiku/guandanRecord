@@ -11,6 +11,8 @@ const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?:
     Save: '✓',
     X: '✕',
     Trash2: '🗑',
+    Download: '⬇️',
+    Upload: '⬆️',
   }
   return (
     <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
@@ -97,6 +99,91 @@ export default function ProfilePage() {
 
   const getPlayerInitial = (name: string) => {
     return name ? name.charAt(0).toUpperCase() : '?'
+  }
+
+  // 导出所有数据
+  const handleExportData = async () => {
+    try {
+      Taro.showLoading({ title: '导出中...' })
+      const res = await Network.request({
+        url: '/api/stats/export'
+      })
+      Taro.hideLoading()
+
+      if (res.data?.code === 200 && res.data?.data) {
+        const exportData = res.data.data
+        const dataStr = JSON.stringify(exportData, null, 2)
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
+        
+        // 微信小程序下载文件
+        const fs = Taro.getFileSystemManager()
+        const filePath = `${Taro.env.USER_DATA_PATH}/guandan_backup_${timestamp}.json`
+        
+        fs.writeFileSync(filePath, dataStr, 'utf8')
+        
+        Taro.showModal({
+          title: '导出成功',
+          content: `数据已保存为 guandan_backup_${timestamp}.json\n\n文件路径：${filePath}`,
+          showCancel: false,
+          confirmText: '我知道了'
+        })
+        
+        console.log('导出数据:', exportData)
+      } else {
+        Taro.showToast({ title: '导出失败', icon: 'none' })
+      }
+    } catch (error) {
+      Taro.hideLoading()
+      console.error('导出数据失败:', error)
+      Taro.showToast({ title: '导出失败', icon: 'none' })
+    }
+  }
+
+  // 导入数据
+  const handleImportData = () => {
+    Taro.showModal({
+      title: '导入数据',
+      content: '请选择备份文件导入。这将覆盖当前所有数据，请确保已备份！',
+      confirmText: '选择文件',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          // 微信小程序选择文件
+          Taro.chooseMessageFile({
+            count: 1,
+            type: 'file',
+            extension: ['json'],
+            success: async (fileRes) => {
+              try {
+                Taro.showLoading({ title: '导入中...' })
+                const tempFilePath = fileRes.tempFiles[0].path
+                const fs = Taro.getFileSystemManager()
+                const dataContent = fs.readFileSync(tempFilePath, 'utf8')
+                const dataStr = typeof dataContent === 'string' ? dataContent : new TextDecoder().decode(dataContent)
+                const importData = JSON.parse(dataStr)
+                
+                await Network.request({
+                  url: '/api/stats/import',
+                  method: 'POST',
+                  data: { data: importData }
+                })
+                
+                Taro.hideLoading()
+                Taro.showToast({ title: '导入成功', icon: 'success' })
+                fetchPlayers()
+              } catch (error) {
+                Taro.hideLoading()
+                console.error('导入数据失败:', error)
+                Taro.showToast({ title: '导入失败，请检查文件格式', icon: 'none' })
+              }
+            },
+            fail: () => {
+              Taro.showToast({ title: '未选择文件', icon: 'none' })
+            }
+          })
+        }
+      }
+    })
   }
 
   const handleClearAllData = () => {
@@ -190,6 +277,22 @@ export default function ProfilePage() {
             ))}
           </View>
         )}
+
+        {/* 数据导出导入区域 */}
+        <View className="data-backup-section">
+          <Text className="data-backup-title">💾 数据备份</Text>
+          <Text className="data-backup-desc">导出所有数据备份，或从备份文件恢复</Text>
+          <View className="data-backup-btns">
+            <View className="backup-btn backup-btn-export" onClick={handleExportData}>
+              <Text className="backup-btn-icon">⬇️</Text>
+              <Text className="backup-btn-text">导出数据</Text>
+            </View>
+            <View className="backup-btn backup-btn-import" onClick={handleImportData}>
+              <Text className="backup-btn-icon">⬆️</Text>
+              <Text className="backup-btn-text">导入数据</Text>
+            </View>
+          </View>
+        </View>
 
         {/* 清空数据区域 */}
         <View className="clear-data-section">
