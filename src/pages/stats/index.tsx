@@ -153,8 +153,17 @@ export default function StatsPage() {
         const seasonList = res.data.data
         setSeasons(seasonList)
 
-        // 默认选择累计（全量统计）
-        setSelectedSeasonId('all')
+        // 默认选择最新赛季（优先选择 active 状态的赛季，否则选择第一个）
+        if (seasonList.length > 0) {
+          const activeSeason = seasonList.find((s: Season) => s.status === 'active')
+          if (activeSeason) {
+            setSelectedSeasonId(activeSeason.id)
+          } else {
+            setSelectedSeasonId(seasonList[0].id)
+          }
+        } else {
+          setSelectedSeasonId('all')
+        }
       }
     } catch (error) {
       console.error('获取赛季列表失败:', error)
