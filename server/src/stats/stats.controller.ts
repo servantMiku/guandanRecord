@@ -8,10 +8,12 @@ export class StatsController {
 
   @Get('season')
   async getSeasonStats(@Query('seasonId') seasonId: string) {
+    console.log('获取赛季统计请求 - 赛季ID:', seasonId)
     const client = getSupabaseClient()
     
     // 判断是否全量统计（不传 seasonId 或传 'all'）
     const isAllTime = !seasonId || seasonId === 'all'
+    console.log('统计模式:', isAllTime ? '全量累计' : '指定赛季')
 
     // 获取赛季信息（全量统计时获取所有赛季）
     let season: any = null
@@ -23,9 +25,11 @@ export class StatsController {
         .single()
       
       if (!seasonData) {
+        console.log('赛季不存在 - ID:', seasonId)
         return { code: 404, msg: '赛季不存在', data: null }
       }
       season = seasonData
+      console.log('赛季信息:', season.name)
     } else {
       season = { id: 'all', name: '累计', status: 'all' }
     }
@@ -361,6 +365,12 @@ export class StatsController {
       longestLoseStreak: longestLoseStreak.streak > 0 ? longestLoseStreak : null
     }
 
+    console.log('统计计算完成')
+    console.log('  - 赛季:', season.name)
+    console.log('  - 总场次:', summary.totalMatches)
+    console.log('  - 最佳玩家:', summary.bestPlayer)
+    console.log('  - 最佳搭档:', summary.bestPartner)
+
     return {
       code: 200,
       msg: 'success',
@@ -375,9 +385,11 @@ export class StatsController {
 
   @Get('export')
   async exportAllData() {
+    console.log('导出数据请求')
     const client = getSupabaseClient()
 
     try {
+      console.log('开始获取所有表数据...')
       // 获取所有表数据
       const [{ data: players }, { data: seasons }, { data: matches }, { data: playerStats }] = await Promise.all([
         client.from('players').select('*'),
@@ -385,6 +397,12 @@ export class StatsController {
         client.from('matches').select('*'),
         client.from('player_stats').select('*')
       ])
+
+      console.log('数据获取完成:')
+      console.log('  - 玩家数量:', players?.length || 0)
+      console.log('  - 赛季数量:', seasons?.length || 0)
+      console.log('  - 战绩数量:', matches?.length || 0)
+      console.log('  - 统计记录数量:', playerStats?.length || 0)
 
       const exportData = {
         version: '1.0',
@@ -395,6 +413,7 @@ export class StatsController {
         playerStats: playerStats || []
       }
 
+      console.log('导出数据准备完成')
       return {
         code: 200,
         msg: 'success',
@@ -408,19 +427,29 @@ export class StatsController {
 
   @Post('import')
   async importAllData(@Body() body: { data: any }) {
+    console.log('导入数据请求')
     const client = getSupabaseClient()
 
     try {
       const { players, seasons, matches, playerStats } = body.data
 
+      console.log('准备导入的数据量:')
+      console.log('  - 玩家数量:', players?.length || 0)
+      console.log('  - 赛季数量:', seasons?.length || 0)
+      console.log('  - 战绩数量:', matches?.length || 0)
+      console.log('  - 统计记录数量:', playerStats?.length || 0)
+
+      console.log('开始清空现有数据...')
       // 清空现有数据（按依赖顺序）
       await client.from('player_stats').delete().neq('id', '0')
       await client.from('matches').delete().neq('id', '0')
       await client.from('seasons').delete().neq('id', '0')
       await client.from('players').delete().neq('id', '0')
+      console.log('现有数据已清空')
 
       // 导入数据（按依赖顺序反向）
       if (players && players.length > 0) {
+        console.log('开始导入玩家数据...')
         const { error: playersError } = await client.from('players').insert(players.map((p: any) => ({
           id: p.id,
           name: p.name,
@@ -431,9 +460,11 @@ export class StatsController {
           console.error('导入 players 失败:', playersError)
           throw playersError
         }
+        console.log('玩家数据导入成功，数量:', players.length)
       }
 
       if (seasons && seasons.length > 0) {
+        console.log('开始导入赛季数据...')
         const { error: seasonsError } = await client.from('seasons').insert(seasons.map((s: any) => ({
           id: s.id,
           name: s.name,
@@ -446,9 +477,11 @@ export class StatsController {
           console.error('导入 seasons 失败:', seasonsError)
           throw seasonsError
         }
+        console.log('赛季数据导入成功，数量:', seasons.length)
       }
 
       if (matches && matches.length > 0) {
+        console.log('开始导入战绩数据...')
         const { error: matchesError } = await client.from('matches').insert(matches.map((m: any) => ({
           id: m.id,
           season_id: m.season_id,
@@ -469,9 +502,11 @@ export class StatsController {
           console.error('导入 matches 失败:', matchesError)
           throw matchesError
         }
+        console.log('战绩数据导入成功，数量:', matches.length)
       }
 
       if (playerStats && playerStats.length > 0) {
+        console.log('开始导入玩家统计数据...')
         const { error: statsError } = await client.from('player_stats').insert(playerStats.map((s: any) => ({
           id: s.id,
           season_id: s.season_id,
@@ -486,8 +521,10 @@ export class StatsController {
           console.error('导入 player_stats 失败:', statsError)
           throw statsError
         }
+        console.log('玩家统计数据导入成功，数量:', playerStats.length)
       }
 
+      console.log('所有数据导入成功完成')
       return { code: 200, msg: '数据导入成功', data: null }
     } catch (error) {
       console.error('导入数据失败:', error)

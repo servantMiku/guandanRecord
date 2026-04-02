@@ -50,6 +50,7 @@ export class PlayersController {
 
   @Put(':id')
   async updatePlayer(@Param('id') id: string, @Body() body: { name?: string; avatar?: string }) {
+    console.log('更新玩家请求 - ID:', id, '数据:', body)
     const client = getSupabaseClient()
 
     const updateData: any = {
@@ -64,6 +65,8 @@ export class PlayersController {
       updateData.avatar = body.avatar
     }
 
+    console.log('准备更新玩家数据:', updateData)
+
     const { data, error } = await client
       .from('players')
       .update(updateData)
@@ -75,6 +78,7 @@ export class PlayersController {
       return { code: 500, msg: '更新玩家失败', data: null }
     }
 
+    console.log('玩家更新成功:', data?.[0])
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 }

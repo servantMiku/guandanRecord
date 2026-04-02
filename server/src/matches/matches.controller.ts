@@ -8,6 +8,7 @@ export class MatchesController {
 
   @Get()
   async getAllMatches(@Query('limit') limit?: string, @Query('seasonId') seasonId?: string) {
+    console.log('获取战绩列表请求 - 赛季ID:', seasonId, '限制:', limit)
     const client = getSupabaseClient()
 
     // 先获取战绩数据（不包含关联查询）
@@ -33,6 +34,8 @@ export class MatchesController {
       return { code: 500, msg: '获取战绩列表失败', data: null }
     }
 
+    console.log('获取战绩列表成功，数量:', matches?.length || 0)
+
     // 获取所有赛季信息
     const { data: seasons } = await client
       .from('seasons')
@@ -52,6 +55,7 @@ export class MatchesController {
 
   @Get('recent')
   async getRecentMatches(@Query('limit') limit: string = '5', @Query('seasonId') seasonId?: string) {
+    console.log('获取最近战绩请求 - 赛季ID:', seasonId, '限制:', limit)
     const client = getSupabaseClient()
 
     // 构建查询
@@ -75,6 +79,8 @@ export class MatchesController {
       return { code: 500, msg: '获取最近战绩失败', data: null }
     }
 
+    console.log('获取最近战绩成功，数量:', matches?.length || 0)
+
     // 获取所有赛季信息
     const { data: seasons } = await client
       .from('seasons')
@@ -94,6 +100,7 @@ export class MatchesController {
 
   @Get(':id')
   async getMatchById(@Param('id') id: string) {
+    console.log('获取战绩详情请求 - ID:', id)
     const client = getSupabaseClient()
     const { data, error } = await client
       .from('matches')
@@ -106,11 +113,13 @@ export class MatchesController {
       return { code: 500, msg: '获取战绩详情失败', data: null }
     }
 
+    console.log('获取战绩详情成功:', data?.id)
     return { code: 200, msg: 'success', data: data || null }
   }
 
   @Post()
   async createMatch(@Body() body: any) {
+    console.log('创建战绩请求:', body)
     const client = getSupabaseClient()
     
     // 构建插入数据
@@ -134,6 +143,8 @@ export class MatchesController {
       insertData.created_at = new Date(localDateTime).toISOString()
     }
     
+    console.log('准备插入战绩数据:', insertData)
+    
     const { data, error } = await client
       .from('matches')
       .insert(insertData)
@@ -144,24 +155,38 @@ export class MatchesController {
       return { code: 500, msg: '创建战绩失败', data: null }
     }
 
+    console.log('战绩创建成功:', data?.[0])
+
     // 更新玩家统计数据
+    console.log('开始更新赛季', body.seasonId, '的玩家统计数据')
     await this.updatePlayerStats(body.seasonId)
+    console.log('玩家统计数据更新完成')
 
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 
   @Post('clear-all')
   async clearAllData() {
+    console.log('清空所有数据请求')
     const client = getSupabaseClient()
 
     try {
+      console.log('开始清空战绩表...')
       // 清空战绩表
       await client.from('matches').delete().neq('id', 0)
+      console.log('战绩表已清空')
+      
+      console.log('开始清空赛季表...')
       // 清空赛季表
       await client.from('seasons').delete().neq('id', 0)
+      console.log('赛季表已清空')
+      
+      console.log('开始清空玩家统计表...')
       // 清空玩家统计表
       await client.from('player_stats').delete().neq('id', 0)
+      console.log('玩家统计表已清空')
 
+      console.log('所有数据已清空完成')
       return { code: 200, msg: '所有数据已清空', data: null }
     } catch (error) {
       console.error('清空数据失败:', error)
@@ -171,6 +196,7 @@ export class MatchesController {
 
   @Put(':id')
   async updateMatch(@Param('id') id: string, @Body() body: any) {
+    console.log('更新战绩请求 - ID:', id, '数据:', body)
     const client = getSupabaseClient()
 
     // 获取原始数据
@@ -181,8 +207,11 @@ export class MatchesController {
       .single()
 
     if (!oldData) {
+      console.log('战绩不存在 - ID:', id)
       return { code: 404, msg: '战绩不存在', data: null }
     }
+
+    console.log('原始战绩数据:', oldData)
 
     // 记录编辑历史
     const editHistory = oldData.edit_history || []
@@ -213,6 +242,8 @@ export class MatchesController {
       updateData.created_at = new Date(localDateTime).toISOString()
     }
 
+    console.log('准备更新战绩数据:', updateData)
+
     // 更新战绩
     const { data, error } = await client
       .from('matches')
@@ -225,14 +256,19 @@ export class MatchesController {
       return { code: 500, msg: '更新战绩失败', data: null }
     }
 
+    console.log('战绩更新成功:', data?.[0])
+
     // 更新玩家统计数据
+    console.log('开始更新赛季', oldData.season_id, '的玩家统计数据')
     await this.updatePlayerStats(oldData.season_id)
+    console.log('玩家统计数据更新完成')
 
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 
   @Delete(':id')
   async deleteMatch(@Param('id') id: string) {
+    console.log('删除战绩请求 - ID:', id)
     const client = getSupabaseClient()
 
     // 获取战绩信息
@@ -243,10 +279,14 @@ export class MatchesController {
       .single()
 
     if (!matchData) {
+      console.log('战绩不存在 - ID:', id)
       return { code: 404, msg: '战绩不存在', data: null }
     }
 
+    console.log('战绩所属赛季:', matchData.season_id)
+
     // 软删除
+    console.log('开始软删除战绩...')
     const { data, error } = await client
       .from('matches')
       .update({
@@ -261,8 +301,12 @@ export class MatchesController {
       return { code: 500, msg: '删除战绩失败', data: null }
     }
 
+    console.log('战绩删除成功:', data?.[0]?.id)
+
     // 更新玩家统计数据
+    console.log('开始更新赛季', matchData.season_id, '的玩家统计数据')
     await this.updatePlayerStats(matchData.season_id)
+    console.log('玩家统计数据更新完成')
 
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }

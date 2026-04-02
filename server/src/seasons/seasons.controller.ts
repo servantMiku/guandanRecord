@@ -8,6 +8,7 @@ export class SeasonsController {
 
   @Get()
   async getAllSeasons() {
+    console.log('获取赛季列表请求')
     const client = getSupabaseClient()
     const { data, error } = await client
       .from('seasons')
@@ -18,6 +19,8 @@ export class SeasonsController {
       console.error('获取赛季列表失败:', error)
       return { code: 500, msg: '获取赛季列表失败', data: null }
     }
+
+    console.log('获取赛季列表成功，数量:', data?.length || 0)
 
     // 转换字段名为 camelCase
     const seasons = (data || []).map((s: any) => ({
@@ -35,6 +38,7 @@ export class SeasonsController {
 
   @Get('active')
   async getActiveSeason() {
+    console.log('获取活跃赛季请求')
     const client = getSupabaseClient()
     const { data, error } = await client
       .from('seasons')
@@ -47,6 +51,8 @@ export class SeasonsController {
       console.error('获取活跃赛季失败:', error)
       return { code: 500, msg: '获取活跃赛季失败', data: null }
     }
+
+    console.log('获取活跃赛季成功:', data?.[0]?.name || '无活跃赛季')
 
     // 转换字段名为 camelCase
     const seasons = (data || []).map((s: any) => ({
@@ -108,6 +114,7 @@ export class SeasonsController {
 
   @Put(':id/end')
   async endSeason(@Param('id') id: string, @Body() body: { endDate: string }) {
+    console.log('结束赛季请求 - ID:', id, '结束日期:', body.endDate)
     const client = getSupabaseClient()
     const { data, error } = await client
       .from('seasons')
@@ -123,6 +130,8 @@ export class SeasonsController {
       console.error('结束赛季失败:', error)
       return { code: 500, msg: '结束赛季失败', data: null }
     }
+
+    console.log('赛季结束成功:', data?.[0]?.name)
 
     // 转换字段名为 camelCase
     const season = data?.[0]
