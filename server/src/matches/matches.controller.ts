@@ -157,10 +157,10 @@ export class MatchesController {
 
     console.log('战绩创建成功:', data?.[0])
 
-    // 更新玩家统计数据
-    console.log('开始更新赛季', body.seasonId, '的玩家统计数据')
-    await this.updatePlayerStats(body.seasonId)
-    console.log('玩家统计数据更新完成')
+    // 累加更新玩家统计数据
+    console.log('开始累加更新赛季', body.seasonId, '的玩家统计数据')
+    await this.updatePlayerStatsIncremental(body.seasonId, insertData, true)
+    console.log('玩家统计数据累加更新完成')
 
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
@@ -213,6 +213,10 @@ export class MatchesController {
 
     console.log('原始战绩数据:', oldData)
 
+    // 先回退旧战绩的影响
+    console.log('先回退旧战绩对统计的影响')
+    await this.updatePlayerStatsIncremental(oldData.season_id, oldData, false)
+
     // 记录编辑历史
     const editHistory = oldData.edit_history || []
     editHistory.push({
@@ -225,8 +229,13 @@ export class MatchesController {
       }
     })
 
-    // 构建更新数据
-    const updateData: any = {
+    // 构建新数据
+    const newMatchData: any = {
+      season_id: oldData.season_id,
+      team1_player1_id: body.team1Player1Id !== undefined ? body.team1Player1Id : oldData.team1_player1_id,
+      team1_player2_id: body.team1Player2Id !== undefined ? body.team1Player2Id : oldData.team1_player2_id,
+      team2_player1_id: body.team2Player1Id !== undefined ? body.team2Player1Id : oldData.team2_player1_id,
+      team2_player2_id: body.team2Player2Id !== undefined ? body.team2Player2Id : oldData.team2_player2_id,
       winner_team: body.winnerTeam !== undefined ? body.winnerTeam : oldData.winner_team,
       score: body.score,
       remark: body.remark,
@@ -239,15 +248,15 @@ export class MatchesController {
       // 前端发送的格式是 YYYY-MM-DDTHH:mm，需要确保按本地时间解析
       // 通过添加秒和时区信息，确保正确转换为 UTC
       const localDateTime = body.matchTime + ':00+08:00' // 假设是北京时间
-      updateData.created_at = new Date(localDateTime).toISOString()
+      newMatchData.created_at = new Date(localDateTime).toISOString()
     }
 
-    console.log('准备更新战绩数据:', updateData)
+    console.log('准备更新战绩数据:', newMatchData)
 
     // 更新战绩
     const { data, error } = await client
       .from('matches')
-      .update(updateData)
+      .update(newMatchData)
       .eq('id', id)
       .select()
 
@@ -258,10 +267,10 @@ export class MatchesController {
 
     console.log('战绩更新成功:', data?.[0])
 
-    // 更新玩家统计数据
-    console.log('开始更新赛季', oldData.season_id, '的玩家统计数据')
-    await this.updatePlayerStats(oldData.season_id)
-    console.log('玩家统计数据更新完成')
+    // 应用新战绩的影响
+    console.log('应用新战绩对统计的影响')
+    await this.updatePlayerStatsIncremental(oldData.season_id, newMatchData, true)
+    console.log('玩家统计数据累加更新完成')
 
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
@@ -271,10 +280,10 @@ export class MatchesController {
     console.log('删除战绩请求 - ID:', id)
     const client = getSupabaseClient()
 
-    // 获取战绩信息
+    // 获取完整战绩信息
     const { data: matchData } = await client
       .from('matches')
-      .select('season_id')
+      .select('*')
       .eq('id', id)
       .single()
 
@@ -284,6 +293,10 @@ export class MatchesController {
     }
 
     console.log('战绩所属赛季:', matchData.season_id)
+
+    // 先回退该战绩对统计的影响
+    console.log('先回退该战绩对统计的影响')
+    await this.updatePlayerStatsIncremental(matchData.season_id, matchData, false)
 
     // 软删除
     console.log('开始软删除战绩...')
@@ -303,17 +316,101 @@ export class MatchesController {
 
     console.log('战绩删除成功:', data?.[0]?.id)
 
-    // 更新玩家统计数据
-    console.log('开始更新赛季', matchData.season_id, '的玩家统计数据')
-    await this.updatePlayerStats(matchData.season_id)
-    console.log('玩家统计数据更新完成')
-
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 
-  // 更新玩家统计数据
+  // 累加更新玩家统计数据（基于单场战绩）
+  private async updatePlayerStatsIncremental(seasonId: string, matchData: any, isAdd: boolean) {
+    const client = getSupabaseClient()
+
+    // 获取该场战绩的所有参与者
+    const playerIds = [
+      matchData.team1_player1_id,
+      matchData.team1_player2_id,
+      matchData.team2_player1_id,
+      matchData.team2_player2_id
+    ].filter(Boolean)
+
+    console.log('战绩参与者:', playerIds, '是否添加:', isAdd)
+
+    // 遍历每个参与者
+    for (const playerId of playerIds) {
+      if (!playerId) continue
+
+      // 获取玩家名称
+      const { data: player } = await client
+        .from('players')
+        .select('name')
+        .eq('id', playerId)
+        .single()
+
+      // 判断该玩家是否获胜
+      const isWinner = 
+        (matchData.team1_player1_id === playerId || matchData.team1_player2_id === playerId) 
+          ? matchData.winner_team === 1 
+          : matchData.winner_team === 2
+
+      console.log(`玩家 ${playerId} (${player?.name || '未知'}) 获胜:`, isWinner)
+
+      // 获取现有统计数据
+      const { data: existing } = await client
+        .from('player_stats')
+        .select('*')
+        .eq('season_id', seasonId)
+        .eq('player_id', playerId)
+        .single()
+
+      const delta = isAdd ? 1 : -1
+      const winDelta = isWinner ? delta : 0
+
+      if (existing) {
+        // 更新现有统计
+        const newTotalMatches = Math.max(0, (existing.total_matches || 0) + delta)
+        const newWins = Math.max(0, (existing.wins || 0) + winDelta)
+        const newWinRate = newTotalMatches > 0 
+          ? ((newWins / newTotalMatches) * 100).toFixed(2) 
+          : '0.00'
+
+        console.log(`更新玩家 ${playerId} 统计:`, {
+          total_matches: newTotalMatches,
+          wins: newWins,
+          win_rate: newWinRate
+        })
+
+        await client
+          .from('player_stats')
+          .update({
+            total_matches: newTotalMatches,
+            wins: newWins,
+            win_rate: newWinRate,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existing.id)
+      } else if (isAdd) {
+        // 只在添加时才插入新记录
+        console.log(`插入玩家 ${playerId} 统计:`, {
+          total_matches: 1,
+          wins: isWinner ? 1 : 0,
+          win_rate: isWinner ? '100.00' : '0.00'
+        })
+
+        await client.from('player_stats').insert({
+          season_id: seasonId,
+          player_id: playerId,
+          player_name: player?.name || '未知',
+          total_matches: 1,
+          wins: isWinner ? 1 : 0,
+          win_rate: isWinner ? '100.00' : '0.00'
+        })
+      }
+    }
+  }
+
+  // 全量更新玩家统计数据（保留作为备用，用于数据修复）
   private async updatePlayerStats(seasonId: string) {
     const client = getSupabaseClient()
+
+    console.log('执行全量统计更新（备用方法）')
 
     // 获取该赛季所有未删除的战绩
     const { data: matches } = await client
@@ -385,6 +482,7 @@ export class MatchesController {
         await client.from('player_stats').insert({
           season_id: seasonId,
           player_id: stat.player_id,
+          player_name: stat.player_name,
           total_matches: stat.total_matches,
           wins: stat.wins,
           win_rate: stat.win_rate
