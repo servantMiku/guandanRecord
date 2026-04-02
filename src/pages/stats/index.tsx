@@ -176,8 +176,8 @@ export default function StatsPage() {
     try {
       setLoading(true)
       const res = await Network.request({
-        url: `/api/stats/season`,
-        data: { seasonId }
+        url: `/api/stats/season?seasonId=${seasonId}`,
+        method: 'GET'
       })
       if (res.data && res.data.data) {
         setStats(res.data.data.playerStats || [])

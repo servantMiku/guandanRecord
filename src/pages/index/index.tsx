@@ -64,8 +64,8 @@ export default function IndexPage() {
       
       // 获取玩家列表
       const playersRes = await Network.request({
-        url: '/api/players',
-        data: { _t: Date.now() }
+        url: `/api/players?_t=${Date.now()}`,
+        method: 'GET'
       })
       if (playersRes.data && playersRes.data.data) {
         setPlayers(playersRes.data.data)
@@ -73,8 +73,8 @@ export default function IndexPage() {
 
       // 获取当前活跃赛季
       const res = await Network.request({
-        url: '/api/seasons/active',
-        data: { _t: Date.now() }
+        url: `/api/seasons/active?_t=${Date.now()}`,
+        method: 'GET'
       })
       let activeSeason: Season | null = null
       if (res.data && res.data.data && res.data.data.length > 0) {
@@ -83,13 +83,13 @@ export default function IndexPage() {
       }
 
       // 获取最近战绩（按当前赛季筛选，限制3场）
+      let matchUrl = `/api/matches/recent?limit=3&_t=${Date.now()}`
+      if (activeSeason?.id) {
+        matchUrl += `&seasonId=${activeSeason.id}`
+      }
       const matchRes = await Network.request({
-        url: '/api/matches/recent',
-        data: { 
-          limit: '3',
-          seasonId: activeSeason?.id,
-          _t: Date.now() // 添加时间戳避免缓存
-        }
+        url: matchUrl,
+        method: 'GET'
       })
       if (matchRes.data && matchRes.data.data) {
         setRecentMatches(matchRes.data.data)

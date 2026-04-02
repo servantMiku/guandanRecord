@@ -93,8 +93,8 @@ export default function ArrangeMatchPage() {
 
       // 获取该赛季所有战绩
       const matchesRes = await Network.request({
-        url: '/api/matches',
-        data: { seasonId: activeSeason.id }
+        url: `/api/matches?seasonId=${activeSeason.id}`,
+        method: 'GET'
       })
       const matchList = matchesRes.data?.data || []
 

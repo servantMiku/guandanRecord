@@ -95,8 +95,8 @@ export default function RecordsPage() {
     try {
       setLoading(true)
       const res = await Network.request({
-        url: '/api/matches',
-        data: { seasonId }
+        url: `/api/matches?seasonId=${seasonId}`,
+        method: 'GET'
       })
       if (res.data && res.data.data) {
         setMatches(res.data.data)
