@@ -172,7 +172,8 @@ export default function RecordsPage() {
   }
 
   // 解析比分
-  const parseScore = (score: string) => {
+  const parseScore = (score: string | null | undefined) => {
+    if (!score) return { team1: '?', team2: '?' }
     const match = score.match(/队伍1：(.+?)，队伍2：(.+)/)
     if (match) {
       return { team1: match[1], team2: match[2] }

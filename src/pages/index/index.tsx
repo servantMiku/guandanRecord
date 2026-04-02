@@ -148,7 +148,8 @@ export default function IndexPage() {
   }
 
   // 解析比分
-  const parseScore = (score: string) => {
+  const parseScore = (score: string | null | undefined) => {
+    if (!score) return { team1: '?', team2: '?' }
     // 格式: "队伍1：A2，队伍2：6"
     const match = score.match(/队伍1：(.+?)，队伍2：(.+)/)
     if (match) {
@@ -158,7 +159,7 @@ export default function IndexPage() {
   }
 
   // 格式化时间
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return '未知时间'
     try {
       const date = new Date(dateString)
