@@ -114,20 +114,43 @@ export default function ProfilePage() {
         const exportData = res.data.data
         const dataStr = JSON.stringify(exportData, null, 2)
         const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
-        
-        // 微信小程序下载文件
-        const fs = Taro.getFileSystemManager()
-        const filePath = `${Taro.env.USER_DATA_PATH}/guandan_backup_${timestamp}.json`
-        
-        fs.writeFileSync(filePath, dataStr, 'utf8')
-        
-        Taro.showModal({
-          title: '导出成功',
-          content: `数据已保存为 guandan_backup_${timestamp}.json\n\n文件路径：${filePath}`,
-          showCancel: false,
-          confirmText: '我知道了'
-        })
-        
+        const filename = `guandan_backup_${timestamp}.json`
+
+        const isWeapp = Taro.getEnv() === Taro.ENV_TYPE.WEAPP
+
+        if (isWeapp) {
+          // 微信小程序下载文件
+          const fs = Taro.getFileSystemManager()
+          const filePath = `${Taro.env.USER_DATA_PATH}/${filename}`
+
+          fs.writeFileSync(filePath, dataStr, 'utf8')
+
+          Taro.showModal({
+            title: '导出成功',
+            content: `数据已保存为 ${filename}\n\n文件路径：${filePath}`,
+            showCancel: false,
+            confirmText: '我知道了'
+          })
+        } else {
+          // H5 端下载文件
+          const blob = new Blob([dataStr], { type: 'application/json' })
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = filename
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+
+          Taro.showModal({
+            title: '导出成功',
+            content: `数据已保存为 ${filename}`,
+            showCancel: false,
+            confirmText: '我知道了'
+          })
+        }
+
         console.log('导出数据:', exportData)
       } else {
         Taro.showToast({ title: '导出失败', icon: 'none' })
@@ -141,49 +164,83 @@ export default function ProfilePage() {
 
   // 导入数据
   const handleImportData = () => {
-    Taro.showModal({
-      title: '导入数据',
-      content: '请选择备份文件导入。这将覆盖当前所有数据，请确保已备份！',
-      confirmText: '选择文件',
-      cancelText: '取消',
-      success: (res) => {
-        if (res.confirm) {
-          // 微信小程序选择文件
-          Taro.chooseMessageFile({
-            count: 1,
-            type: 'file',
-            extension: ['json'],
-            success: async (fileRes) => {
-              try {
-                Taro.showLoading({ title: '导入中...' })
-                const tempFilePath = fileRes.tempFiles[0].path
-                const fs = Taro.getFileSystemManager()
-                const dataContent = fs.readFileSync(tempFilePath, 'utf8')
-                const dataStr = typeof dataContent === 'string' ? dataContent : new TextDecoder().decode(dataContent)
-                const importData = JSON.parse(dataStr)
-                
-                await Network.request({
-                  url: '/api/stats/import',
-                  method: 'POST',
-                  data: { data: importData }
-                })
-                
-                Taro.hideLoading()
-                Taro.showToast({ title: '导入成功', icon: 'success' })
-                fetchPlayers()
-              } catch (error) {
-                Taro.hideLoading()
-                console.error('导入数据失败:', error)
-                Taro.showToast({ title: '导入失败，请检查文件格式', icon: 'none' })
+    const isWeapp = Taro.getEnv() === Taro.ENV_TYPE.WEAPP
+
+    if (isWeapp) {
+      // 微信小程序导入
+      Taro.showModal({
+        title: '导入数据',
+        content: '请选择备份文件导入。这将覆盖当前所有数据，请确保已备份！',
+        confirmText: '选择文件',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            Taro.chooseMessageFile({
+              count: 1,
+              type: 'file',
+              extension: ['json'],
+              success: async (fileRes) => {
+                try {
+                  Taro.showLoading({ title: '导入中...' })
+                  const tempFilePath = fileRes.tempFiles[0].path
+                  const fs = Taro.getFileSystemManager()
+                  const dataContent = fs.readFileSync(tempFilePath, 'utf8')
+                  const dataStr = typeof dataContent === 'string' ? dataContent : new TextDecoder().decode(dataContent)
+                  const importData = JSON.parse(dataStr)
+
+                  await Network.request({
+                    url: '/api/stats/import',
+                    method: 'POST',
+                    data: { data: importData }
+                  })
+
+                  Taro.hideLoading()
+                  Taro.showToast({ title: '导入成功', icon: 'success' })
+                  fetchPlayers()
+                } catch (error) {
+                  Taro.hideLoading()
+                  console.error('导入数据失败:', error)
+                  Taro.showToast({ title: '导入失败，请检查文件格式', icon: 'none' })
+                }
+              },
+              fail: () => {
+                Taro.showToast({ title: '未选择文件', icon: 'none' })
               }
-            },
-            fail: () => {
-              Taro.showToast({ title: '未选择文件', icon: 'none' })
-            }
+            })
+          }
+        }
+      })
+    } else {
+      // H5 端导入 - 使用文件选择器
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.json'
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0]
+        if (!file) return
+
+        try {
+          Taro.showLoading({ title: '导入中...' })
+          const text = await file.text()
+          const importData = JSON.parse(text)
+
+          await Network.request({
+            url: '/api/stats/import',
+            method: 'POST',
+            data: { data: importData }
           })
+
+          Taro.hideLoading()
+          Taro.showToast({ title: '导入成功', icon: 'success' })
+          fetchPlayers()
+        } catch (error) {
+          Taro.hideLoading()
+          console.error('导入数据失败:', error)
+          Taro.showToast({ title: '导入失败，请检查文件格式', icon: 'none' })
         }
       }
-    })
+      input.click()
+    }
   }
 
   const handleClearAllData = () => {
