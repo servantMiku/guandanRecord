@@ -72,6 +72,18 @@ type PlayerPairMatrixItem = {
 type SortField = 'playerName' | 'totalMatches' | 'wins' | 'winRate'
 type SortOrder = 'asc' | 'desc'
 
+type Award = {
+  id: string
+  name: string
+  icon: string
+  description: string
+  playerId?: string
+  playerName?: string
+  playerIds?: string[]
+  playerNames?: string[]
+  type: 'individual' | 'team'
+}
+
 // 连胜/连败图标组件
 const StreakIcon = ({ streak, type }: { streak: number; type: string }) => {
   if (streak === 0 || type === 'none') return null
@@ -140,6 +152,7 @@ export default function StatsPage() {
   const [partnerStats, setPartnerStats] = useState<PartnerStat[]>([])
   const [playerPairMatrix, setPlayerPairMatrix] = useState<PlayerPairMatrixItem[]>([])
   const [summary, setSummary] = useState<any>(null)
+  const [awards, setAwards] = useState<Award[]>([])
   const [loading, setLoading] = useState(true)
   const [sortField, setSortField] = useState<SortField>('winRate')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
@@ -184,6 +197,7 @@ export default function StatsPage() {
         setPartnerStats(res.data.data.partnerStats || [])
         setPlayerPairMatrix(res.data.data.playerPairMatrix || [])
         setSummary(res.data.data.summary)
+        setAwards(res.data.data.awards || [])
       }
     } catch (error) {
       console.error('获取统计数据失败:', error)
@@ -354,6 +368,32 @@ export default function StatsPage() {
               </View>
             </View>
           )}
+        </View>
+      )}
+
+      {/* 荣誉墙 */}
+      {awards.length > 0 && (
+        <View className="awards-card">
+          <View className="awards-header">
+            <Text className="awards-title">🎖️ 赛季荣誉墙</Text>
+          </View>
+          <View className="awards-list">
+            {awards.map((award) => (
+              <View key={award.id} className="award-item">
+                <View className="award-icon">{award.icon}</View>
+                <View className="award-info">
+                  <Text className="award-name">{award.name}</Text>
+                  {award.playerName && (
+                    <Text className="award-player">{award.playerName}</Text>
+                  )}
+                  {award.playerNames && award.playerNames.length > 0 && (
+                    <Text className="award-player">{award.playerNames.join(' + ')}</Text>
+                  )}
+                </View>
+                <Text className="award-desc">{award.description}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       )}
 

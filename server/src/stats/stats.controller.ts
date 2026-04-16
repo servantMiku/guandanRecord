@@ -2,6 +2,163 @@ import { Controller, Get, Query, Post, Body } from '@nestjs/common'
 import { StatsService } from './stats.service'
 import { getSupabaseClient } from '../storage/database/supabase-client'
 
+// 奖项类型定义
+type Award = {
+  id: string
+  name: string
+  icon: string
+  description: string
+  playerId?: string
+  playerName?: string
+  playerIds?: string[]
+  playerNames?: string[]
+  type: 'individual' | 'team'
+}
+
+// 计算所有奖项
+const calculateAwards = (
+  playerStats: any[],
+  players: any[],
+  currentSeasonId: string,
+  isAllTime: boolean,
+  client: any
+): Award[] => {
+  const awards: Award[] = []
+
+  if (playerStats.length === 0) return awards
+
+  // 1. 🏆 胜率之王
+  const winRateKing = [...playerStats].sort((a, b) => 
+    parseFloat(b.winRate) - parseFloat(a.winRate)
+  )[0]
+  if (winRateKing) {
+    awards.push({
+      id: 'win-rate-king',
+      name: '胜率之王',
+      icon: '🏆',
+      description: `${winRateKing.winRate}%`,
+      playerId: winRateKing.playerId,
+      playerName: winRateKing.playerName,
+      type: 'individual'
+    })
+  }
+
+  // 2. 💎 掼蛋大富翁（胜3分 + 负1分）
+  const playerWithScores = playerStats.map(p => ({
+    ...p,
+    totalScore: p.wins * 3 + (p.totalMatches - p.wins) * 1
+  }))
+  const richPlayer = [...playerWithScores].sort((a, b) => 
+    b.totalScore - a.totalScore
+  )[0]
+  if (richPlayer) {
+    awards.push({
+      id: 'rich-player',
+      name: '掼蛋大富翁',
+      icon: '💎',
+      description: `${richPlayer.totalScore} 积分`,
+      playerId: richPlayer.playerId,
+      playerName: richPlayer.playerName,
+      type: 'individual'
+    })
+  }
+
+  // 3. ⚡ 金牌收割机（积分效率）
+  const playerWithEfficiency = playerWithScores.map(p => ({
+    ...p,
+    efficiency: p.totalMatches > 0 ? (p.totalScore / p.totalMatches).toFixed(1) : '0'
+  }))
+  const efficiencyKing = [...playerWithEfficiency].sort((a, b) => 
+    parseFloat(b.efficiency) - parseFloat(a.efficiency)
+  )[0]
+  if (efficiencyKing) {
+    awards.push({
+      id: 'efficiency-king',
+      name: '金牌收割机',
+      icon: '⚡',
+      description: `${efficiencyKing.efficiency} 分/场`,
+      playerId: efficiencyKing.playerId,
+      playerName: efficiencyKing.playerName,
+      type: 'individual'
+    })
+  }
+
+  // 4. 🎪 全场最靓仔（参赛场次最多）
+  const mostActive = [...playerStats].sort((a, b) => 
+    b.totalMatches - a.totalMatches
+  )[0]
+  if (mostActive) {
+    awards.push({
+      id: 'most-active',
+      name: '全场最靓仔',
+      icon: '🎪',
+      description: `${mostActive.totalMatches} 场`,
+      playerId: mostActive.playerId,
+      playerName: mostActive.playerName,
+      type: 'individual'
+    })
+  }
+
+  // 5. 🔥 火力全开（胜场数最多）
+  const mostWins = [...playerStats].sort((a, b) => 
+    b.wins - a.wins
+  )[0]
+  if (mostWins) {
+    awards.push({
+      id: 'most-wins',
+      name: '火力全开',
+      icon: '🔥',
+      description: `${mostWins.wins} 胜`,
+      playerId: mostWins.playerId,
+      playerName: mostWins.playerName,
+      type: 'individual'
+    })
+  }
+
+  // 6. 📈 进步之星（需要对比上赛季，仅单赛季模式）
+  if (!isAllTime && currentSeasonId && currentSeasonId !== 'all') {
+    // 这里简化处理，实际可以查询上一赛季数据
+    // 暂时不评选进步之星，或者可以给一个默认
+  }
+
+  // 7. 🎲 逆袭王（输球场次多但胜率还不错）
+  const playersWithLosses = playerStats
+    .map(p => ({
+      ...p,
+      losses: p.totalMatches - p.wins,
+      comebackScore: (p.totalMatches - p.wins) * parseFloat(p.winRate) / 100
+    }))
+    .filter(p => p.losses > 0)
+  
+  if (playersWithLosses.length > 0) {
+    // 先找出平均输球场次
+    const avgLosses = playersWithLosses.reduce((sum, p) => sum + p.losses, 0) / playersWithLosses.length
+    // 筛选出输球场次 >= 平均的玩家
+    const eligiblePlayers = playersWithLosses.filter(p => p.losses >= avgLosses)
+    
+    if (eligiblePlayers.length > 0) {
+      // 在 eligiblePlayers 中按胜率排序
+      const comebackKing = eligiblePlayers.sort((a, b) => 
+        parseFloat(b.winRate) - parseFloat(a.winRate)
+      )[0]
+      
+      if (comebackKing) {
+        awards.push({
+          id: 'comeback-king',
+          name: '逆袭王',
+          icon: '🎲',
+          description: `${comebackKing.losses} 负仍有 ${comebackKing.winRate}% 胜率`,
+          playerId: comebackKing.playerId,
+          playerName: comebackKing.playerName,
+          type: 'individual'
+        })
+      }
+    }
+  }
+
+  return awards
+}
+
 @Controller('stats')
 export class StatsController {
   constructor(private readonly statsService: StatsService) {}
@@ -351,6 +508,9 @@ export class StatsController {
       }
     }
 
+    // 计算所有奖项
+    const awards = calculateAwards(playerStatsWithNames, players, seasonId, isAllTime, client)
+
     // 赛季概览
     const summary = {
       seasonId: season.id,
@@ -378,7 +538,8 @@ export class StatsController {
         summary,
         playerStats: playerStatsWithNames,
         partnerStats,
-        playerPairMatrix
+        playerPairMatrix,
+        awards
       }
     }
   }

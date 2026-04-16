@@ -748,3 +748,80 @@
   color: rgba(255, 255, 255, 0.6);
   font-size: 18px;
 }
+
+/* 荣誉墙卡片 */
+.awards-card {
+  margin: 0 24px 24px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.awards-header {
+  padding: 20px 24px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.awards-title {
+  display: block;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.awards-list {
+  padding: 16px;
+}
+
+.award-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.award-item:last-child {
+  margin-bottom: 0;
+}
+
+.award-icon {
+  font-size: 36px;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.award-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.award-name {
+  display: block;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.award-player {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.award-desc {
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 22px;
+  font-weight: 600;
+  text-align: right;
+  flex-shrink: 0;
+}
