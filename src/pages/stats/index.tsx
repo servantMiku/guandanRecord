@@ -193,6 +193,8 @@ export default function StatsPage() {
         method: 'GET'
       })
       if (res.data && res.data.data) {
+        console.log('统计数据返回:', res.data.data)
+        console.log('奖项数据:', res.data.data.awards)
         setStats(res.data.data.playerStats || [])
         setPartnerStats(res.data.data.partnerStats || [])
         setPlayerPairMatrix(res.data.data.playerPairMatrix || [])
@@ -372,27 +374,38 @@ export default function StatsPage() {
       )}
 
       {/* 荣誉墙 */}
-      {awards.length > 0 && (
+      {awards && awards.length > 0 ? (
         <View className="awards-card">
           <View className="awards-header">
-            <Text className="awards-title">🎖️ 赛季荣誉墙</Text>
+            <Text className="awards-title block">🎖️ 赛季荣誉墙</Text>
           </View>
           <View className="awards-list">
             {awards.map((award) => (
               <View key={award.id} className="award-item">
-                <View className="award-icon">{award.icon}</View>
+                <Text className="award-icon block">{award.icon}</Text>
                 <View className="award-info">
-                  <Text className="award-name">{award.name}</Text>
+                  <Text className="award-name block">{award.name}</Text>
                   {award.playerName && (
-                    <Text className="award-player">{award.playerName}</Text>
+                    <Text className="award-player block">{award.playerName}</Text>
                   )}
                   {award.playerNames && award.playerNames.length > 0 && (
-                    <Text className="award-player">{award.playerNames.join(' + ')}</Text>
+                    <Text className="award-player block">{award.playerNames.join(' + ')}</Text>
                   )}
                 </View>
-                <Text className="award-desc">{award.description}</Text>
+                <Text className="award-desc block">{award.description}</Text>
               </View>
             ))}
+          </View>
+        </View>
+      ) : (
+        <View className="awards-card">
+          <View className="awards-header">
+            <Text className="awards-title block">🎖️ 赛季荣誉墙</Text>
+          </View>
+          <View style={{ padding: '40px 20px', textAlign: 'center' }}>
+            <Text className="block" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '20px' }}>
+              暂无荣誉数据
+            </Text>
           </View>
         </View>
       )}

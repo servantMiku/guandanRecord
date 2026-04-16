@@ -509,7 +509,7 @@ export class StatsController {
     }
 
     // 计算所有奖项
-    const awards = calculateAwards(playerStatsWithNames, players, seasonId, isAllTime, client)
+    const awards = calculateAwards(playerStatsWithNames, players || [], seasonId, isAllTime, client)
 
     // 赛季概览
     const summary = {
@@ -530,6 +530,8 @@ export class StatsController {
     console.log('  - 总场次:', summary.totalMatches)
     console.log('  - 最佳玩家:', summary.bestPlayer)
     console.log('  - 最佳搭档:', summary.bestPartner)
+    console.log('  - 奖项数量:', awards.length)
+    console.log('  - 奖项详情:', awards)
 
     return {
       code: 200,
