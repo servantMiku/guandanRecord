@@ -778,12 +778,13 @@
 
 .award-item {
   display: flex;
-  align-items: center;
-  padding: 16px;
+  align-items: flex-start;
+  padding: 20px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  margin-bottom: 12px;
+  border-radius: 20px;
+  margin-bottom: 16px;
   border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
 }
 
 .award-item:last-child {
@@ -791,46 +792,75 @@
 }
 
 .award-icon {
-  font-size: 36px;
-  margin-right: 16px;
+  font-size: 40px;
+  margin-right: 20px;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .award-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .award-name {
   display: block;
   color: #ffffff;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
+}
+
+.award-help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.award-help-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
 }
 
 .award-player {
   display: block;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 20px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 22px;
   font-weight: 500;
+}
+
+.award-rule-container {
+  margin-top: 10px;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .award-rule {
   display: block;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 18px;
   font-weight: 400;
-  margin-top: 4px;
-  line-height: 1.3;
+  line-height: 1.4;
 }
 
 .award-desc {
   display: block;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 22px;
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 24px;
+  font-weight: 700;
   text-align: right;
   flex-shrink: 0;
+  margin-left: 16px;
+  margin-top: 4px;
 }

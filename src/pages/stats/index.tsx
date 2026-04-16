@@ -154,6 +154,7 @@ export default function StatsPage() {
   const [playerPairMatrix, setPlayerPairMatrix] = useState<PlayerPairMatrixItem[]>([])
   const [summary, setSummary] = useState<any>(null)
   const [awards, setAwards] = useState<Award[]>([])
+  const [expandedAwardId, setExpandedAwardId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [sortField, setSortField] = useState<SortField>('winRate')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
@@ -383,14 +384,26 @@ export default function StatsPage() {
               <View key={award.id} className="award-item">
                 <Text className="award-icon block">{award.icon}</Text>
                 <View className="award-info">
-                  <Text className="award-name block">{award.name}</Text>
+                  <View style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Text className="award-name block">{award.name}</Text>
+                    <View 
+                      className="award-help-btn"
+                      onClick={() => setExpandedAwardId(expandedAwardId === award.id ? null : award.id)}
+                    >
+                      <Text className="block" style={{ fontSize: '18px', lineHeight: 1 }}>❓</Text>
+                    </View>
+                  </View>
                   {award.playerName && (
                     <Text className="award-player block">{award.playerName}</Text>
                   )}
                   {award.playerNames && award.playerNames.length > 0 && (
                     <Text className="award-player block">{award.playerNames.join(' + ')}</Text>
                   )}
-                  <Text className="award-rule block">{award.rule}</Text>
+                  {expandedAwardId === award.id && (
+                    <View className="award-rule-container">
+                      <Text className="award-rule block">{award.rule}</Text>
+                    </View>
+                  )}
                 </View>
                 <Text className="award-desc block">{award.description}</Text>
               </View>
