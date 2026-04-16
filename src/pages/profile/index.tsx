@@ -119,17 +119,55 @@ export default function ProfilePage() {
         const isWeapp = Taro.getEnv() === Taro.ENV_TYPE.WEAPP
 
         if (isWeapp) {
-          // 微信小程序下载文件
+          // 微信小程序导出文件 - 使用两种文件格式
           const fs = Taro.getFileSystemManager()
-          const filePath = `${Taro.env.USER_DATA_PATH}/${filename}`
-
-          fs.writeFileSync(filePath, dataStr, 'utf8')
+          
+          // 保存为 .json 格式（用于导入时识别）
+          const jsonFilePath = `${Taro.env.USER_DATA_PATH}/${filename}`
+          fs.writeFileSync(jsonFilePath, dataStr, 'utf8')
+          
+          // 同时保存为 .txt 格式（方便微信打开和分享）
+          const txtFilename = `guandan_backup_${timestamp}.txt`
+          const txtFilePath = `${Taro.env.USER_DATA_PATH}/${txtFilename}`
+          fs.writeFileSync(txtFilePath, dataStr, 'utf8')
 
           Taro.showModal({
             title: '导出成功',
-            content: `数据已保存为 ${filename}\n\n文件路径：${filePath}`,
-            showCancel: false,
-            confirmText: '我知道了'
+            content: `数据已保存！\n\n📁 文件格式：\n• JSON 格式：${filename}\n• TXT 格式：${txtFilename}\n\n💡 使用建议：\n1. 点击"打开文件"查看和分享 TXT 版本\n2. 导入数据时选择 JSON 版本文件`,
+            confirmText: '打开文件',
+            cancelText: '关闭',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                // 尝试打开 TXT 格式文件（微信支持较好）
+                Taro.openDocument({
+                  filePath: txtFilePath,
+                  showMenu: true,
+                  success: () => {
+                    console.log('TXT 文件打开成功')
+                  },
+                  fail: (err) => {
+                    console.error('打开文件失败:', err)
+                    // 如果打开失败，提供复制路径功能
+                    Taro.showModal({
+                      title: '提示',
+                      content: `文件已保存：\n\nJSON 格式：${jsonFilePath}\n\nTXT 格式：${txtFilePath}\n\n在导入数据时，请选择 JSON 格式的文件。`,
+                      confirmText: '复制JSON路径',
+                      cancelText: '关闭',
+                      success: (copyRes) => {
+                        if (copyRes.confirm) {
+                          Taro.setClipboardData({
+                            data: jsonFilePath,
+                            success: () => {
+                              Taro.showToast({ title: '路径已复制', icon: 'success' })
+                            }
+                          })
+                        }
+                      }
+                    })
+                  }
+                })
+              }
+            }
           })
         } else {
           // H5 端下载文件
