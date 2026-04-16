@@ -390,7 +390,7 @@ export default function StatsPage() {
                       className="award-help-btn"
                       onClick={() => setExpandedAwardId(expandedAwardId === award.id ? null : award.id)}
                     >
-                      <Text className="block" style={{ fontSize: '18px', lineHeight: 1 }}>❓</Text>
+                      <Text className="award-help-icon block">❓</Text>
                     </View>
                   </View>
                   {award.playerName && (

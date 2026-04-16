@@ -817,9 +817,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.15);
+  width: 22px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -827,8 +827,15 @@
 }
 
 .award-help-btn:active {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
   transform: scale(0.95);
+}
+
+.award-help-icon {
+  display: block;
+  font-size: 14px;
+  opacity: 0.5;
+  line-height: 1;
 }
 
 .award-player {
