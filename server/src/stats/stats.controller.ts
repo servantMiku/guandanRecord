@@ -8,6 +8,7 @@ type Award = {
   name: string
   icon: string
   description: string
+  rule: string           // 新增：奖项规则说明
   playerId?: string
   playerName?: string
   playerIds?: string[]
@@ -37,6 +38,7 @@ const calculateAwards = (
       name: '胜率之王',
       icon: '🏆',
       description: `${winRateKing.winRate}%`,
+      rule: '胜率最高的玩家',
       playerId: winRateKing.playerId,
       playerName: winRateKing.playerName,
       type: 'individual'
@@ -57,6 +59,7 @@ const calculateAwards = (
       name: '掼蛋大富翁',
       icon: '💎',
       description: `${richPlayer.totalScore} 积分`,
+      rule: '胜一场积3分，负一场积1分，总积分最高',
       playerId: richPlayer.playerId,
       playerName: richPlayer.playerName,
       type: 'individual'
@@ -77,6 +80,7 @@ const calculateAwards = (
       name: '金牌收割机',
       icon: '⚡',
       description: `${efficiencyKing.efficiency} 分/场`,
+      rule: '场均积分最高（积分效率）',
       playerId: efficiencyKing.playerId,
       playerName: efficiencyKing.playerName,
       type: 'individual'
@@ -93,6 +97,7 @@ const calculateAwards = (
       name: '全场最靓仔',
       icon: '🎪',
       description: `${mostActive.totalMatches} 场`,
+      rule: '参赛场次最多的劳模玩家',
       playerId: mostActive.playerId,
       playerName: mostActive.playerName,
       type: 'individual'
@@ -109,6 +114,7 @@ const calculateAwards = (
       name: '火力全开',
       icon: '🔥',
       description: `${mostWins.wins} 胜`,
+      rule: '胜场数最多的玩家',
       playerId: mostWins.playerId,
       playerName: mostWins.playerName,
       type: 'individual'
@@ -148,6 +154,7 @@ const calculateAwards = (
           name: '逆袭王',
           icon: '🎲',
           description: `${comebackKing.losses} 负仍有 ${comebackKing.winRate}% 胜率`,
+          rule: '输球场次多但胜率依然可观，韧性极强',
           playerId: comebackKing.playerId,
           playerName: comebackKing.playerName,
           type: 'individual'
@@ -525,13 +532,7 @@ export class StatsController {
       longestLoseStreak: longestLoseStreak.streak > 0 ? longestLoseStreak : null
     }
 
-    console.log('统计计算完成')
-    console.log('  - 赛季:', season.name)
-    console.log('  - 总场次:', summary.totalMatches)
-    console.log('  - 最佳玩家:', summary.bestPlayer)
-    console.log('  - 最佳搭档:', summary.bestPartner)
-    console.log('  - 奖项数量:', awards.length)
-    console.log('  - 奖项详情:', awards)
+    // 统计计算完成
 
     return {
       code: 200,

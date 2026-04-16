@@ -77,6 +77,7 @@ type Award = {
   name: string
   icon: string
   description: string
+  rule: string
   playerId?: string
   playerName?: string
   playerIds?: string[]
@@ -193,8 +194,6 @@ export default function StatsPage() {
         method: 'GET'
       })
       if (res.data && res.data.data) {
-        console.log('统计数据返回:', res.data.data)
-        console.log('奖项数据:', res.data.data.awards)
         setStats(res.data.data.playerStats || [])
         setPartnerStats(res.data.data.partnerStats || [])
         setPlayerPairMatrix(res.data.data.playerPairMatrix || [])
@@ -391,6 +390,7 @@ export default function StatsPage() {
                   {award.playerNames && award.playerNames.length > 0 && (
                     <Text className="award-player block">{award.playerNames.join(' + ')}</Text>
                   )}
+                  <Text className="award-rule block">{award.rule}</Text>
                 </View>
                 <Text className="award-desc block">{award.description}</Text>
               </View>
