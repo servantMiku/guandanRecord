@@ -432,7 +432,6 @@ export class MatchesController {
             const { error: insertError } = await client.from('player_stats').insert({
               season_id: seasonId,
               player_id: playerId,
-              player_name: player.name,
               total_matches: 1,
               wins: isWinner ? 1 : 0,
               win_rate: isWinner ? '100.00' : '0.00'
@@ -528,7 +527,6 @@ export class MatchesController {
         await client.from('player_stats').insert({
           season_id: seasonId,
           player_id: stat.player_id,
-          player_name: stat.player_name,
           total_matches: stat.total_matches,
           wins: stat.wins,
           win_rate: stat.win_rate
