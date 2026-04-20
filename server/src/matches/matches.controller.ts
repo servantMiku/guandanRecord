@@ -157,10 +157,14 @@ export class MatchesController {
 
     console.log('战绩创建成功:', data?.[0])
 
-    // 累加更新玩家统计数据
-    console.log('开始累加更新赛季', body.seasonId, '的玩家统计数据')
-    await this.updatePlayerStatsIncremental(body.seasonId, insertData, true)
-    console.log('玩家统计数据累加更新完成')
+    // 累加更新玩家统计数据（即使失败也不影响战绩创建）
+    try {
+      console.log('开始累加更新赛季', body.seasonId, '的玩家统计数据')
+      await this.updatePlayerStatsIncremental(body.seasonId, insertData, true)
+      console.log('玩家统计数据累加更新完成')
+    } catch (statsError) {
+      console.error('更新玩家统计数据失败，但战绩已创建:', statsError)
+    }
 
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
@@ -267,10 +271,14 @@ export class MatchesController {
 
     console.log('战绩更新成功:', data?.[0])
 
-    // 应用新战绩的影响
-    console.log('应用新战绩对统计的影响')
-    await this.updatePlayerStatsIncremental(oldData.season_id, newMatchData, true)
-    console.log('玩家统计数据累加更新完成')
+    // 应用新战绩的影响（即使失败也不影响战绩更新）
+    try {
+      console.log('应用新战绩对统计的影响')
+      await this.updatePlayerStatsIncremental(oldData.season_id, newMatchData, true)
+      console.log('玩家统计数据累加更新完成')
+    } catch (statsError) {
+      console.error('更新玩家统计数据失败，但战绩已更新:', statsError)
+    }
 
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
@@ -294,9 +302,13 @@ export class MatchesController {
 
     console.log('战绩所属赛季:', matchData.season_id)
 
-    // 先回退该战绩对统计的影响
-    console.log('先回退该战绩对统计的影响')
-    await this.updatePlayerStatsIncremental(matchData.season_id, matchData, false)
+    // 先回退该战绩对统计的影响（即使失败也不影响删除）
+    try {
+      console.log('先回退该战绩对统计的影响')
+      await this.updatePlayerStatsIncremental(matchData.season_id, matchData, false)
+    } catch (statsError) {
+      console.error('回退玩家统计数据失败，但战绩将被删除:', statsError)
+    }
 
     // 软删除
     console.log('开始软删除战绩...')
@@ -323,86 +335,120 @@ export class MatchesController {
   private async updatePlayerStatsIncremental(seasonId: string, matchData: any, isAdd: boolean) {
     const client = getSupabaseClient()
 
-    // 获取该场战绩的所有参与者
-    const playerIds = [
-      matchData.team1_player1_id,
-      matchData.team1_player2_id,
-      matchData.team2_player1_id,
-      matchData.team2_player2_id
-    ].filter(Boolean)
+    try {
+      // 获取该场战绩的所有参与者
+      const playerIds = [
+        matchData.team1_player1_id,
+        matchData.team1_player2_id,
+        matchData.team2_player1_id,
+        matchData.team2_player2_id
+      ].filter(Boolean)
 
-    console.log('战绩参与者:', playerIds, '是否添加:', isAdd)
+      console.log('战绩参与者:', playerIds, '是否添加:', isAdd)
 
-    // 遍历每个参与者
-    for (const playerId of playerIds) {
-      if (!playerId) continue
+      // 遍历每个参与者
+      for (const playerId of playerIds) {
+        if (!playerId) continue
 
-      // 获取玩家名称
-      const { data: player } = await client
-        .from('players')
-        .select('name')
-        .eq('id', playerId)
-        .single()
+        try {
+          console.log(`正在处理玩家: ${playerId}`)
 
-      // 判断该玩家是否获胜
-      const isWinner = 
-        (matchData.team1_player1_id === playerId || matchData.team1_player2_id === playerId) 
-          ? matchData.winner_team === 1 
-          : matchData.winner_team === 2
+          // 获取玩家名称
+          const { data: player, error: playerError } = await client
+            .from('players')
+            .select('name')
+            .eq('id', playerId)
+            .single()
 
-      console.log(`玩家 ${playerId} (${player?.name || '未知'}) 获胜:`, isWinner)
+          if (playerError) {
+            console.error(`获取玩家 ${playerId} 信息失败:`, playerError)
+            continue
+          }
 
-      // 获取现有统计数据
-      const { data: existing } = await client
-        .from('player_stats')
-        .select('*')
-        .eq('season_id', seasonId)
-        .eq('player_id', playerId)
-        .single()
+          if (!player) {
+            console.error(`玩家 ${playerId} 不存在`)
+            continue
+          }
 
-      const delta = isAdd ? 1 : -1
-      const winDelta = isWinner ? delta : 0
+          // 判断该玩家是否获胜
+          const isWinner = 
+            (matchData.team1_player1_id === playerId || matchData.team1_player2_id === playerId) 
+              ? matchData.winner_team === 1 
+              : matchData.winner_team === 2
 
-      if (existing) {
-        // 更新现有统计
-        const newTotalMatches = Math.max(0, (existing.total_matches || 0) + delta)
-        const newWins = Math.max(0, (existing.wins || 0) + winDelta)
-        const newWinRate = newTotalMatches > 0 
-          ? ((newWins / newTotalMatches) * 100).toFixed(2) 
-          : '0.00'
+          console.log(`玩家 ${playerId} (${player.name}) 获胜:`, isWinner)
 
-        console.log(`更新玩家 ${playerId} 统计:`, {
-          total_matches: newTotalMatches,
-          wins: newWins,
-          win_rate: newWinRate
-        })
+          // 获取现有统计数据
+          const { data: existing, error: existingError } = await client
+            .from('player_stats')
+            .select('*')
+            .eq('season_id', seasonId)
+            .eq('player_id', playerId)
+            .single()
 
-        await client
-          .from('player_stats')
-          .update({
-            total_matches: newTotalMatches,
-            wins: newWins,
-            win_rate: newWinRate,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existing.id)
-      } else if (isAdd) {
-        // 只在添加时才插入新记录
-        console.log(`插入玩家 ${playerId} 统计:`, {
-          total_matches: 1,
-          wins: isWinner ? 1 : 0,
-          win_rate: isWinner ? '100.00' : '0.00'
-        })
+          if (existingError && existingError.code !== 'PGRST116') {
+            console.error(`查询玩家 ${playerId} 统计失败:`, existingError)
+            continue
+          }
 
-        await client.from('player_stats').insert({
-          season_id: seasonId,
-          player_id: playerId,
-          player_name: player?.name || '未知',
-          total_matches: 1,
-          wins: isWinner ? 1 : 0,
-          win_rate: isWinner ? '100.00' : '0.00'
-        })
+          const delta = isAdd ? 1 : -1
+          const winDelta = isWinner ? delta : 0
+
+          if (existing) {
+            // 更新现有统计
+            const newTotalMatches = Math.max(0, (existing.total_matches || 0) + delta)
+            const newWins = Math.max(0, (existing.wins || 0) + winDelta)
+            const newWinRate = newTotalMatches > 0 
+              ? ((newWins / newTotalMatches) * 100).toFixed(2) 
+              : '0.00'
+
+            console.log(`更新玩家 ${playerId} 统计:`, {
+              total_matches: newTotalMatches,
+              wins: newWins,
+              win_rate: newWinRate
+            })
+
+            const { error: updateError } = await client
+              .from('player_stats')
+              .update({
+                total_matches: newTotalMatches,
+                wins: newWins,
+                win_rate: newWinRate,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existing.id)
+
+            if (updateError) {
+              console.error(`更新玩家 ${playerId} 统计失败:`, updateError)
+            }
+          } else if (isAdd) {
+            // 只在添加时才插入新记录
+            console.log(`插入玩家 ${playerId} 统计:`, {
+              total_matches: 1,
+              wins: isWinner ? 1 : 0,
+              win_rate: isWinner ? '100.00' : '0.00'
+            })
+
+            const { error: insertError } = await client.from('player_stats').insert({
+              season_id: seasonId,
+              player_id: playerId,
+              player_name: player.name,
+              total_matches: 1,
+              wins: isWinner ? 1 : 0,
+              win_rate: isWinner ? '100.00' : '0.00'
+            })
+
+            if (insertError) {
+              console.error(`插入玩家 ${playerId} 统计失败:`, insertError)
+            }
+          }
+        } catch (playerError) {
+          console.error(`处理玩家 ${playerId} 时出错:`, playerError)
+        }
       }
+    } catch (error) {
+      console.error('更新玩家统计数据时出错:', error)
+      throw error
     }
   }
 
