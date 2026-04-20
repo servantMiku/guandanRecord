@@ -240,13 +240,22 @@ export class StatsController {
           playerStatsMap.set(stat.player_id, { ...stat })
         }
       }
-      // 重新计算胜率
-      playerStats = Array.from(playerStatsMap.values()).map((stat: any) => ({
-        ...stat,
-        win_rate: stat.total_matches > 0 
-          ? ((stat.wins / stat.total_matches) * 100).toFixed(2) 
-          : '0.00'
-      }))
+      // 遍历所有玩家，确保每个玩家都有记录（即使数据为 0）
+      playerStats = (players || []).map(player => {
+        const existingStat = playerStatsMap.get(player.id)
+        return {
+          id: existingStat?.id || `temp-goat-${player.id}`,
+          player_id: player.id,
+          season_id: 'all',
+          total_matches: existingStat?.total_matches || 0,
+          wins: existingStat?.wins || 0,
+          win_rate: existingStat ? 
+            (existingStat.total_matches > 0 ? 
+              ((existingStat.wins / existingStat.total_matches) * 100).toFixed(2) : 
+              '0.00') : 
+            '0.00'
+        }
+      })
     } else {
       playerStats = playerStatsRaw || []
     }
@@ -469,22 +478,27 @@ export class StatsController {
     }
 
     // 合并玩家名称并转换字段名为 camelCase，添加连胜/连败数据
-    const playerStatsWithNames = (playerStats || []).map((stat) => {
-      const player = players?.find((p) => p.id === stat.player_id)
-      const streak = streakMap.get(stat.player_id) || { 
+    // 确保所有玩家都显示，即使没有比赛记录
+    const playerStatsMap = new Map(
+      (playerStats || []).map(stat => [stat.player_id, stat])
+    )
+    
+    const playerStatsWithNames = (players || []).map(player => {
+      const stat = playerStatsMap.get(player.id)
+      const streak = streakMap.get(player.id) || { 
         currentStreak: 0, 
         currentType: 'none' as const,
         maxWinStreak: 0,
         maxLoseStreak: 0
       }
       return {
-        id: stat.id,
-        seasonId: stat.season_id,
-        playerId: stat.player_id,
-        playerName: player?.name || '未知玩家',
-        totalMatches: stat.total_matches || 0,
-        wins: stat.wins || 0,
-        winRate: stat.win_rate || '0.00',
+        id: stat?.id || `temp-${player.id}`,
+        seasonId: stat?.season_id || seasonId,
+        playerId: player.id,
+        playerName: player.name,
+        totalMatches: stat?.total_matches || 0,
+        wins: stat?.wins || 0,
+        winRate: stat?.win_rate || '0.00',
         streak: streak.currentStreak,
         streakType: streak.currentType,
         maxWinStreak: streak.maxWinStreak,
