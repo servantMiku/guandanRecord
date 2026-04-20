@@ -37,6 +37,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [editingPlayer, setEditingPlayer] = useState<EditingPlayer | null>(null)
   const [editingName, setEditingName] = useState('')
+  const [showAddInput, setShowAddInput] = useState(false)
+  const [newPlayerName, setNewPlayerName] = useState('')
 
   useEffect(() => {
     fetchPlayers()
@@ -95,6 +97,34 @@ export default function ProfilePage() {
       console.error('更新玩家失败:', error)
       Taro.showToast({ title: '更新失败', icon: 'none' })
     }
+  }
+
+  const handleAddPlayer = async () => {
+    if (!newPlayerName.trim()) {
+      Taro.showToast({ title: '玩家名称不能为空', icon: 'none' })
+      return
+    }
+
+    try {
+      await Network.request({
+        url: '/api/players',
+        method: 'POST',
+        data: { name: newPlayerName.trim() }
+      })
+
+      Taro.showToast({ title: '添加成功', icon: 'success' })
+      setShowAddInput(false)
+      setNewPlayerName('')
+      fetchPlayers()
+    } catch (error) {
+      console.error('添加玩家失败:', error)
+      Taro.showToast({ title: '添加失败', icon: 'none' })
+    }
+  }
+
+  const handleCancelAddPlayer = () => {
+    setShowAddInput(false)
+    setNewPlayerName('')
   }
 
   const getPlayerInitial = (name: string) => {
@@ -318,7 +348,36 @@ export default function ProfilePage() {
             <Text className="loading-text">加载中...</Text>
           </View>
         ) : (
-          <View className="player-list">
+          <View>
+            <View className="add-player-section">
+              {showAddInput ? (
+                <View className="add-player-input-container">
+                  <View className="add-player-input-wrapper">
+                    <Input
+                      className="add-player-input"
+                      placeholder="输入新玩家名称"
+                      value={newPlayerName}
+                      onInput={(e) => setNewPlayerName(e.detail.value)}
+                    />
+                  </View>
+                  <View className="add-player-actions">
+                    <View className="add-player-btn add-player-btn-confirm" onClick={handleAddPlayer}>
+                      <Text className="add-player-btn-text">确认</Text>
+                    </View>
+                    <View className="add-player-btn add-player-btn-cancel" onClick={handleCancelAddPlayer}>
+                      <Text className="add-player-btn-text">取消</Text>
+                    </View>
+                  </View>
+                </View>
+              ) : (
+                <View className="add-player-btn add-player-btn-main" onClick={() => setShowAddInput(true)}>
+                  <Text className="add-player-btn-icon">➕</Text>
+                  <Text className="add-player-btn-text" style={{ marginLeft: '8px' }}>添加玩家</Text>
+                </View>
+              )}
+            </View>
+
+            <View className="player-list">
             {players.map((player, index) => (
               <View key={player.id} className="player-card">
                 <View className="player-info">
@@ -370,6 +429,7 @@ export default function ProfilePage() {
                 </View>
               </View>
             ))}
+          </View>
           </View>
         )}
 

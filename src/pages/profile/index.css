@@ -44,6 +44,76 @@
   font-size: 28px;
 }
 
+/* 新增玩家区域 */
+.add-player-section {
+  margin-bottom: 24px;
+}
+
+.add-player-btn-main {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.add-player-input-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.add-player-input-wrapper {
+  margin-bottom: 16px;
+}
+
+.add-player-input {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px 24px;
+  color: #ffffff;
+  font-size: 26px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.add-player-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.add-player-btn {
+  flex: 1;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-player-btn-confirm {
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+}
+
+.add-player-btn-cancel {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.add-player-btn-icon {
+  font-size: 28px;
+}
+
+.add-player-btn-text {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+}
+
 /* 玩家列表 */
 .player-list {
   display: flex;

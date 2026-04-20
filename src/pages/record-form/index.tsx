@@ -52,6 +52,7 @@ export default function RecordFormPage() {
   const [team2Score, setTeam2Score] = useState<string>('')
   const [remark, setRemark] = useState<string>('')
   const [matchTime, setMatchTime] = useState<string>('') // 比赛时间
+  const [winnerMode, setWinnerMode] = useState<'auto' | 'team1' | 'team2'>('auto') // 获胜队伍选择模式
 
   const fetchData = useCallback(async () => {
     try {
@@ -124,6 +125,14 @@ export default function RecordFormPage() {
     // 新增模式下清空草稿，确保空白状态（但如果有URL参数预填充则不清空）
     if (!matchId && !team1p1) {
       clearDraft()
+      // 设置默认时间为当前时间
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const hours = String(now.getHours()).padStart(2, '0')
+      const minutes = String(now.getMinutes()).padStart(2, '0')
+      setMatchTime(`${year}-${month}-${day}T${hours}:${minutes}`)
     }
   }, [fetchData, matchId, team1p1])
 
@@ -247,10 +256,28 @@ export default function RecordFormPage() {
     setSubmitting(true)
 
     try {
-      // 确定获胜队伍（根据牌级索引，索引越大牌越大）
-      const team1ScoreIndex = CARD_LEVELS.indexOf(team1Score)
-      const team2ScoreIndex = CARD_LEVELS.indexOf(team2Score)
-      const winnerTeam = team1ScoreIndex > team2ScoreIndex ? 1 : 2
+      // 确定获胜队伍
+      let winnerTeam: number
+      if (winnerMode === 'auto') {
+        // 自动判断模式（根据牌级索引，索引越大牌越大）
+        const team1ScoreIndex = CARD_LEVELS.indexOf(team1Score)
+        const team2ScoreIndex = CARD_LEVELS.indexOf(team2Score)
+        
+        // 如果比分相同，提示用户手动选择
+        if (team1ScoreIndex === team2ScoreIndex) {
+          Taro.showToast({ 
+            title: '比分相同，请手动选择获胜队伍', 
+            icon: 'none',
+            duration: 2000
+          })
+          return
+        }
+        
+        winnerTeam = team1ScoreIndex > team2ScoreIndex ? 1 : 2
+      } else {
+        // 手动选择模式
+        winnerTeam = winnerMode === 'team1' ? 1 : 2
+      }
 
       // 构造比分字符串
       const scoreStr = `队伍1：${team1Score}，队伍2：${team2Score}`
@@ -503,6 +530,31 @@ export default function RecordFormPage() {
               <Text className="score-display-text">
                 {team1Score || '?'} VS {team2Score || '?'}
               </Text>
+            </View>
+
+            {/* 获胜队伍选择 */}
+            <View className="winner-select-section">
+              <Text className="winner-select-title">获胜队伍</Text>
+              <View className="winner-select-options">
+                <View 
+                  className={`winner-option ${winnerMode === 'auto' ? 'winner-option-selected' : ''}`}
+                  onClick={() => setWinnerMode('auto')}
+                >
+                  <Text className="winner-option-text">🏳️ 自动判断</Text>
+                </View>
+                <View 
+                  className={`winner-option winner-option-team1 ${winnerMode === 'team1' ? 'winner-option-selected' : ''}`}
+                  onClick={() => setWinnerMode('team1')}
+                >
+                  <Text className="winner-option-text">🏆 队伍1胜</Text>
+                </View>
+                <View 
+                  className={`winner-option winner-option-team2 ${winnerMode === 'team2' ? 'winner-option-selected' : ''}`}
+                  onClick={() => setWinnerMode('team2')}
+                >
+                  <Text className="winner-option-text">🏆 队伍2胜</Text>
+                </View>
+              </View>
             </View>
           </View>
 

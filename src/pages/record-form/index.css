@@ -330,3 +330,57 @@
   color: #ffffff;
   font-size: 26px;
 }
+
+/* 获胜队伍选择 */
+.winner-select-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.winner-select-title {
+  display: block;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.winner-select-options {
+  display: flex;
+  gap: 12px;
+}
+
+.winner-option {
+  flex: 1;
+  padding: 18px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.winner-option-selected {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-color: #fbbf24;
+}
+
+.winner-option-team1.winner-option-selected {
+  background: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
+  border-color: #ec4899;
+}
+
+.winner-option-team2.winner-option-selected {
+  background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
+  border-color: #06b6d4;
+}
+
+.winner-option-text {
+  display: block;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+}

@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Param, Body } from '@nestjs/common'
+import { Controller, Get, Post, Put, Param, Body } from '@nestjs/common'
 import { PlayersService } from './players.service'
 import { getSupabaseClient } from '../storage/database/supabase-client'
 
@@ -46,6 +46,36 @@ export class PlayersController {
     }
 
     return { code: 200, msg: 'success', data: existingPlayers || [] }
+  }
+
+  @Post()
+  async createPlayer(@Body() body: { name: string; avatar?: string }) {
+    console.log('创建玩家请求 - 数据:', body)
+    const client = getSupabaseClient()
+
+    if (!body.name || !body.name.trim()) {
+      return { code: 400, msg: '玩家名称不能为空', data: null }
+    }
+
+    const newPlayer = {
+      name: body.name.trim(),
+      avatar: body.avatar || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    const { data, error } = await client
+      .from('players')
+      .insert(newPlayer)
+      .select()
+
+    if (error) {
+      console.error('创建玩家失败:', error)
+      return { code: 500, msg: '创建玩家失败', data: null }
+    }
+
+    console.log('玩家创建成功:', data?.[0])
+    return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 
   @Put(':id')
