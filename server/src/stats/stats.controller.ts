@@ -517,7 +517,7 @@ export class StatsController {
     const playedMatches = matches?.length || 0
     const totalMatches = season.total_matches
     const remainingMatches = totalMatches ? Math.max(0, totalMatches - playedMatches) : null
-    const minMatchesForAwards = Math.ceil(playedMatches * thresholdRate)
+    const minMatchesForAwards = Math.floor(playedMatches * thresholdRate)
 
     console.log('赛季场次信息:', {
       played: playedMatches,
