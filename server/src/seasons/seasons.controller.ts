@@ -28,6 +28,8 @@ export class SeasonsController {
       name: s.name,
       startDate: s.start_date,
       endDate: s.end_date,
+      totalMatches: s.total_matches,
+      currentMatches: s.current_matches,
       status: s.status,
       createdAt: s.created_at,
       updatedAt: s.updated_at
@@ -60,6 +62,8 @@ export class SeasonsController {
       name: s.name,
       startDate: s.start_date,
       endDate: s.end_date,
+      totalMatches: s.total_matches,
+      currentMatches: s.current_matches,
       status: s.status,
       createdAt: s.created_at,
       updatedAt: s.updated_at
@@ -69,7 +73,7 @@ export class SeasonsController {
   }
 
   @Post()
-  async createSeason(@Body() body: { name: string; startDate: string; endDate?: string | null }) {
+  async createSeason(@Body() body: { name: string; startDate: string; endDate?: string | null; totalMatches?: number }) {
     console.log('创建赛季请求:', body)
     const client = getSupabaseClient()
 
@@ -81,6 +85,10 @@ export class SeasonsController {
 
     if (body.endDate) {
       insertData.end_date = body.endDate
+    }
+
+    if (body.totalMatches && body.totalMatches > 0) {
+      insertData.total_matches = body.totalMatches
     }
 
     console.log('插入数据:', insertData)
@@ -104,6 +112,8 @@ export class SeasonsController {
       name: season.name,
       startDate: season.start_date,
       endDate: season.end_date,
+      totalMatches: season.total_matches,
+      currentMatches: season.current_matches,
       status: season.status,
       createdAt: season.created_at,
       updatedAt: season.updated_at
@@ -116,6 +126,38 @@ export class SeasonsController {
   async endSeason(@Param('id') id: string, @Body() body: { endDate: string }) {
     console.log('结束赛季请求 - ID:', id, '结束日期:', body.endDate)
     const client = getSupabaseClient()
+
+    // 先清空该赛季的历史数据（软删除）
+    try {
+      console.log('开始清空赛季', id, '的历史数据')
+      const { error: matchesError } = await client
+        .from('matches')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('season_id', id)
+        .is('deleted_at', null)
+
+      if (matchesError) {
+        console.error('清空赛季战绩失败:', matchesError)
+        return { code: 500, msg: '清空赛季战绩失败', data: null }
+      }
+
+      const { error: statsError } = await client
+        .from('player_stats')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('season_id', id)
+        .is('deleted_at', null)
+
+      if (statsError) {
+        console.error('清空赛季统计数据失败:', statsError)
+        return { code: 500, msg: '清空赛季统计数据失败', data: null }
+      }
+
+      console.log('赛季', id, '的历史数据已清空')
+    } catch (err) {
+      console.error('清空赛季数据时出错:', err)
+      return { code: 500, msg: '清空赛季数据时出错', data: null }
+    }
+
     const { data, error } = await client
       .from('seasons')
       .update({
@@ -140,6 +182,8 @@ export class SeasonsController {
       name: season.name,
       startDate: season.start_date,
       endDate: season.end_date,
+      totalMatches: season.total_matches,
+      currentMatches: season.current_matches,
       status: season.status,
       createdAt: season.created_at,
       updatedAt: season.updated_at

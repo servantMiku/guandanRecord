@@ -171,9 +171,16 @@ export class StatsController {
   constructor(private readonly statsService: StatsService) {}
 
   @Get('season')
-  async getSeasonStats(@Query('seasonId') seasonId: string) {
-    console.log('获取赛季统计请求 - 赛季ID:', seasonId)
+  async getSeasonStats(
+    @Query('seasonId') seasonId: string,
+    @Query('threshold') threshold?: string
+  ) {
+    console.log('获取赛季统计请求 - 赛季ID:', seasonId, '门槛:', threshold)
     const client = getSupabaseClient()
+
+    // 解析门槛比例，默认 80%
+    const thresholdRate = threshold ? parseFloat(threshold) : 0.8
+    console.log('使用门槛比例:', thresholdRate)
     
     // 判断是否全量统计（不传 seasonId 或传 'all'）
     const isAllTime = !seasonId || seasonId === 'all'
@@ -532,11 +539,38 @@ export class StatsController {
     // 计算所有奖项
     const awards = calculateAwards(playerStatsWithNames, players || [], seasonId, isAllTime, client)
 
+    // 计算赛季场次信息
+    const playedMatches = matches?.length || 0
+    const totalMatches = season.total_matches
+    const remainingMatches = totalMatches ? Math.max(0, totalMatches - playedMatches) : null
+    const minMatchesForAwards = Math.ceil(playedMatches * thresholdRate)
+
+    console.log('赛季场次信息:', {
+      played: playedMatches,
+      total: totalMatches,
+      remaining: remainingMatches,
+      threshold: thresholdRate,
+      minMatches: minMatchesForAwards
+    })
+
+    // 过滤达到门槛的玩家用于荣誉计算
+    const eligiblePlayers = playerStatsWithNames.filter(
+      p => p.totalMatches >= minMatchesForAwards
+    )
+    console.log('达到门槛的玩家:', eligiblePlayers.length, '/', playerStatsWithNames.length)
+
+    // 使用过滤后的玩家计算奖项
+    const filteredAwards = calculateAwards(eligiblePlayers, players || [], seasonId, isAllTime, client)
+
     // 赛季概览
     const summary = {
       seasonId: season.id,
       seasonName: season.name,
-      totalMatches: matches?.length || 0,
+      totalMatches: playedMatches,
+      seasonTotalMatches: totalMatches,
+      remainingMatches,
+      threshold: thresholdRate,
+      minMatchesForAwards,
       bestPlayer: bestPlayer?.playerName || '暂无',
       bestWinRate: bestPlayer ? `${bestPlayer.winRate}%` : '0.00%',
       bestPartner: bestPartner ? `${bestPartner.player1Name} + ${bestPartner.player2Name}` : '暂无',
@@ -556,7 +590,14 @@ export class StatsController {
         playerStats: playerStatsWithNames,
         partnerStats,
         playerPairMatrix,
-        awards
+        awards: filteredAwards,
+        seasonInfo: {
+          totalMatches,
+          currentMatches: playedMatches,
+          remainingMatches,
+          threshold: thresholdRate,
+          minMatchesForAwards
+        }
       }
     }
   }

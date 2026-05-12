@@ -166,6 +166,46 @@ export class MatchesController {
       console.error('更新玩家统计数据失败，但战绩已创建:', statsError)
     }
 
+    // 更新赛季 current_matches 并检查是否达到总场次
+    try {
+      console.log('开始更新赛季', body.seasonId, '的当前场次')
+      const { data: seasonData } = await client
+        .from('seasons')
+        .select('total_matches, current_matches')
+        .eq('id', body.seasonId)
+        .single()
+
+      if (seasonData) {
+        const newCurrent = (seasonData.current_matches || 0) + 1
+        console.log('赛季当前场次:', newCurrent, '/', seasonData.total_matches)
+
+        const updateData: any = {
+          current_matches: newCurrent,
+          updated_at: new Date().toISOString()
+        }
+
+        // 如果达到总场次，自动结束赛季
+        if (seasonData.total_matches && newCurrent >= seasonData.total_matches) {
+          updateData.end_date = new Date().toISOString()
+          updateData.status = 'ended'
+          console.log('赛季达到总场次，自动结束赛季')
+        }
+
+        const { error: seasonUpdateError } = await client
+          .from('seasons')
+          .update(updateData)
+          .eq('id', body.seasonId)
+
+        if (seasonUpdateError) {
+          console.error('更新赛季场次失败:', seasonUpdateError)
+        } else {
+          console.log('赛季场次更新成功:', newCurrent)
+        }
+      }
+    } catch (seasonError) {
+      console.error('更新赛季场次时出错:', seasonError)
+    }
+
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 

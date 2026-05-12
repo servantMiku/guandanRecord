@@ -1,4 +1,4 @@
-import { View, Text, Input } from '@tarojs/components'
+import { View, Text, Input, Slider } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
@@ -39,9 +39,15 @@ export default function ProfilePage() {
   const [editingName, setEditingName] = useState('')
   const [showAddInput, setShowAddInput] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState('')
+  const [honorThreshold, setHonorThreshold] = useState(80)
 
   useEffect(() => {
     fetchPlayers()
+    // 从本地存储读取门槛值
+    const savedThreshold = Taro.getStorageSync('honorThreshold')
+    if (savedThreshold) {
+      setHonorThreshold(Number(savedThreshold))
+    }
   }, [])
 
   // 页面显示时刷新数据
@@ -125,6 +131,11 @@ export default function ProfilePage() {
   const handleCancelAddPlayer = () => {
     setShowAddInput(false)
     setNewPlayerName('')
+  }
+
+  const handleThresholdChange = (value: number) => {
+    setHonorThreshold(value)
+    Taro.setStorageSync('honorThreshold', value.toString())
   }
 
   const getPlayerInitial = (name: string) => {
@@ -447,6 +458,30 @@ export default function ProfilePage() {
               <Text className="backup-btn-text">导入数据</Text>
             </View>
           </View>
+        </View>
+
+        {/* 荣誉门槛配置 */}
+        <View className="threshold-section">
+          <Text className="threshold-title">🎖️ 荣誉门槛</Text>
+          <Text className="threshold-desc">
+            参赛场次达到赛季总场次的 {honorThreshold}% 才能参与荣誉评选
+          </Text>
+          <View className="threshold-slider-container">
+            <Text className="threshold-slider-label">50%</Text>
+            <Slider
+              className="threshold-slider"
+              min={50}
+              max={100}
+              step={5}
+              value={honorThreshold}
+              onChange={(e) => handleThresholdChange(e.detail.value)}
+              activeColor="#22c55e"
+              backgroundColor="rgba(255,255,255,0.2)"
+              blockSize={20}
+            />
+            <Text className="threshold-slider-label">100%</Text>
+          </View>
+          <Text className="threshold-value">当前设置：{honorThreshold}%</Text>
         </View>
 
         {/* 清空数据区域 */}

@@ -275,6 +275,57 @@
 }
 
 /* 清空数据区域 */
+/* 荣誉门槛配置 */
+.threshold-section {
+  margin-top: 40px;
+  padding: 28px;
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: 20px;
+  border: 2px solid rgba(139, 92, 246, 0.3);
+}
+
+.threshold-title {
+  display: block;
+  color: #a78bfa;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.threshold-desc {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 22px;
+  margin-bottom: 24px;
+}
+
+.threshold-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.threshold-slider {
+  flex: 1;
+}
+
+.threshold-slider-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.threshold-value {
+  display: block;
+  color: #a78bfa;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+}
+
 .clear-data-section {
   margin-top: 40px;
   padding: 28px;

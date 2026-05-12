@@ -298,6 +298,71 @@
   font-weight: 700;
 }
 
+/* 赛季进度卡片 */
+.season-progress-card {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.season-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.season-progress-title {
+  display: block;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.season-progress-text {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+.season-progress-bar-bg {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.season-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.season-progress-remain {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  text-align: right;
+}
+
+/* 门槛提示 */
+.threshold-info {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-left: 3px solid #fbbf24;
+}
+
+.threshold-text {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
 /* 最佳搭档展示 */
 .best-partner-section {
   margin-top: 24px;

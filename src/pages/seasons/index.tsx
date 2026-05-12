@@ -26,6 +26,8 @@ type Season = {
   startDate: string
   endDate: string | null
   status: 'active' | 'ended'
+  totalMatches: number | null
+  currentMatches: number
   createdAt: string
 }
 
@@ -33,6 +35,7 @@ type SeasonForm = {
   name: string
   startDate: string
   endDate: string | null
+  totalMatches: number | null
 }
 
 export default function SeasonsPage() {
@@ -43,7 +46,8 @@ export default function SeasonsPage() {
   const [form, setForm] = useState<SeasonForm>({
     name: '',
     startDate: new Date().toISOString().split('T')[0],
-    endDate: null
+    endDate: null,
+    totalMatches: null
   })
 
   const fetchSeasons = async () => {
@@ -75,7 +79,8 @@ export default function SeasonsPage() {
     setForm({
       name: '',
       startDate: new Date().toISOString().split('T')[0],
-      endDate: null
+      endDate: null,
+      totalMatches: null
     })
     setShowForm(true)
   }
@@ -85,7 +90,8 @@ export default function SeasonsPage() {
     setForm({
       name: season.name,
       startDate: season.startDate,
-      endDate: season.endDate
+      endDate: season.endDate,
+      totalMatches: season.totalMatches
     })
     setShowForm(true)
   }
@@ -110,16 +116,19 @@ export default function SeasonsPage() {
     }
 
     try {
+      const payload = {
+        name: form.name,
+        startDate: form.startDate,
+        endDate: form.endDate,
+        totalMatches: form.totalMatches
+      }
+
       if (editingSeason) {
         // 编辑赛季
         await Network.request({
           url: `/api/seasons/${editingSeason.id}`,
           method: 'PUT',
-          data: {
-            name: form.name,
-            startDate: form.startDate,
-            endDate: form.endDate
-          }
+          data: payload
         })
         Taro.showToast({ title: '更新成功', icon: 'success' })
       } else {
@@ -127,11 +136,7 @@ export default function SeasonsPage() {
         await Network.request({
           url: '/api/seasons',
           method: 'POST',
-          data: {
-            name: form.name,
-            startDate: form.startDate,
-            endDate: form.endDate
-          }
+          data: payload
         })
         Taro.showToast({ title: '创建成功', icon: 'success' })
       }
@@ -275,6 +280,22 @@ export default function SeasonsPage() {
               )}
             </View>
 
+            {/* 总场次 */}
+            <View className="form-field">
+              <Text className="form-label">🎯 总场次 (可选)</Text>
+              <Input
+                className="form-input"
+                type="number"
+                placeholder="例如：20"
+                value={form.totalMatches !== null ? String(form.totalMatches) : ''}
+                onInput={(e) => {
+                  const val = e.detail.value
+                  setForm({ ...form, totalMatches: val ? parseInt(val, 10) || null : null })
+                }}
+              />
+              <Text className="block text-xs opacity-50 mt-2">设置总场次后，到达场次将自动结束赛季</Text>
+            </View>
+
             {/* 按钮 */}
             <View className="form-actions">
               <View className="form-btn form-btn-cancel" onClick={() => setShowForm(false)}>
@@ -305,6 +326,21 @@ export default function SeasonsPage() {
                   <Icon name="Calendar" size={20} color="#ffffff" />
                   <Text className="season-date-text">{season.startDate} - 进行中</Text>
                 </View>
+                {season.totalMatches !== null && (
+                  <View className="season-progress">
+                    <View className="season-progress-bar">
+                      <View
+                        className="season-progress-fill"
+                        style={{
+                          width: `${Math.min(100, (season.currentMatches / season.totalMatches) * 100)}%`
+                        }}
+                      />
+                    </View>
+                    <Text className="season-progress-text">
+                      {season.currentMatches} / {season.totalMatches} 场
+                    </Text>
+                  </View>
+                )}
                 <View className="season-actions">
                   <View
                     className="season-action season-action-end"

@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
-import { useDidShow } from '@tarojs/taro'
+import { useDidShow, getStorageSync } from '@tarojs/taro'
 import { Network } from '@/network'
 import './index.css'
 
@@ -29,6 +29,8 @@ type Season = {
   startDate: string
   endDate: string | null
   status: string
+  totalMatches?: number
+  currentMatches?: number
 }
 
 type PlayerStat = {
@@ -190,8 +192,10 @@ export default function StatsPage() {
 
     try {
       setLoading(true)
+      // 从 localStorage 读取荣誉门槛
+      const threshold = getStorageSync('HONOR_THRESHOLD') || 80
       const res = await Network.request({
-        url: `/api/stats/season?seasonId=${seasonId}`,
+        url: `/api/stats/season?seasonId=${seasonId}&threshold=${threshold}`,
         method: 'GET'
       })
       if (res.data && res.data.data) {
@@ -297,6 +301,29 @@ export default function StatsPage() {
           </View>
         )}
       </View>
+
+      {/* 赛季进度 */}
+      {selectedSeasonId !== 'all' && summary && summary.totalMatches !== undefined && (
+        <View className="season-progress-card">
+          <View className="season-progress-header">
+            <Text className="season-progress-title">赛季进度</Text>
+            <Text className="season-progress-text">
+              {summary.currentMatches || 0} / {summary.totalMatches || 0} 场
+            </Text>
+          </View>
+          <View className="season-progress-bar-bg">
+            <View 
+              className="season-progress-bar-fill"
+              style={{
+                width: `${summary.totalMatches > 0 ? Math.round(((summary.currentMatches || 0) / summary.totalMatches) * 100) : 0}%`
+              }}
+            />
+          </View>
+          <Text className="season-progress-remain">
+            剩余 {Math.max(0, (summary.totalMatches || 0) - (summary.currentMatches || 0))} 场
+          </Text>
+        </View>
+      )}
 
       {/* 汇总信息 */}
       {summary && (
@@ -461,6 +488,14 @@ export default function StatsPage() {
           </View>
         ) : (
           <View>
+            {/* 门槛过滤提示 */}
+            {selectedSeasonId !== 'all' && summary && summary.threshold && summary.threshold > 0 && (
+              <View className="threshold-info">
+                <Text className="threshold-text">
+                  荣誉门槛：参赛率 ≥ {summary.threshold}%（{(summary.currentMatches || 0)}场中需 ≥ {Math.ceil((summary.currentMatches || 0) * (summary.threshold / 100))}场）
+                </Text>
+              </View>
+            )}
             {sortedStats.map((stat, index) => (
               <View
                 key={stat.id}

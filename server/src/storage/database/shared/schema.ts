@@ -18,6 +18,8 @@ export const seasons = pgTable(
     name: varchar("name", { length: 100 }).notNull(),
     startDate: varchar("start_date", { length: 10 }).notNull(), // YYYY-MM-DD
     endDate: varchar("end_date", { length: 10 }), // YYYY-MM-DD
+    totalMatches: integer("total_matches"), // 赛季总场次（可选，为空表示不限制）
+    currentMatches: integer("current_matches").notNull().default(0), // 当前已进行场次
     status: varchar("status", { length: 20 }).notNull().default("active"), // active, ended
     createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' })
       .defaultNow()
