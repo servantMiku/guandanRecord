@@ -513,33 +513,7 @@ export class StatsController {
       }
     })
 
-    // 找出最佳战绩玩家
-    const bestPlayer = playerStatsWithNames.length > 0
-      ? playerStatsWithNames.reduce((best, current) => {
-          const currentWinRate = parseFloat(current.winRate || '0')
-          const bestWinRate = parseFloat(best.winRate || '0')
-          return currentWinRate > bestWinRate ? current : best
-        })
-      : null
-
-    // 找出最长连胜和最长连败
-    let longestWinStreak = { playerName: '', streak: 0 }
-    let longestLoseStreak = { playerName: '', streak: 0 }
-    
-    for (const [playerId, streakInfo] of streakMap.entries()) {
-      const playerName = players?.find(p => p.id === playerId)?.name || '未知'
-      if (streakInfo.maxWinStreak > longestWinStreak.streak) {
-        longestWinStreak = { playerName, streak: streakInfo.maxWinStreak }
-      }
-      if (streakInfo.maxLoseStreak > longestLoseStreak.streak) {
-        longestLoseStreak = { playerName, streak: streakInfo.maxLoseStreak }
-      }
-    }
-
-    // 计算所有奖项
-    const awards = calculateAwards(playerStatsWithNames, players || [], seasonId, isAllTime, client)
-
-    // 计算赛季场次信息
+    // 计算赛季场次信息（基于实际已发生的比赛场次）
     const playedMatches = matches?.length || 0
     const totalMatches = season.total_matches
     const remainingMatches = totalMatches ? Math.max(0, totalMatches - playedMatches) : null
@@ -561,6 +535,29 @@ export class StatsController {
 
     // 使用过滤后的玩家计算奖项
     const filteredAwards = calculateAwards(eligiblePlayers, players || [], seasonId, isAllTime, client)
+
+    // 找出最佳战绩玩家（基于达到门槛的玩家）
+    const bestPlayer = eligiblePlayers.length > 0
+      ? eligiblePlayers.reduce((best, current) => {
+          const currentWinRate = parseFloat(current.winRate || '0')
+          const bestWinRate = parseFloat(best.winRate || '0')
+          return currentWinRate > bestWinRate ? current : best
+        })
+      : null
+
+    // 找出最长连胜和最长连败
+    let longestWinStreak = { playerName: '', streak: 0 }
+    let longestLoseStreak = { playerName: '', streak: 0 }
+    
+    for (const [playerId, streakInfo] of streakMap.entries()) {
+      const playerName = players?.find(p => p.id === playerId)?.name || '未知'
+      if (streakInfo.maxWinStreak > longestWinStreak.streak) {
+        longestWinStreak = { playerName, streak: streakInfo.maxWinStreak }
+      }
+      if (streakInfo.maxLoseStreak > longestLoseStreak.streak) {
+        longestLoseStreak = { playerName, streak: streakInfo.maxLoseStreak }
+      }
+    }
 
     // 赛季概览
     const summary = {

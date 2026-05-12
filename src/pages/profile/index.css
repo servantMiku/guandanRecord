@@ -299,30 +299,50 @@
   margin-bottom: 24px;
 }
 
-.threshold-slider-container {
+.threshold-control {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
   margin-bottom: 16px;
 }
 
-.threshold-slider {
-  flex: 1;
+.threshold-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 20px;
 }
 
-.threshold-slider-label {
+.threshold-btn:active {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.threshold-btn-text {
   display: block;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 20px;
-  min-width: 40px;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 300;
   text-align: center;
+  line-height: 1;
 }
 
-.threshold-value {
+.threshold-value-display {
   display: block;
-  color: #a78bfa;
-  font-size: 24px;
+  color: #22c55e;
+  font-size: 36px;
   font-weight: bold;
+  text-align: center;
+  min-width: 100px;
+}
+
+.threshold-hint {
+  display: block;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
   text-align: center;
 }
 
