@@ -40,14 +40,11 @@ export default function ProfilePage() {
   const [showAddInput, setShowAddInput] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState('')
   const [honorThreshold, setHonorThreshold] = useState(80)
+  const [thresholdLoading, setThresholdLoading] = useState(false)
 
   useEffect(() => {
     fetchPlayers()
-    // 从本地存储读取门槛值
-    const savedThreshold = Taro.getStorageSync('honorThreshold')
-    if (savedThreshold) {
-      setHonorThreshold(Number(savedThreshold))
-    }
+    fetchThreshold()
   }, [])
 
   // 页面显示时刷新数据
@@ -133,9 +130,49 @@ export default function ProfilePage() {
     setNewPlayerName('')
   }
 
+  const fetchThreshold = async () => {
+    try {
+      const res = await Network.request({
+        url: '/api/config/honor_threshold'
+      })
+      if (res.data && res.data.data) {
+        const configValue = Number(res.data.data.value)
+        if (!Number.isNaN(configValue)) {
+          setHonorThreshold(configValue)
+        }
+      }
+    } catch (error) {
+      console.log('获取门槛配置失败:', error)
+    }
+  }
+
   const handleThresholdChange = (value: number) => {
     setHonorThreshold(value)
-    Taro.setStorageSync('honorThreshold', value.toString())
+  }
+
+  const handleSaveThreshold = async () => {
+    try {
+      setThresholdLoading(true)
+      const res = await Network.request({
+        url: '/api/config',
+        method: 'POST',
+        data: {
+          key: 'honor_threshold',
+          value: honorThreshold.toString(),
+          description: '荣誉门槛百分比'
+        }
+      })
+      if (res.data && res.data.code === 200) {
+        Taro.showToast({ title: '保存成功', icon: 'success' })
+      } else {
+        Taro.showToast({ title: '保存失败', icon: 'none' })
+      }
+    } catch (error) {
+      console.log('保存门槛配置失败:', error)
+      Taro.showToast({ title: '保存失败', icon: 'none' })
+    } finally {
+      setThresholdLoading(false)
+    }
   }
 
   const getPlayerInitial = (name: string) => {
@@ -482,6 +519,11 @@ export default function ProfilePage() {
             </View>
           </View>
           <Text className="threshold-hint">点击按钮调整门槛（50% - 100%）</Text>
+          <View className="threshold-save-btn" onClick={handleSaveThreshold}>
+            <Text className="threshold-save-text">
+              {thresholdLoading ? '保存中...' : '💾 保存设置'}
+            </Text>
+          </View>
         </View>
 
         {/* 清空数据区域 */}

@@ -178,8 +178,21 @@ export class StatsController {
     console.log('获取赛季统计请求 - 赛季ID:', seasonId, '门槛:', threshold)
     const client = getSupabaseClient()
 
-    // 解析门槛比例，默认 80%
-    const thresholdRate = threshold ? parseFloat(threshold) : 0.8
+    // 解析门槛比例，默认从数据库读取
+    let thresholdRate = 0.8
+    if (threshold) {
+      thresholdRate = parseFloat(threshold)
+    } else {
+      // 从数据库读取默认配置
+      const { data: configData } = await client
+        .from('app_config')
+        .select('value')
+        .eq('key', 'honor_threshold')
+        .single()
+      if (configData) {
+        thresholdRate = parseFloat(configData.value) / 100
+      }
+    }
     console.log('使用门槛比例:', thresholdRate)
     
     // 判断是否全量统计（不传 seasonId 或传 'all'）

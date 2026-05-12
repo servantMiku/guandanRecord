@@ -6,9 +6,10 @@ import { SeasonsModule } from '@/seasons/seasons.module';
 import { MatchesModule } from '@/matches/matches.module';
 import { StatsModule } from '@/stats/stats.module';
 import { InitModule } from '@/init/init.module';
+import { ConfigModule } from '@/config/config.module';
 
 @Module({
-  imports: [PlayersModule, SeasonsModule, MatchesModule, StatsModule, InitModule],
+  imports: [PlayersModule, SeasonsModule, MatchesModule, StatsModule, InitModule, ConfigModule],
   controllers: [AppController],
   providers: [AppService],
 })

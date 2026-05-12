@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
-import { useDidShow, getStorageSync } from '@tarojs/taro'
+import { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
 import './index.css'
 
@@ -192,10 +192,8 @@ export default function StatsPage() {
 
     try {
       setLoading(true)
-      // 从 localStorage 读取荣誉门槛
-      const threshold = getStorageSync('HONOR_THRESHOLD') || 80
       const res = await Network.request({
-        url: `/api/stats/season?seasonId=${seasonId}&threshold=${threshold}`,
+        url: `/api/stats/season?seasonId=${seasonId}`,
         method: 'GET'
       })
       if (res.data && res.data.data) {
