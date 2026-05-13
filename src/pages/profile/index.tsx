@@ -155,7 +155,7 @@ export default function ProfilePage() {
       setThresholdLoading(true)
       const res = await Network.request({
         url: '/api/config',
-        method: 'POST',
+        method: 'PUT',
         data: {
           key: 'honor_threshold',
           value: honorThreshold.toString(),
@@ -197,54 +197,19 @@ export default function ProfilePage() {
         const isWeapp = Taro.getEnv() === Taro.ENV_TYPE.WEAPP
 
         if (isWeapp) {
-          // 微信小程序导出文件 - 使用两种文件格式
-          const fs = Taro.getFileSystemManager()
-          
-          // 保存为 .json 格式（用于导入时识别）
-          const jsonFilePath = `${Taro.env.USER_DATA_PATH}/${filename}`
-          fs.writeFileSync(jsonFilePath, dataStr, 'utf8')
-          
-          // 同时保存为 .txt 格式（方便微信打开和分享）
-          const txtFilename = `guandan_backup_${timestamp}.txt`
-          const txtFilePath = `${Taro.env.USER_DATA_PATH}/${txtFilename}`
-          fs.writeFileSync(txtFilePath, dataStr, 'utf8')
-
-          Taro.showModal({
-            title: '导出成功',
-            content: `数据已保存！\n\n📁 文件格式：\n• JSON 格式：${filename}\n• TXT 格式：${txtFilename}\n\n💡 使用建议：\n1. 点击"打开文件"查看和分享 TXT 版本\n2. 导入数据时选择 JSON 版本文件`,
-            confirmText: '打开文件',
-            cancelText: '关闭',
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                // 尝试打开 TXT 格式文件（微信支持较好）
-                Taro.openDocument({
-                  filePath: txtFilePath,
-                  showMenu: true,
-                  success: () => {
-                    console.log('TXT 文件打开成功')
-                  },
-                  fail: (err) => {
-                    console.error('打开文件失败:', err)
-                    // 如果打开失败，提供复制路径功能
-                    Taro.showModal({
-                      title: '提示',
-                      content: `文件已保存：\n\nJSON 格式：${jsonFilePath}\n\nTXT 格式：${txtFilePath}\n\n在导入数据时，请选择 JSON 格式的文件。`,
-                      confirmText: '复制JSON路径',
-                      cancelText: '关闭',
-                      success: (copyRes) => {
-                        if (copyRes.confirm) {
-                          Taro.setClipboardData({
-                            data: jsonFilePath,
-                            success: () => {
-                              Taro.showToast({ title: '路径已复制', icon: 'success' })
-                            }
-                          })
-                        }
-                      }
-                    })
-                  }
-                })
-              }
+          // 微信小程序：复制 JSON 文本到剪贴板
+          Taro.setClipboardData({
+            data: dataStr,
+            success: () => {
+              Taro.showModal({
+                title: '导出成功',
+                content: '数据已复制到剪贴板！\n\n📋 下一步操作：\n1. 打开微信聊天窗口\n2. 粘贴发送给文件传输助手或好友\n3. 需要恢复时，复制消息内容即可导入',
+                showCancel: false,
+                confirmText: '我知道了'
+              })
+            },
+            fail: () => {
+              Taro.showToast({ title: '复制失败', icon: 'none' })
             }
           })
         } else {
@@ -286,23 +251,28 @@ export default function ProfilePage() {
       // 微信小程序导入
       Taro.showModal({
         title: '导入数据',
-        content: '请选择备份文件导入。这将覆盖当前所有数据，请确保已备份！',
-        confirmText: '选择文件',
+        content: '操作步骤：\n\n1. 先复制微信聊天记录中的备份文本\n2. 点击下方按钮，粘贴到输入框\n3. 系统将自动识别并导入\n\n⚠️ 导入会覆盖当前数据，请确保已备份！',
+        confirmText: '开始导入',
         cancelText: '取消',
         success: (res) => {
           if (res.confirm) {
-            Taro.chooseMessageFile({
-              count: 1,
-              type: 'file',
-              extension: ['json'],
-              success: async (fileRes) => {
+            // 提示用户复制剪贴板内容
+            Taro.getClipboardData({
+              success: async (clipboardRes) => {
+                const clipboardText = clipboardRes.data
+                if (!clipboardText || clipboardText.trim().length === 0) {
+                  Taro.showModal({
+                    title: '剪贴板为空',
+                    content: '请先在微信中复制备份消息，然后再点击导入',
+                    showCancel: false,
+                    confirmText: '我知道了'
+                  })
+                  return
+                }
+
                 try {
                   Taro.showLoading({ title: '导入中...' })
-                  const tempFilePath = fileRes.tempFiles[0].path
-                  const fs = Taro.getFileSystemManager()
-                  const dataContent = fs.readFileSync(tempFilePath, 'utf8')
-                  const dataStr = typeof dataContent === 'string' ? dataContent : new TextDecoder().decode(dataContent)
-                  const importData = JSON.parse(dataStr)
+                  const importData = JSON.parse(clipboardText)
 
                   await Network.request({
                     url: '/api/stats/import',
@@ -312,15 +282,28 @@ export default function ProfilePage() {
 
                   Taro.hideLoading()
                   Taro.showToast({ title: '导入成功', icon: 'success' })
-                  fetchPlayers()
+                  // 刷新页面数据
+                  setTimeout(() => {
+                    Taro.reLaunch({ url: '/pages/profile/index' })
+                  }, 1500)
                 } catch (error) {
                   Taro.hideLoading()
                   console.error('导入数据失败:', error)
-                  Taro.showToast({ title: '导入失败，请检查文件格式', icon: 'none' })
+                  Taro.showModal({
+                    title: '导入失败',
+                    content: '无法识别剪贴板内容。\n\n请确保：\n1. 已复制正确的备份消息\n2. 消息内容未被修改\n3. 格式为 JSON',
+                    showCancel: false,
+                    confirmText: '我知道了'
+                  })
                 }
               },
               fail: () => {
-                Taro.showToast({ title: '未选择文件', icon: 'none' })
+                Taro.showModal({
+                  title: '无法读取剪贴板',
+                  content: '请允许访问剪贴板权限，或手动复制备份消息后再导入',
+                  showCancel: false,
+                  confirmText: '我知道了'
+                })
               }
             })
           }
