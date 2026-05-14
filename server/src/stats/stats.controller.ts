@@ -576,8 +576,8 @@ export class StatsController {
     const summary = {
       seasonId: season.id,
       seasonName: season.name,
-      totalMatches: playedMatches,
-      seasonTotalMatches: totalMatches,
+      totalMatches: totalMatches || 0,
+      currentMatches: playedMatches,
       remainingMatches,
       threshold: thresholdRate,
       minMatchesForAwards,
@@ -620,11 +620,12 @@ export class StatsController {
     try {
       console.log('开始获取所有表数据...')
       // 获取所有表数据
-      const [{ data: players }, { data: seasons }, { data: matches }, { data: playerStats }] = await Promise.all([
+      const [{ data: players }, { data: seasons }, { data: matches }, { data: playerStats }, { data: appConfig }] = await Promise.all([
         client.from('players').select('*'),
         client.from('seasons').select('*'),
         client.from('matches').select('*'),
-        client.from('player_stats').select('*')
+        client.from('player_stats').select('*'),
+        client.from('app_config').select('*')
       ])
 
       console.log('数据获取完成:')
@@ -632,6 +633,7 @@ export class StatsController {
       console.log('  - 赛季数量:', seasons?.length || 0)
       console.log('  - 战绩数量:', matches?.length || 0)
       console.log('  - 统计记录数量:', playerStats?.length || 0)
+      console.log('  - 配置数量:', appConfig?.length || 0)
 
       const exportData = {
         version: '1.0',
@@ -639,7 +641,8 @@ export class StatsController {
         players: players || [],
         seasons: seasons || [],
         matches: matches || [],
-        playerStats: playerStats || []
+        playerStats: playerStats || [],
+        appConfig: appConfig || []
       }
 
       console.log('导出数据准备完成')
@@ -660,31 +663,36 @@ export class StatsController {
     const client = getSupabaseClient()
 
     try {
-      const { players, seasons, matches, playerStats } = body.data
+      const { players, seasons, matches, playerStats, appConfig } = body.data
 
       console.log('准备导入的数据量:')
       console.log('  - 玩家数量:', players?.length || 0)
       console.log('  - 赛季数量:', seasons?.length || 0)
       console.log('  - 战绩数量:', matches?.length || 0)
       console.log('  - 统计记录数量:', playerStats?.length || 0)
+      console.log('  - 配置数量:', appConfig?.length || 0)
 
-      console.log('开始清空现有数据...')
-      // 清空现有数据（按依赖顺序）
-      await client.from('player_stats').delete().neq('id', '0')
-      await client.from('matches').delete().neq('id', '0')
-      await client.from('seasons').delete().neq('id', '0')
-      await client.from('players').delete().neq('id', '0')
-      console.log('现有数据已清空')
+      // 先尝试清空（RLS 可能限制删除，但不影响后续 upsert）
+      console.log('尝试清空现有数据...')
+      await client.from('player_stats').delete().neq('id', '0').maybeSingle()
+      await client.from('matches').delete().neq('id', '0').maybeSingle()
+      await client.from('seasons').delete().neq('id', '0').maybeSingle()
+      await client.from('players').delete().neq('id', '0').maybeSingle()
+      await client.from('app_config').delete().neq('id', '0').maybeSingle()
 
-      // 导入数据（按依赖顺序反向）
+      // 统一用 upsert，以导入数据为准，兼容数据已存在或删除失败的情况
       if (players && players.length > 0) {
         console.log('开始导入玩家数据...')
-        const { error: playersError } = await client.from('players').insert(players.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          avatar: p.avatar,
-          created_at: p.created_at
-        })))
+        const { error: playersError } = await client.from('players').upsert(
+          players.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            avatar: p.avatar,
+            created_at: p.created_at,
+            updated_at: p.updated_at
+          })),
+          { onConflict: 'id', ignoreDuplicates: false }
+        )
         if (playersError) {
           console.error('导入 players 失败:', playersError)
           throw playersError
@@ -694,14 +702,20 @@ export class StatsController {
 
       if (seasons && seasons.length > 0) {
         console.log('开始导入赛季数据...')
-        const { error: seasonsError } = await client.from('seasons').insert(seasons.map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          start_date: s.start_date,
-          end_date: s.end_date,
-          status: s.status,
-          created_at: s.created_at
-        })))
+        const { error: seasonsError } = await client.from('seasons').upsert(
+          seasons.map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            start_date: s.start_date,
+            end_date: s.end_date,
+            status: s.status,
+            total_matches: s.total_matches,
+            current_matches: s.current_matches ?? 0,
+            created_at: s.created_at,
+            updated_at: s.updated_at
+          })),
+          { onConflict: 'id', ignoreDuplicates: false }
+        )
         if (seasonsError) {
           console.error('导入 seasons 失败:', seasonsError)
           throw seasonsError
@@ -711,22 +725,25 @@ export class StatsController {
 
       if (matches && matches.length > 0) {
         console.log('开始导入战绩数据...')
-        const { error: matchesError } = await client.from('matches').insert(matches.map((m: any) => ({
-          id: m.id,
-          season_id: m.season_id,
-          team1_player1_id: m.team1_player1_id,
-          team1_player2_id: m.team1_player2_id,
-          team2_player1_id: m.team2_player1_id,
-          team2_player2_id: m.team2_player2_id,
-          winner_team: m.winner_team,
-          score: m.score,
-          remark: m.remark,
-          is_deleted: m.is_deleted ?? false,
-          deleted_at: m.deleted_at,
-          edit_history: m.edit_history,
-          created_at: m.created_at,
-          updated_at: m.updated_at
-        })))
+        const { error: matchesError } = await client.from('matches').upsert(
+          matches.map((m: any) => ({
+            id: m.id,
+            season_id: m.season_id,
+            team1_player1_id: m.team1_player1_id,
+            team1_player2_id: m.team1_player2_id,
+            team2_player1_id: m.team2_player1_id,
+            team2_player2_id: m.team2_player2_id,
+            winner_team: m.winner_team,
+            score: m.score,
+            remark: m.remark,
+            is_deleted: m.is_deleted ?? false,
+            deleted_at: m.deleted_at,
+            edit_history: m.edit_history,
+            created_at: m.created_at,
+            updated_at: m.updated_at
+          })),
+          { onConflict: 'id', ignoreDuplicates: false }
+        )
         if (matchesError) {
           console.error('导入 matches 失败:', matchesError)
           throw matchesError
@@ -736,21 +753,45 @@ export class StatsController {
 
       if (playerStats && playerStats.length > 0) {
         console.log('开始导入玩家统计数据...')
-        const { error: statsError } = await client.from('player_stats').insert(playerStats.map((s: any) => ({
-          id: s.id,
-          season_id: s.season_id,
-          player_id: s.player_id,
-          total_matches: s.total_matches,
-          wins: s.wins,
-          win_rate: s.win_rate,
-          created_at: s.created_at,
-          updated_at: s.updated_at
-        })))
+        const { error: statsError } = await client.from('player_stats').upsert(
+          playerStats.map((s: any) => ({
+            id: s.id,
+            season_id: s.season_id,
+            player_id: s.player_id,
+            total_matches: s.total_matches,
+            wins: s.wins,
+            win_rate: s.win_rate,
+            deleted_at: s.deleted_at,
+            created_at: s.created_at,
+            updated_at: s.updated_at
+          })),
+          { onConflict: 'id', ignoreDuplicates: false }
+        )
         if (statsError) {
           console.error('导入 player_stats 失败:', statsError)
           throw statsError
         }
         console.log('玩家统计数据导入成功，数量:', playerStats.length)
+      }
+
+      if (appConfig && appConfig.length > 0) {
+        console.log('开始导入配置数据...')
+        const { error: configError } = await client.from('app_config').upsert(
+          appConfig.map((c: any) => ({
+            id: c.id,
+            key: c.key,
+            value: c.value,
+            description: c.description,
+            created_at: c.created_at,
+            updated_at: c.updated_at
+          })),
+          { onConflict: 'key', ignoreDuplicates: false }
+        )
+        if (configError) {
+          console.error('导入 app_config 失败:', configError)
+          throw configError
+        }
+        console.log('配置数据导入成功，数量:', appConfig.length)
       }
 
       console.log('所有数据导入成功完成')

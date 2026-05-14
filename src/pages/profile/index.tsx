@@ -155,7 +155,7 @@ export default function ProfilePage() {
       setThresholdLoading(true)
       const res = await Network.request({
         url: '/api/config',
-        method: 'PUT',
+        method: 'POST',
         data: {
           key: 'honor_threshold',
           value: honorThreshold.toString(),

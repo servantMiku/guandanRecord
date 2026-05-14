@@ -122,6 +122,49 @@ export class SeasonsController {
     return { code: 200, msg: 'success', data: result }
   }
 
+  @Put(':id')
+  async updateSeason(@Param('id') id: string, @Body() body: { name?: string; startDate?: string; endDate?: string | null; totalMatches?: number }) {
+    console.log('更新赛季请求 - ID:', id, body)
+    const client = getSupabaseClient()
+
+    const updateData: any = {
+      updated_at: new Date().toISOString()
+    }
+
+    if (body.name !== undefined) updateData.name = body.name
+    if (body.startDate !== undefined) updateData.start_date = body.startDate
+    if (body.endDate !== undefined) updateData.end_date = body.endDate
+    if (body.totalMatches !== undefined) updateData.total_matches = body.totalMatches
+
+    const { data, error } = await client
+      .from('seasons')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+
+    if (error) {
+      console.error('更新赛季失败:', error)
+      return { code: 500, msg: '更新赛季失败: ' + error.message, data: null }
+    }
+
+    console.log('赛季更新成功:', data?.[0]?.name)
+
+    const season = data?.[0]
+    const result = season ? {
+      id: season.id,
+      name: season.name,
+      startDate: season.start_date,
+      endDate: season.end_date,
+      totalMatches: season.total_matches,
+      currentMatches: season.current_matches,
+      status: season.status,
+      createdAt: season.created_at,
+      updatedAt: season.updated_at
+    } : null
+
+    return { code: 200, msg: 'success', data: result }
+  }
+
   @Put(':id/end')
   async endSeason(@Param('id') id: string, @Body() body: { endDate: string }) {
     console.log('结束赛季请求 - ID:', id, '结束日期:', body.endDate)

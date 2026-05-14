@@ -490,7 +490,7 @@ export default function StatsPage() {
             {selectedSeasonId !== 'all' && summary && summary.threshold && summary.threshold > 0 && (
               <View className="threshold-info">
                 <Text className="threshold-text">
-                  荣誉门槛：参赛率 ≥ {summary.threshold}%（{(summary.currentMatches || 0)}场中需 ≥ {Math.ceil((summary.currentMatches || 0) * (summary.threshold / 100))}场）
+                  荣誉门槛：参赛率 ≥ {(summary.threshold * 100).toFixed(0)}%{summary.minMatchesForAwards > 0 ? `（至少需参赛${summary.minMatchesForAwards}场）` : ''}
                 </Text>
               </View>
             )}

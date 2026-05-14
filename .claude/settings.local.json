@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --version)",
+      "Bash(npm install *)",
+      "Bash(~/npm-global/bin/pnpm --version)",
+      "Bash(export PATH=\"$HOME/npm-global/bin:$PATH\")",
+      "Bash(echo 'export PATH=\"$HOME/npm-global/bin:$PATH\"')",
+      "Bash(pnpm install *)",
+      "Bash(pnpm exec *)",
+      "Bash(npx tsc *)",
+      "Bash(timeout 15 npx nest start)",
+      "Bash(pnpm dev *)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill *)",
+      "Bash(lsof -ti:5000)",
+      "Bash(lsof -ti:5001)",
+      "Bash(lsof -ti:5002)",
+      "Bash(lsof -i:5000)",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(curl -s http://localhost:3000/api/players)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl *)",
+      "Bash(pnpm dev:server *)",
+      "Bash(npx pnpm *)"
+    ]
+  }
+}

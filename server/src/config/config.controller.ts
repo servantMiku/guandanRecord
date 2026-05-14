@@ -1,20 +1,18 @@
-import { Controller, Get, Put, Body } from "@nestjs/common";
-import { SupabaseService } from "@/storage/supabase/supabase.service";
+import { Controller, Get, Post, Param, Body } from "@nestjs/common";
+import { getSupabaseClient } from "../storage/database/supabase-client";
 
 @Controller("config")
 export class ConfigController {
-  constructor(private readonly supabaseService: SupabaseService) {}
-
   @Get()
   async getConfig() {
-    const client = this.supabaseService.getClient();
+    const client = getSupabaseClient();
     const { data, error } = await client
       .from("app_config")
       .select("*");
 
     if (error) {
       console.error("获取配置失败:", error);
-      return { data: [] };
+      return { code: 500, msg: "获取配置失败", data: null };
     }
 
     const config: Record<string, string> = {};
@@ -22,12 +20,30 @@ export class ConfigController {
       config[item.key] = item.value;
     });
 
-    return { data: config };
+    return { code: 200, msg: "success", data: config };
   }
 
-  @Put()
+  // 兼容：GET /api/config/honor_threshold 返回单个配置项
+  @Get(":key")
+  async getConfigByKey(@Param("key") key: string) {
+    const client = getSupabaseClient();
+    const { data, error } = await client
+      .from("app_config")
+      .select("*")
+      .eq("key", key)
+      .single();
+
+    if (error) {
+      console.error("获取配置项失败:", error);
+      return { code: 500, msg: "获取配置项失败", data: null };
+    }
+
+    return { code: 200, msg: "success", data };
+  }
+
+  @Post()
   async updateConfig(@Body() body: { key: string; value: string; description?: string }) {
-    const client = this.supabaseService.getClient();
+    const client = getSupabaseClient();
 
     // Try to update first
     const { error: updateError } = await client
@@ -37,7 +53,7 @@ export class ConfigController {
 
     if (updateError) {
       console.error("更新配置失败:", updateError);
-      return { data: null, msg: "更新配置失败", code: 500 };
+      return { code: 500, msg: "更新配置失败", data: null };
     }
 
     // If no rows were updated, insert new
@@ -58,10 +74,10 @@ export class ConfigController {
 
       if (insertError) {
         console.error("插入配置失败:", insertError);
-        return { data: null, msg: "插入配置失败", code: 500 };
+        return { code: 500, msg: "插入配置失败", data: null };
       }
     }
 
-    return { data: { key: body.key, value: body.value }, msg: "保存成功", code: 200 };
+    return { code: 200, msg: "保存成功", data: { key: body.key, value: body.value } };
   }
 }
