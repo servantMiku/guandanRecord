@@ -194,7 +194,23 @@ export class StatsController {
       }
     }
     console.log('使用门槛比例:', thresholdRate)
-    
+
+    // 读取门槛计算方式
+    let thresholdCalcMethod = 'season_total'
+    try {
+      const { data: methodConfig } = await client
+        .from('app_config')
+        .select('value')
+        .eq('key', 'threshold_calc_method')
+        .single()
+      if (methodConfig) {
+        thresholdCalcMethod = methodConfig.value
+      }
+    } catch (e) {
+      // 默认 season_total
+    }
+    console.log('门槛计算方式:', thresholdCalcMethod)
+
     // 判断是否全量统计（不传 seasonId 或传 'all'）
     const isAllTime = !seasonId || seasonId === 'all'
     console.log('统计模式:', isAllTime ? '全量累计' : '指定赛季')
@@ -526,25 +542,44 @@ export class StatsController {
       }
     })
 
-    // 计算赛季场次信息（基于实际已发生的比赛场次）
+    // 计算赛季场次信息
     const playedMatches = matches?.length || 0
     const totalMatches = season.total_matches
     const remainingMatches = totalMatches ? Math.max(0, totalMatches - playedMatches) : null
-    const minMatchesForAwards = Math.floor(playedMatches * thresholdRate)
+
+    // 根据计算方式确定最低参赛场次门槛
+    let minMatchesForAwards: number
+    if (thresholdCalcMethod === 'avg_participation') {
+      // 以已参赛选手的平均参赛场次计算
+      const playersWithMatches = playerStatsWithNames.filter(p => p.totalMatches > 0)
+      const avgMatches = playersWithMatches.length > 0
+        ? playersWithMatches.reduce((sum, p) => sum + p.totalMatches, 0) / playersWithMatches.length
+        : 0
+      minMatchesForAwards = Math.floor(avgMatches * thresholdRate)
+      console.log('基于已参赛选手平均场次计算:', { avgMatches, minMatches: minMatchesForAwards })
+    } else {
+      // 默认：以赛季已发生场次计算
+      minMatchesForAwards = Math.floor(playedMatches * thresholdRate)
+    }
 
     console.log('赛季场次信息:', {
       played: playedMatches,
       total: totalMatches,
       remaining: remainingMatches,
       threshold: thresholdRate,
-      minMatches: minMatchesForAwards
+      minMatches: minMatchesForAwards,
+      calcMethod: thresholdCalcMethod
     })
 
+    // 为每个玩家标记是否达到门槛
+    const playerStatsWithEligibility = playerStatsWithNames.map(p => ({
+      ...p,
+      isEligible: p.totalMatches >= minMatchesForAwards
+    }))
+
     // 过滤达到门槛的玩家用于荣誉计算
-    const eligiblePlayers = playerStatsWithNames.filter(
-      p => p.totalMatches >= minMatchesForAwards
-    )
-    console.log('达到门槛的玩家:', eligiblePlayers.length, '/', playerStatsWithNames.length)
+    const eligiblePlayers = playerStatsWithEligibility.filter(p => p.isEligible)
+    console.log('达到门槛的玩家:', eligiblePlayers.length, '/', playerStatsWithEligibility.length)
 
     // 使用过滤后的玩家计算奖项
     const filteredAwards = calculateAwards(eligiblePlayers, players || [], seasonId, isAllTime, client)
@@ -576,11 +611,13 @@ export class StatsController {
     const summary = {
       seasonId: season.id,
       seasonName: season.name,
-      totalMatches: totalMatches || 0,
+      totalMatches: playedMatches,
+      seasonLimit: totalMatches ?? null,
       currentMatches: playedMatches,
       remainingMatches,
       threshold: thresholdRate,
       minMatchesForAwards,
+      thresholdCalcMethod,
       bestPlayer: bestPlayer?.playerName || '暂无',
       bestWinRate: bestPlayer ? `${bestPlayer.winRate}%` : '0.00%',
       bestPartner: bestPartner ? `${bestPartner.player1Name} + ${bestPartner.player2Name}` : '暂无',
@@ -597,7 +634,7 @@ export class StatsController {
       msg: 'success',
       data: {
         summary,
-        playerStats: playerStatsWithNames,
+        playerStats: playerStatsWithEligibility,
         partnerStats,
         playerPairMatrix,
         awards: filteredAwards,
@@ -606,7 +643,8 @@ export class StatsController {
           currentMatches: playedMatches,
           remainingMatches,
           threshold: thresholdRate,
-          minMatchesForAwards
+          minMatchesForAwards,
+          thresholdCalcMethod
         }
       }
     }

@@ -40,6 +40,7 @@ export default function ProfilePage() {
   const [showAddInput, setShowAddInput] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState('')
   const [honorThreshold, setHonorThreshold] = useState(80)
+  const [thresholdCalcMethod, setThresholdCalcMethod] = useState<'season_total' | 'avg_participation'>('season_total')
   const [thresholdLoading, setThresholdLoading] = useState(false)
 
   useEffect(() => {
@@ -144,6 +145,21 @@ export default function ProfilePage() {
     } catch (error) {
       console.log('获取门槛配置失败:', error)
     }
+
+    // 获取门槛计算方式
+    try {
+      const methodRes = await Network.request({
+        url: '/api/config/threshold_calc_method'
+      })
+      if (methodRes.data && methodRes.data.data) {
+        const method = methodRes.data.data.value
+        if (method === 'avg_participation' || method === 'season_total') {
+          setThresholdCalcMethod(method)
+        }
+      }
+    } catch (error) {
+      console.log('获取门槛计算方式失败:', error)
+    }
   }
 
   const handleThresholdChange = (value: number) => {
@@ -163,6 +179,16 @@ export default function ProfilePage() {
         }
       })
       if (res.data && res.data.code === 200) {
+        // 保存门槛计算方式
+        await Network.request({
+          url: '/api/config',
+          method: 'POST',
+          data: {
+            key: 'threshold_calc_method',
+            value: thresholdCalcMethod,
+            description: '荣誉门槛计算方式'
+          }
+        })
         Taro.showToast({ title: '保存成功', icon: 'success' })
       } else {
         Taro.showToast({ title: '保存失败', icon: 'none' })
@@ -483,19 +509,42 @@ export default function ProfilePage() {
         {/* 荣誉门槛配置 */}
         <View className="threshold-section">
           <Text className="threshold-title">🎖️ 荣誉门槛</Text>
+
+          {/* 门槛计算方式选择 */}
+          <Text className="threshold-subtitle">计算方式</Text>
+          <View className="threshold-method-toggle">
+            <View
+              className={`threshold-method-option ${thresholdCalcMethod === 'season_total' ? 'threshold-method-active' : ''}`}
+              onClick={() => setThresholdCalcMethod('season_total')}
+            >
+              <Text className="threshold-method-text">赛季已发生场次</Text>
+              <Text className="threshold-method-desc">基于当前赛季已进行的比赛场次计算</Text>
+            </View>
+            <View
+              className={`threshold-method-option ${thresholdCalcMethod === 'avg_participation' ? 'threshold-method-active' : ''}`}
+              onClick={() => setThresholdCalcMethod('avg_participation')}
+            >
+              <Text className="threshold-method-text">已参赛选手平均场次</Text>
+              <Text className="threshold-method-desc">基于实际参赛选手的平均场次计算</Text>
+            </View>
+          </View>
+
           <Text className="threshold-desc">
-            参赛场次达到当前赛季已进行场次的 {honorThreshold}% 才能参与荣誉评选
+            {thresholdCalcMethod === 'season_total'
+              ? `参赛场次达到当前赛季已进行场次的 ${honorThreshold}% 才能参与荣誉评选`
+              : `参赛场次达到已参赛选手平均参赛场次的 ${honorThreshold}% 才能参与荣誉评选`
+            }
           </Text>
           <View className="threshold-control">
-            <View 
-              className="threshold-btn" 
+            <View
+              className="threshold-btn"
               onClick={() => handleThresholdChange(Math.max(50, honorThreshold - 5))}
             >
               <Text className="threshold-btn-text">−</Text>
             </View>
             <Text className="threshold-value-display">{honorThreshold}%</Text>
-            <View 
-              className="threshold-btn" 
+            <View
+              className="threshold-btn"
               onClick={() => handleThresholdChange(Math.min(100, honorThreshold + 5))}
             >
               <Text className="threshold-btn-text">+</Text>

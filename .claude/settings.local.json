@@ -22,7 +22,10 @@
       "Bash(python3 -m json.tool)",
       "Bash(curl *)",
       "Bash(pnpm dev:server *)",
-      "Bash(npx pnpm *)"
+      "Bash(npx pnpm *)",
+      "Bash(git -C /Users/chaihua/Documents/code/guandanRecord log --all --oneline --grep=\"1.2.6\")",
+      "Bash(git -C /Users/chaihua/Documents/code/guandanRecord log --all --oneline --grep=\"126\")",
+      "Bash(git -C /Users/chaihua/Documents/code/guandanRecord log --all --oneline --grep=\"version\")"
     ]
   }
 }

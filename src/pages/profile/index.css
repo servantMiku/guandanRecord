@@ -292,6 +292,52 @@
   margin-bottom: 16px;
 }
 
+.threshold-subtitle {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.threshold-method-toggle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.threshold-method-option {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.threshold-method-option:active {
+  opacity: 0.7;
+}
+
+.threshold-method-active {
+  border-color: #a78bfa;
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.threshold-method-text {
+  display: block;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.threshold-method-desc {
+  display: block;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+}
+
 .threshold-desc {
   display: block;
   color: rgba(255, 255, 255, 0.6);

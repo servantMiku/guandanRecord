@@ -45,6 +45,7 @@ type PlayerStat = {
   streakType: 'win' | 'lose' | 'none'
   maxWinStreak: number
   maxLoseStreak: number
+  isEligible: boolean
 }
 
 type PartnerStat = {
@@ -237,9 +238,22 @@ export default function StatsPage() {
     }
   }
 
+  // 获取门槛计算方式显示文本
+  const getThresholdMethodText = () => {
+    if (!summary?.thresholdCalcMethod || summary.thresholdCalcMethod === 'season_total') {
+      return '赛季已发生场次'
+    }
+    return '已参赛选手平均参赛场次'
+  }
+
   // 默认排序：胜率优先，胜场次之
   const getSortedStats = () => {
-    return [...stats].sort((a, b) => {
+    // 应用荣誉门槛过滤（非 GOAT 模式）
+    const filteredStats = selectedSeasonId !== 'all' && summary?.threshold
+      ? stats.filter(s => s.isEligible)
+      : [...stats]
+
+    return filteredStats.sort((a, b) => {
       // 首先按胜率排序
       const winRateDiff = parseFloat(a.winRate) - parseFloat(b.winRate)
       if (Math.abs(winRateDiff) > 0.01) {
@@ -301,25 +315,31 @@ export default function StatsPage() {
       </View>
 
       {/* 赛季进度 */}
-      {selectedSeasonId !== 'all' && summary && summary.totalMatches !== undefined && (
+      {selectedSeasonId !== 'all' && summary && (summary.seasonLimit > 0 || summary.totalMatches > 0) && (
         <View className="season-progress-card">
           <View className="season-progress-header">
             <Text className="season-progress-title">赛季进度</Text>
             <Text className="season-progress-text">
-              {summary.currentMatches || 0} / {summary.totalMatches || 0} 场
+              {summary.seasonLimit > 0
+                ? `${summary.currentMatches || 0} / ${summary.seasonLimit} 场`
+                : `${summary.totalMatches} 场`}
             </Text>
           </View>
-          <View className="season-progress-bar-bg">
-            <View 
-              className="season-progress-bar-fill"
-              style={{
-                width: `${summary.totalMatches > 0 ? Math.round(((summary.currentMatches || 0) / summary.totalMatches) * 100) : 0}%`
-              }}
-            />
-          </View>
-          <Text className="season-progress-remain">
-            剩余 {Math.max(0, (summary.totalMatches || 0) - (summary.currentMatches || 0))} 场
-          </Text>
+          {summary.seasonLimit > 0 && (
+            <>
+              <View className="season-progress-bar-bg">
+                <View
+                  className="season-progress-bar-fill"
+                  style={{
+                    width: `${Math.round(((summary.currentMatches || 0) / summary.seasonLimit) * 100)}%`
+                  }}
+                />
+              </View>
+              <Text className="season-progress-remain">
+                剩余 {Math.max(0, summary.seasonLimit - (summary.currentMatches || 0))} 场
+              </Text>
+            </>
+          )}
         </View>
       )}
 
@@ -491,6 +511,9 @@ export default function StatsPage() {
               <View className="threshold-info">
                 <Text className="threshold-text">
                   荣誉门槛：参赛率 ≥ {(summary.threshold * 100).toFixed(0)}%{summary.minMatchesForAwards > 0 ? `（至少需参赛${summary.minMatchesForAwards}场）` : ''}
+                </Text>
+                <Text className="threshold-sub-text" style={{ marginTop: '4px' }}>
+                  计算方式：{getThresholdMethodText()} · 排名已过滤不符合门槛的玩家
                 </Text>
               </View>
             )}
