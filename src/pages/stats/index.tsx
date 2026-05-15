@@ -512,11 +512,8 @@ export default function StatsPage() {
                 <Text className="threshold-text">
                   荣誉门槛：参赛率 ≥ {(summary.threshold * 100).toFixed(0)}%{summary.minMatchesForAwards > 0 ? `（至少需参赛${summary.minMatchesForAwards}场）` : ''}
                 </Text>
-                <Text className="threshold-text" style={{ fontSize: '12px', opacity: 0.7, marginTop: '2px' }}>
-                  计算方式：{getThresholdMethodText()}
-                </Text>
-                <Text className="threshold-text" style={{ fontSize: '12px', opacity: 0.7 }}>
-                  排名已过滤不符合门槛的玩家
+                <Text className="threshold-sub-text" style={{ marginTop: '4px' }}>
+                  计算方式：{getThresholdMethodText()} · 排名已过滤不符合门槛的玩家
                 </Text>
               </View>
             )}

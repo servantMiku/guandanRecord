@@ -352,15 +352,23 @@
 .threshold-info {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 14px 16px;
   margin-bottom: 12px;
   border-left: 3px solid #fbbf24;
 }
 
 .threshold-text {
   display: block;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.threshold-sub-text {
+  display: block;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 18px;
+  line-height: 1.4;
 }
 
 /* 最佳搭档展示 */
