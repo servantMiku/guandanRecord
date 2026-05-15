@@ -45,6 +45,7 @@ type PlayerStat = {
   streakType: 'win' | 'lose' | 'none'
   maxWinStreak: number
   maxLoseStreak: number
+  isEligible: boolean
 }
 
 type PartnerStat = {
@@ -237,9 +238,22 @@ export default function StatsPage() {
     }
   }
 
+  // 获取门槛计算方式显示文本
+  const getThresholdMethodText = () => {
+    if (!summary?.thresholdCalcMethod || summary.thresholdCalcMethod === 'season_total') {
+      return '赛季已发生场次'
+    }
+    return '已参赛选手平均参赛场次'
+  }
+
   // 默认排序：胜率优先，胜场次之
   const getSortedStats = () => {
-    return [...stats].sort((a, b) => {
+    // 应用荣誉门槛过滤（非 GOAT 模式）
+    const filteredStats = selectedSeasonId !== 'all' && summary?.threshold
+      ? stats.filter(s => s.isEligible)
+      : [...stats]
+
+    return filteredStats.sort((a, b) => {
       // 首先按胜率排序
       const winRateDiff = parseFloat(a.winRate) - parseFloat(b.winRate)
       if (Math.abs(winRateDiff) > 0.01) {
@@ -497,6 +511,12 @@ export default function StatsPage() {
               <View className="threshold-info">
                 <Text className="threshold-text">
                   荣誉门槛：参赛率 ≥ {(summary.threshold * 100).toFixed(0)}%{summary.minMatchesForAwards > 0 ? `（至少需参赛${summary.minMatchesForAwards}场）` : ''}
+                </Text>
+                <Text className="threshold-text" style={{ fontSize: '12px', opacity: 0.7, marginTop: '2px' }}>
+                  计算方式：{getThresholdMethodText()}
+                </Text>
+                <Text className="threshold-text" style={{ fontSize: '12px', opacity: 0.7 }}>
+                  排名已过滤不符合门槛的玩家
                 </Text>
               </View>
             )}
