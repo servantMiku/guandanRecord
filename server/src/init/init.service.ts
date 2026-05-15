@@ -39,6 +39,8 @@ export class InitService {
           name VARCHAR(100) NOT NULL,
           start_date VARCHAR(10) NOT NULL,
           end_date VARCHAR(10),
+          total_matches INTEGER,
+          current_matches INTEGER DEFAULT 0 NOT NULL,
           status VARCHAR(20) DEFAULT 'active' NOT NULL,
           created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
           updated_at TIMESTAMPTZ

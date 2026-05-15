@@ -301,25 +301,31 @@ export default function StatsPage() {
       </View>
 
       {/* 赛季进度 */}
-      {selectedSeasonId !== 'all' && summary && summary.totalMatches !== undefined && (
+      {selectedSeasonId !== 'all' && summary && (summary.seasonLimit > 0 || summary.totalMatches > 0) && (
         <View className="season-progress-card">
           <View className="season-progress-header">
             <Text className="season-progress-title">赛季进度</Text>
             <Text className="season-progress-text">
-              {summary.currentMatches || 0} / {summary.totalMatches || 0} 场
+              {summary.seasonLimit > 0
+                ? `${summary.currentMatches || 0} / ${summary.seasonLimit} 场`
+                : `${summary.totalMatches} 场`}
             </Text>
           </View>
-          <View className="season-progress-bar-bg">
-            <View 
-              className="season-progress-bar-fill"
-              style={{
-                width: `${summary.totalMatches > 0 ? Math.round(((summary.currentMatches || 0) / summary.totalMatches) * 100) : 0}%`
-              }}
-            />
-          </View>
-          <Text className="season-progress-remain">
-            剩余 {Math.max(0, (summary.totalMatches || 0) - (summary.currentMatches || 0))} 场
-          </Text>
+          {summary.seasonLimit > 0 && (
+            <>
+              <View className="season-progress-bar-bg">
+                <View
+                  className="season-progress-bar-fill"
+                  style={{
+                    width: `${Math.round(((summary.currentMatches || 0) / summary.seasonLimit) * 100)}%`
+                  }}
+                />
+              </View>
+              <Text className="season-progress-remain">
+                剩余 {Math.max(0, summary.seasonLimit - (summary.currentMatches || 0))} 场
+              </Text>
+            </>
+          )}
         </View>
       )}
 

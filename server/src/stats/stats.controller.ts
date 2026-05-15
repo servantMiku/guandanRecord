@@ -576,7 +576,8 @@ export class StatsController {
     const summary = {
       seasonId: season.id,
       seasonName: season.name,
-      totalMatches: totalMatches || 0,
+      totalMatches: playedMatches,
+      seasonLimit: totalMatches ?? null,
       currentMatches: playedMatches,
       remainingMatches,
       threshold: thresholdRate,
