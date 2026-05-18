@@ -1,6 +1,11 @@
-import { Controller, Get, Query, Post, Body } from '@nestjs/common'
+import { Controller, Get, Query, Post, Body, UseGuards } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
 import { StatsService } from './stats.service'
 import { getSupabaseClient } from '../storage/database/supabase-client'
+import { RolesGuard } from '../auth/guards/roles.guard'
+import { Roles } from '../auth/decorators/roles.decorator'
+import { CurrentUser } from '../auth/decorators/current-user.decorator'
+import { OperationLogService } from '../operation-log/operation-log.service'
 
 // 奖项类型定义
 type Award = {
@@ -168,7 +173,10 @@ const calculateAwards = (
 
 @Controller('stats')
 export class StatsController {
-  constructor(private readonly statsService: StatsService) {}
+  constructor(
+    private readonly statsService: StatsService,
+    private readonly logService: OperationLogService,
+  ) {}
 
   @Get('season')
   async getSeasonStats(
@@ -651,7 +659,9 @@ export class StatsController {
   }
 
   @Get('export')
-  async exportAllData() {
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  async exportAllData(@CurrentUser() user: any) {
     console.log('导出数据请求')
     const client = getSupabaseClient()
 
@@ -684,6 +694,12 @@ export class StatsController {
       }
 
       console.log('导出数据准备完成')
+      this.logService.log({
+        action: 'export',
+        target_type: 'data',
+        user_id: user?.userId,
+        details: { exportTime: exportData.exportTime, counts: { players: players?.length, seasons: seasons?.length, matches: matches?.length, playerStats: playerStats?.length, appConfig: appConfig?.length } },
+      })
       return {
         code: 200,
         msg: 'success',
@@ -696,7 +712,9 @@ export class StatsController {
   }
 
   @Post('import')
-  async importAllData(@Body() body: { data: any }) {
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  async importAllData(@Body() body: { data: any }, @CurrentUser() user: any) {
     console.log('导入数据请求')
     const client = getSupabaseClient()
 
@@ -833,6 +851,12 @@ export class StatsController {
       }
 
       console.log('所有数据导入成功完成')
+      this.logService.log({
+        action: 'import',
+        target_type: 'data',
+        user_id: user?.userId,
+        details: { counts: { players: players?.length, seasons: seasons?.length, matches: matches?.length, playerStats: playerStats?.length, appConfig: appConfig?.length } },
+      })
       return { code: 200, msg: '数据导入成功', data: null }
     } catch (error) {
       console.error('导入数据失败:', error)

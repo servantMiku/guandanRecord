@@ -2,6 +2,7 @@ import { View, Text, Input, Picker } from '@tarojs/components'
 import { useState, useEffect, useCallback } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
 import { Network } from '@/network'
+import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
 // 图标组件 - 使用 Unicode 字符
@@ -333,6 +334,10 @@ export default function RecordFormPage() {
     return player ? player.name : ''
   }
 
+  const getPlayer = (playerId: string) => {
+    return players.find(p => p.id === playerId) || null
+  }
+
   const isPlayerSelected = (playerId: string) => {
     return [team1Player1, team1Player2, team2Player1, team2Player2].includes(playerId)
   }
@@ -386,6 +391,7 @@ export default function RecordFormPage() {
                     className={`player-btn ${selected ? colorClass : ''}`}
                     onClick={() => handlePlayerClick(player.id)}
                   >
+                    <PlayerAvatar player={player} size={40} />
                     <Text className={`player-name ${selected ? 'name-selected' : ''}`}>
                       {player.name}
                     </Text>
@@ -401,6 +407,7 @@ export default function RecordFormPage() {
                 <Text className="team-title">队伍1 (粉色)</Text>
                 <View className="team-players">
                   <View className="team-player">
+                    {getPlayer(team1Player1) && <PlayerAvatar player={getPlayer(team1Player1)} size={40} />}
                     <Text className="team-player-label">玩家1</Text>
                     <Text className="team-player-name">
                       {getPlayerName(team1Player1) || '-'}
@@ -418,6 +425,7 @@ export default function RecordFormPage() {
                     )}
                   </View>
                   <View className="team-player">
+                    {getPlayer(team1Player2) && <PlayerAvatar player={getPlayer(team1Player2)} size={40} />}
                     <Text className="team-player-label">玩家2</Text>
                     <Text className="team-player-name">
                       {getPlayerName(team1Player2) || '-'}
@@ -442,6 +450,7 @@ export default function RecordFormPage() {
                 <Text className="team-title">队伍2 (蓝色)</Text>
                 <View className="team-players">
                   <View className="team-player">
+                    {getPlayer(team2Player1) && <PlayerAvatar player={getPlayer(team2Player1)} size={40} />}
                     <Text className="team-player-label">玩家1</Text>
                     <Text className="team-player-name">
                       {getPlayerName(team2Player1) || '-'}
@@ -459,6 +468,7 @@ export default function RecordFormPage() {
                     )}
                   </View>
                   <View className="team-player">
+                    {getPlayer(team2Player2) && <PlayerAvatar player={getPlayer(team2Player2)} size={40} />}
                     <Text className="team-player-label">玩家2</Text>
                     <Text className="team-player-name">
                       {getPlayerName(team2Player2) || '-'}

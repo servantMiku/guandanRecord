@@ -1,10 +1,18 @@
-import { Controller, Get, Post, Put, Param, Body } from '@nestjs/common'
+import { Controller, Get, Post, Put, Param, Body, UseGuards } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
 import { PlayersService } from './players.service'
 import { getSupabaseClient } from '../storage/database/supabase-client'
+import { RolesGuard } from '../auth/guards/roles.guard'
+import { Roles } from '../auth/decorators/roles.decorator'
+import { CurrentUser } from '../auth/decorators/current-user.decorator'
+import { OperationLogService } from '../operation-log/operation-log.service'
 
 @Controller('players')
 export class PlayersController {
-  constructor(private readonly playersService: PlayersService) {}
+  constructor(
+    private readonly playersService: PlayersService,
+    private readonly logService: OperationLogService,
+  ) {}
 
   @Get()
   async getAllPlayers() {
@@ -49,7 +57,9 @@ export class PlayersController {
   }
 
   @Post()
-  async createPlayer(@Body() body: { name: string; avatar?: string }) {
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  async createPlayer(@Body() body: { name: string; avatar?: string }, @CurrentUser() user: any) {
     console.log('创建玩家请求 - 数据:', body)
     const client = getSupabaseClient()
 
@@ -75,11 +85,22 @@ export class PlayersController {
     }
 
     console.log('玩家创建成功:', data?.[0])
+    if (data?.[0]) {
+      this.logService.log({
+        action: 'create',
+        target_type: 'player',
+        target_id: data[0].id,
+        user_id: user?.userId,
+        details: { name: body.name },
+      })
+    }
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 
   @Put(':id')
-  async updatePlayer(@Param('id') id: string, @Body() body: { name?: string; avatar?: string }) {
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  async updatePlayer(@Param('id') id: string, @Body() body: { name?: string; avatar?: string }, @CurrentUser() user: any) {
     console.log('更新玩家请求 - ID:', id, '数据:', body)
     const client = getSupabaseClient()
 
@@ -109,6 +130,15 @@ export class PlayersController {
     }
 
     console.log('玩家更新成功:', data?.[0])
+    if (data?.[0]) {
+      this.logService.log({
+        action: 'update',
+        target_type: 'player',
+        target_id: id,
+        user_id: user?.userId,
+        details: { name: body.name },
+      })
+    }
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 }

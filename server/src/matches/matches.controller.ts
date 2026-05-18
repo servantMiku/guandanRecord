@@ -1,10 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query } from '@nestjs/common'
+import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards, Req } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
 import { MatchesService } from './matches.service'
 import { getSupabaseClient } from '../storage/database/supabase-client'
+import { RolesGuard } from '../auth/guards/roles.guard'
+import { Roles } from '../auth/decorators/roles.decorator'
+import { OperationLogService } from '../operation-log/operation-log.service'
 
 @Controller('matches')
 export class MatchesController {
-  constructor(private readonly matchesService: MatchesService) {}
+  constructor(
+    private readonly matchesService: MatchesService,
+    private readonly logService: OperationLogService,
+  ) {}
 
   @Get()
   async getAllMatches(@Query('limit') limit?: string, @Query('seasonId') seasonId?: string) {
@@ -206,10 +213,22 @@ export class MatchesController {
       console.error('更新赛季场次时出错:', seasonError)
     }
 
+    // 记录操作日志
+    if (data?.[0]) {
+      this.logService.log({
+        action: 'create',
+        target_type: 'match',
+        target_id: data[0].id,
+        details: { seasonId: body.seasonId, score: body.score },
+      })
+    }
+
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 
   @Post('clear-all')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   async clearAllData() {
     console.log('清空所有数据请求')
     const client = getSupabaseClient()
@@ -231,6 +250,7 @@ export class MatchesController {
       console.log('玩家统计表已清空')
 
       console.log('所有数据已清空完成')
+      this.logService.log({ action: 'clear', target_type: 'data' })
       return { code: 200, msg: '所有数据已清空', data: null }
     } catch (error) {
       console.error('清空数据失败:', error)
@@ -320,6 +340,14 @@ export class MatchesController {
       console.error('更新玩家统计数据失败，但战绩已更新:', statsError)
     }
 
+    // 记录操作日志
+    this.logService.log({
+      action: 'update',
+      target_type: 'match',
+      target_id: id,
+      details: { score: body.score, remark: body.remark },
+    })
+
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }
 
@@ -367,6 +395,13 @@ export class MatchesController {
     }
 
     console.log('战绩删除成功:', data?.[0]?.id)
+
+    // 记录操作日志
+    this.logService.log({
+      action: 'delete',
+      target_type: 'match',
+      target_id: id,
+    })
 
     return { code: 200, msg: 'success', data: data?.[0] || null }
   }

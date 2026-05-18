@@ -2,6 +2,8 @@ import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
+import { getStoredUser, loginWithPassword, logout, UserInfo } from '@/stores/authStore'
+import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
 // 图标组件 - 使用 Unicode 字符
@@ -13,6 +15,8 @@ const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?:
     Trash2: '🗑',
     Download: '⬇️',
     Upload: '⬆️',
+    User: '👤',
+    Shield: '🛡',
   }
   return (
     <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
@@ -33,6 +37,11 @@ type EditingPlayer = {
 }
 
 export default function ProfilePage() {
+  const [user, setUser] = useState<UserInfo | null>(getStoredUser())
+  const [showPasswordLogin, setShowPasswordLogin] = useState(false)
+  const [password, setPassword] = useState('')
+  const [loginLoading, setLoginLoading] = useState(false)
+
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
   const [editingPlayer, setEditingPlayer] = useState<EditingPlayer | null>(null)
@@ -42,6 +51,12 @@ export default function ProfilePage() {
   const [honorThreshold, setHonorThreshold] = useState(80)
   const [thresholdCalcMethod, setThresholdCalcMethod] = useState<'season_total' | 'avg_participation'>('season_total')
   const [thresholdLoading, setThresholdLoading] = useState(false)
+
+  const isAdmin = user?.role === 'admin'
+
+  const refreshUser = () => {
+    setUser(getStoredUser())
+  }
 
   useEffect(() => {
     fetchPlayers()
@@ -126,6 +141,38 @@ export default function ProfilePage() {
     }
   }
 
+  const handlePasswordLogin = async () => {
+    if (!password.trim()) {
+      Taro.showToast({ title: '请输入密码', icon: 'none' })
+      return
+    }
+    setLoginLoading(true)
+    const result = await loginWithPassword(password.trim())
+    setLoginLoading(false)
+    if (result) {
+      Taro.showToast({ title: '登录成功', icon: 'success' })
+      setShowPasswordLogin(false)
+      setPassword('')
+      refreshUser()
+    } else {
+      Taro.showToast({ title: '密码错误', icon: 'none' })
+    }
+  }
+
+  const handleLogout = () => {
+    Taro.showModal({
+      title: '退出登录',
+      content: '确定要退出当前账户吗？',
+      success: (res) => {
+        if (res.confirm) {
+          logout()
+          setUser(null)
+          Taro.showToast({ title: '已退出', icon: 'success' })
+        }
+      }
+    })
+  }
+
   const handleCancelAddPlayer = () => {
     setShowAddInput(false)
     setNewPlayerName('')
@@ -201,8 +248,45 @@ export default function ProfilePage() {
     }
   }
 
-  const getPlayerInitial = (name: string) => {
-    return name ? name.charAt(0).toUpperCase() : '?'
+  // 选择并上传头像
+  const pickAvatar = async (player: Player) => {
+    try {
+      const res = await Taro.chooseImage({ count: 1, sizeType: ['compressed'] })
+      const tempPath = res.tempFilePaths[0]
+
+      let base64 = ''
+      const env = Taro.getEnv()
+
+      if (env === Taro.ENV_TYPE.WEAPP) {
+        const fs = Taro.getFileSystemManager()
+        const fileData = fs.readFileSync(tempPath, 'base64')
+        base64 = `data:image/jpeg;base64,${fileData}`
+      } else {
+        // H5: tempPath is a blob URL
+        const response = await fetch(tempPath)
+        const blob = await response.blob()
+        base64 = await new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(blob)
+        })
+      }
+
+      Taro.showLoading({ title: '上传中...' })
+      await Network.request({
+        url: `/api/players/${player.id}`,
+        method: 'PUT',
+        data: { avatar: base64 },
+      })
+      Taro.hideLoading()
+
+      Taro.showToast({ title: '头像已更新', icon: 'success' })
+      fetchPlayers()
+    } catch (error) {
+      Taro.hideLoading()
+      console.error('上传头像失败:', error)
+      Taro.showToast({ title: '上传失败', icon: 'none' })
+    }
   }
 
   // 导出所有数据
@@ -393,11 +477,65 @@ export default function ProfilePage() {
 
   return (
     <View className="profile-page">
-      {/* 头部 */}
+      {/* 头部 - 用户信息 */}
       <View className="header">
-        <Text className="header-title">玩家管理</Text>
-        <Text className="header-subtitle">管理6位好友的信息</Text>
+        {user ? (
+          <View>
+            <View className="header-user-row">
+              <View className="header-avatar">
+                <Text className="header-avatar-text">
+                  {user.nickname ? user.nickname.charAt(0).toUpperCase() : 'U'}
+                </Text>
+              </View>
+              <View className="header-user-info">
+                <Text className="header-title">{user.nickname || '微信用户'}</Text>
+                <Text className={`header-role ${isAdmin ? 'role-admin' : 'role-user'}`}>
+                  {isAdmin ? '管理员' : '普通用户'}
+                </Text>
+              </View>
+            </View>
+            <Text className="header-logout" onClick={handleLogout}>退出登录</Text>
+          </View>
+        ) : (
+          <View>
+            <Text className="header-title">未登录</Text>
+            <Text className="header-subtitle">登录后可使用完整功能</Text>
+          </View>
+        )}
       </View>
+
+      {/* H5 密码登录 */}
+      {!user && !showPasswordLogin && Taro.getEnv() !== Taro.ENV_TYPE.WEAPP && (
+        <View className="login-section">
+          <View className="login-btn" onClick={() => setShowPasswordLogin(true)}>
+            <Icon name="Shield" size={24} color="#ffffff" />
+            <Text className="login-btn-text">管理员登录</Text>
+          </View>
+        </View>
+      )}
+
+      {!user && showPasswordLogin && (
+        <View className="login-section">
+          <View className="login-form">
+            <Input
+              className="login-input"
+              type="text"
+              password
+              placeholder="输入管理员密码"
+              value={password}
+              onInput={(e) => setPassword(e.detail.value)}
+            />
+            <View className="login-actions">
+              <View className="login-btn login-btn-cancel" onClick={() => { setShowPasswordLogin(false); setPassword('') }}>
+                <Text className="login-btn-text">取消</Text>
+              </View>
+              <View className="login-btn login-btn-submit" onClick={handlePasswordLogin}>
+                <Text className="login-btn-text">{loginLoading ? '登录中...' : '登录'}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
 
       <View className="content">
         {loading ? (
@@ -405,7 +543,8 @@ export default function ProfilePage() {
             <Text className="loading-text">加载中...</Text>
           </View>
         ) : (
-          <View>
+          <>
+            {isAdmin && (
             <View className="add-player-section">
               {showAddInput ? (
                 <View className="add-player-input-container">
@@ -433,14 +572,28 @@ export default function ProfilePage() {
                 </View>
               )}
             </View>
+            )}
 
             <View className="player-list">
             {players.map((player, index) => (
               <View key={player.id} className="player-card">
                 <View className="player-info">
-                  {/* 头像 - 名字缩写 */}
-                  <View className={`avatar avatar-${index}`}>
-                    <Text className="avatar-text">{getPlayerInitial(player.name)}</Text>
+                  <View style={{ position: 'relative' }}>
+                    <PlayerAvatar player={player} size={80} colorIndex={index} onClick={isAdmin ? () => pickAvatar(player) : undefined} />
+                    {isAdmin && (
+                      <View
+                        style={{
+                          position: 'absolute', bottom: 0, right: 0,
+                          width: '32px', height: '32px', borderRadius: '50%',
+                          background: 'rgba(0,0,0,0.6)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: '2px solid rgba(255,255,255,0.3)',
+                        }}
+                        onClick={() => pickAvatar(player)}
+                      >
+                        <Text style={{ color: '#fff', fontSize: '16px', lineHeight: 1 }}>📷</Text>
+                      </View>
+                    )}
                   </View>
 
                   {/* 玩家信息 */}
@@ -459,6 +612,7 @@ export default function ProfilePage() {
                 </View>
 
                 {/* 编辑按钮 */}
+                {isAdmin && (
                 <View className="player-actions">
                   {editingPlayer?.id === player.id ? (
                     <>
@@ -484,12 +638,13 @@ export default function ProfilePage() {
                     </View>
                   )}
                 </View>
+                )}
               </View>
             ))}
           </View>
-          </View>
-        )}
 
+        {isAdmin && (
+        <View>
         {/* 数据导出导入区域 */}
         <View className="data-backup-section">
           <Text className="data-backup-title">💾 数据备份</Text>
@@ -567,6 +722,10 @@ export default function ProfilePage() {
             <Text className="clear-data-btn-text" style={{ marginLeft: '12px' }}>清空所有数据</Text>
           </View>
         </View>
+        </View>
+        )}
+        </>
+      )}
       </View>
     </View>
   )

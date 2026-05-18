@@ -35,6 +35,7 @@ async function bootstrap() {
   // 获取 InitService 实例并初始化默认玩家数据
   const initService = app.get(InitService);
   await initService.initializeDefaultPlayers();
+  await initService.initializeAdminUser();
 
   // 2. 解析端口
   const port = parsePort();

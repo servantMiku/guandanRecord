@@ -2,6 +2,7 @@ import { View, Text, Input, Picker } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
+import { getStoredUser } from '@/stores/authStore'
 import './index.css'
 
 // 图标组件 - 使用 Unicode 字符
@@ -43,6 +44,7 @@ export default function SeasonsPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingSeason, setEditingSeason] = useState<Season | null>(null)
+  const isAdmin = getStoredUser()?.role === 'admin'
   const [form, setForm] = useState<SeasonForm>({
     name: '',
     startDate: new Date().toISOString().split('T')[0],
@@ -215,10 +217,12 @@ export default function SeasonsPage() {
       {/* 头部 */}
       <View className="header">
         <Text className="header-title">赛季管理</Text>
+        {isAdmin && (
         <View className="create-btn" onClick={handleCreate}>
           <Icon name="Plus" size={20} color="#ffffff" />
           <Text className="create-btn-text">新建</Text>
         </View>
+        )}
       </View>
 
       {showForm && (
@@ -341,6 +345,7 @@ export default function SeasonsPage() {
                     </Text>
                   </View>
                 )}
+                {isAdmin && (
                 <View className="season-actions">
                   <View
                     className="season-action season-action-end"
@@ -364,6 +369,7 @@ export default function SeasonsPage() {
                     <Text className="season-action-text">删除</Text>
                   </View>
                 </View>
+                )}
               </View>
             ))}
           </View>
