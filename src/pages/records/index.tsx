@@ -2,6 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
+import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
 // 图标组件 - 使用 Unicode 字符
@@ -159,10 +160,9 @@ export default function RecordsPage() {
     Taro.navigateTo({ url: `/pages/record-form/index?seasonId=${seasonId}&matchId=${matchId}` })
   }
 
-  // 获取玩家名字缩写
-  const getPlayerInitial = (playerId: string) => {
-    const player = players.find(p => p.id === playerId)
-    return player ? player.name.charAt(0).toUpperCase() : '?'
+  // 获取玩家对象
+  const getPlayer = (playerId: string) => {
+    return players.find(p => p.id === playerId) || null
   }
 
   // 获取玩家全名
@@ -295,18 +295,14 @@ export default function RecordsPage() {
                     <View className="match-team winner-team">
                       <View className="team-avatars">
                         <View className="player-avatar-wrapper">
-                          <View className="player-avatar winner-avatar">
-                            <Text className="avatar-text">{getPlayerInitial(winnerP1)}</Text>
+                            <PlayerAvatar player={getPlayer(winnerP1)} size={72} />
+                            <Text className="avatar-name winner-name">{getPlayerName(winnerP1)}</Text>
                           </View>
-                          <Text className="avatar-name winner-name">{getPlayerName(winnerP1)}</Text>
-                        </View>
-                        <Text className="player-plus">+</Text>
-                        <View className="player-avatar-wrapper">
-                          <View className="player-avatar winner-avatar">
-                            <Text className="avatar-text">{getPlayerInitial(winnerP2)}</Text>
+                          <Text className="player-plus">+</Text>
+                          <View className="player-avatar-wrapper">
+                            <PlayerAvatar player={getPlayer(winnerP2)} size={72} />
+                            <Text className="avatar-name winner-name">{getPlayerName(winnerP2)}</Text>
                           </View>
-                          <Text className="avatar-name winner-name">{getPlayerName(winnerP2)}</Text>
-                        </View>
                       </View>
                       <View className="team-score winner-score">
                         <Text className="score-text">{winnerScore}</Text>
@@ -322,18 +318,14 @@ export default function RecordsPage() {
                     <View className="match-team loser-team">
                       <View className="team-avatars">
                         <View className="player-avatar-wrapper">
-                          <View className="player-avatar loser-avatar">
-                            <Text className="avatar-text">{getPlayerInitial(loserP1)}</Text>
+                            <PlayerAvatar player={getPlayer(loserP1)} size={72} />
+                            <Text className="avatar-name loser-name">{getPlayerName(loserP1)}</Text>
                           </View>
-                          <Text className="avatar-name loser-name">{getPlayerName(loserP1)}</Text>
-                        </View>
-                        <Text className="player-plus">+</Text>
-                        <View className="player-avatar-wrapper">
-                          <View className="player-avatar loser-avatar">
-                            <Text className="avatar-text">{getPlayerInitial(loserP2)}</Text>
+                          <Text className="player-plus">+</Text>
+                          <View className="player-avatar-wrapper">
+                            <PlayerAvatar player={getPlayer(loserP2)} size={72} />
+                            <Text className="avatar-name loser-name">{getPlayerName(loserP2)}</Text>
                           </View>
-                          <Text className="avatar-name loser-name">{getPlayerName(loserP2)}</Text>
-                        </View>
                       </View>
                       <View className="team-score loser-score">
                         <Text className="score-text">{loserScore}</Text>

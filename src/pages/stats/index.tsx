@@ -2,6 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
+import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
 // 图标组件 - 使用 Unicode 字符
@@ -157,10 +158,26 @@ export default function StatsPage() {
   const [playerPairMatrix, setPlayerPairMatrix] = useState<PlayerPairMatrixItem[]>([])
   const [summary, setSummary] = useState<any>(null)
   const [awards, setAwards] = useState<Award[]>([])
+  const [players, setPlayers] = useState<any[]>([])
   const [expandedAwardId, setExpandedAwardId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [sortField, setSortField] = useState<SortField>('winRate')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+
+  const fetchPlayers = async () => {
+    try {
+      const res = await Network.request({ url: '/api/players' })
+      if (res.data && res.data.data) {
+        setPlayers(res.data.data)
+      }
+    } catch (error) {
+      console.error('获取玩家列表失败:', error)
+    }
+  }
+
+  const getPlayer = (playerId: string) => {
+    return players.find(p => p.id === playerId) || null
+  }
 
   const fetchSeasons = async () => {
     try {
@@ -213,6 +230,7 @@ export default function StatsPage() {
 
   useEffect(() => {
     fetchSeasons()
+    fetchPlayers()
   }, [])
 
   // 页面显示时刷新数据
@@ -438,7 +456,13 @@ export default function StatsPage() {
                       <Text className="award-help-icon block">❓</Text>
                     </View>
                   </View>
-                  {award.playerName && (
+                  {award.type === 'individual' && award.playerId && (
+                    <View className="award-player-row">
+                      <PlayerAvatar player={getPlayer(award.playerId)} size={32} />
+                      <Text className="award-player block">{award.playerName}</Text>
+                    </View>
+                  )}
+                  {!award.playerId && award.playerName && (
                     <Text className="award-player block">{award.playerName}</Text>
                   )}
                   {award.playerNames && award.playerNames.length > 0 && (
@@ -530,6 +554,7 @@ export default function StatsPage() {
                 {/* 玩家信息 */}
                 <View className="table-cell">
                   <View className="player-info">
+                    <PlayerAvatar player={getPlayer(stat.playerId)} size={40} />
                     <Text className="table-cell-text player-name">{stat.playerName}</Text>
                     {/* 连胜/连败 */}
                     <View className="streak-info">

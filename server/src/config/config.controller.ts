@@ -1,8 +1,15 @@
-import { Controller, Get, Post, Param, Body } from "@nestjs/common";
+import { Controller, Get, Post, Param, Body, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import { getSupabaseClient } from "../storage/database/supabase-client";
+import { RolesGuard } from "../auth/guards/roles.guard";
+import { Roles } from "../auth/decorators/roles.decorator";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { OperationLogService } from "../operation-log/operation-log.service";
 
 @Controller("config")
 export class ConfigController {
+  constructor(private readonly logService: OperationLogService) {}
+
   @Get()
   async getConfig() {
     const client = getSupabaseClient();
@@ -42,7 +49,9 @@ export class ConfigController {
   }
 
   @Post()
-  async updateConfig(@Body() body: { key: string; value: string; description?: string }) {
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  async updateConfig(@Body() body: { key: string; value: string; description?: string }, @CurrentUser() user: any) {
     const client = getSupabaseClient();
 
     // Try to update first
@@ -77,6 +86,15 @@ export class ConfigController {
         return { code: 500, msg: "插入配置失败", data: null };
       }
     }
+
+    // 记录操作日志
+    this.logService.log({
+      action: 'config',
+      target_type: 'config',
+      target_id: body.key,
+      user_id: user?.userId,
+      details: { key: body.key, value: body.value },
+    })
 
     return { code: 200, msg: "保存成功", data: { key: body.key, value: body.value } };
   }

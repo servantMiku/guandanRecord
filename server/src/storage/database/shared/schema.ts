@@ -40,6 +40,7 @@ export const players = pgTable(
       .default(sql`gen_random_uuid()`),
     name: varchar("name", { length: 50 }).notNull(),
     avatar: text("avatar"), // 头像URL（可选）
+    userId: varchar("user_id", { length: 36 }), // 绑定的用户ID
     createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),
@@ -47,6 +48,7 @@ export const players = pgTable(
   },
   (table) => [
     index("players_name_idx").on(table.name),
+    index("players_user_id_idx").on(table.userId),
   ]
 );
 
@@ -107,6 +109,50 @@ export const playerStats = pgTable(
   ]
 );
 
+// Users - 微信用户认证表
+export const users = pgTable(
+  "users",
+  {
+    id: varchar("id", { length: 36 })
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    openid: varchar("openid", { length: 100 }).notNull().unique(),
+    nickname: varchar("nickname", { length: 100 }),
+    avatarUrl: text("avatar_url"),
+    role: varchar("role", { length: 20 }).notNull().default("user"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    lastLoginAt: timestamp("last_login_at", { withTimezone: true, mode: 'string' }),
+  },
+  (table) => [
+    index("users_openid_idx").on(table.openid),
+  ]
+);
+
+// Operation Logs - 操作审计日志
+export const operationLogs = pgTable(
+  "operation_logs",
+  {
+    id: varchar("id", { length: 36 })
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar("user_id", { length: 36 }),
+    userName: varchar("user_name", { length: 100 }),
+    action: varchar("action", { length: 50 }).notNull(),
+    targetType: varchar("target_type", { length: 50 }).notNull(),
+    targetId: varchar("target_id", { length: 100 }),
+    details: jsonb("details").$type<Record<string, any>>(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("operation_logs_created_idx").on(table.createdAt),
+    index("operation_logs_target_idx").on(table.targetType, table.targetId),
+  ]
+);
+
 // App config table
 export const appConfig = pgTable("app_config", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -162,4 +208,5 @@ export type Match = typeof matches.$inferSelect;
 export type InsertMatch = z.infer<typeof insertMatchSchema>;
 export type UpdateMatch = z.infer<typeof updateMatchSchema>;
 
+export type User = typeof users.$inferSelect;
 export type PlayerStats = typeof playerStats.$inferSelect;

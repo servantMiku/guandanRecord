@@ -911,6 +911,13 @@
   line-height: 1;
 }
 
+.award-player-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 .award-player {
   display: block;
   color: rgba(255, 255, 255, 0.85);

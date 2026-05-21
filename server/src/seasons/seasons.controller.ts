@@ -1,10 +1,18 @@
-import { Controller, Get, Post, Put, Param, Body } from '@nestjs/common'
+import { Controller, Get, Post, Put, Param, Body, UseGuards } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
 import { SeasonsService } from './seasons.service'
 import { getSupabaseClient } from '../storage/database/supabase-client'
+import { RolesGuard } from '../auth/guards/roles.guard'
+import { Roles } from '../auth/decorators/roles.decorator'
+import { CurrentUser } from '../auth/decorators/current-user.decorator'
+import { OperationLogService } from '../operation-log/operation-log.service'
 
 @Controller('seasons')
 export class SeasonsController {
-  constructor(private readonly seasonsService: SeasonsService) {}
+  constructor(
+    private readonly seasonsService: SeasonsService,
+    private readonly logService: OperationLogService,
+  ) {}
 
   @Get()
   async getAllSeasons() {
@@ -73,7 +81,9 @@ export class SeasonsController {
   }
 
   @Post()
-  async createSeason(@Body() body: { name: string; startDate: string; endDate?: string | null; totalMatches?: number }) {
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  async createSeason(@Body() body: { name: string; startDate: string; endDate?: string | null; totalMatches?: number }, @CurrentUser() user: any) {
     console.log('创建赛季请求:', body)
     const client = getSupabaseClient()
 
@@ -119,11 +129,24 @@ export class SeasonsController {
       updatedAt: season.updated_at
     } : null
 
+    // 记录操作日志
+    if (result) {
+      this.logService.log({
+        action: 'create',
+        target_type: 'season',
+        target_id: result.id,
+        user_id: user?.userId,
+        details: { name: body.name, startDate: body.startDate },
+      })
+    }
+
     return { code: 200, msg: 'success', data: result }
   }
 
   @Put(':id')
-  async updateSeason(@Param('id') id: string, @Body() body: { name?: string; startDate?: string; endDate?: string | null; totalMatches?: number }) {
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  async updateSeason(@Param('id') id: string, @Body() body: { name?: string; startDate?: string; endDate?: string | null; totalMatches?: number }, @CurrentUser() user: any) {
     console.log('更新赛季请求 - ID:', id, body)
     const client = getSupabaseClient()
 
@@ -162,11 +185,24 @@ export class SeasonsController {
       updatedAt: season.updated_at
     } : null
 
+    // 记录操作日志
+    if (result) {
+      this.logService.log({
+        action: 'update',
+        target_type: 'season',
+        target_id: id,
+        user_id: user?.userId,
+        details: { name: body.name },
+      })
+    }
+
     return { code: 200, msg: 'success', data: result }
   }
 
   @Put(':id/end')
-  async endSeason(@Param('id') id: string, @Body() body: { endDate: string }) {
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  async endSeason(@Param('id') id: string, @Body() body: { endDate: string }, @CurrentUser() user: any) {
     console.log('结束赛季请求 - ID:', id, '结束日期:', body.endDate)
     const client = getSupabaseClient()
 
@@ -231,6 +267,17 @@ export class SeasonsController {
       createdAt: season.created_at,
       updatedAt: season.updated_at
     } : null
+
+    // 记录操作日志
+    if (result) {
+      this.logService.log({
+        action: 'end',
+        target_type: 'season',
+        target_id: id,
+        user_id: user?.userId,
+        details: { name: result.name, endDate: body.endDate },
+      })
+    }
 
     return { code: 200, msg: 'success', data: result }
   }

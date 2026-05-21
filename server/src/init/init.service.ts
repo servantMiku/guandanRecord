@@ -108,6 +108,53 @@ export class InitService {
     } else {
       console.log('player_stats表检查/创建成功')
     }
+
+    // 创建 users 表（微信用户认证）
+    const { error: usersError } = await client.rpc('exec_sql', {
+      sql: `
+        CREATE TABLE IF NOT EXISTS users (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          openid VARCHAR(100) UNIQUE NOT NULL,
+          nickname VARCHAR(100),
+          avatar_url TEXT,
+          role VARCHAR(20) DEFAULT 'user' NOT NULL
+            CHECK (role IN ('user', 'admin')),
+          created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+          last_login_at TIMESTAMPTZ
+        );
+        CREATE INDEX IF NOT EXISTS users_openid_idx ON users(openid);
+      `
+    })
+
+    if (usersError) {
+      console.log('users表可能已存在或RPC不可用:', usersError.message)
+    } else {
+      console.log('users表检查/创建成功')
+    }
+
+    // 创建 operation_logs 表（操作审计日志）
+    const { error: logsError } = await client.rpc('exec_sql', {
+      sql: `
+        CREATE TABLE IF NOT EXISTS operation_logs (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id VARCHAR(36),
+          user_name VARCHAR(100),
+          action VARCHAR(50) NOT NULL,
+          target_type VARCHAR(50) NOT NULL,
+          target_id VARCHAR(100),
+          details JSONB,
+          created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS operation_logs_created_idx ON operation_logs(created_at DESC);
+        CREATE INDEX IF NOT EXISTS operation_logs_target_idx ON operation_logs(target_type, target_id);
+      `
+    })
+
+    if (logsError) {
+      console.log('operation_logs表可能已存在或RPC不可用:', logsError.message)
+    } else {
+      console.log('operation_logs表检查/创建成功')
+    }
   }
 
   async initializeDefaultPlayers() {
@@ -150,6 +197,37 @@ export class InitService {
       console.error('初始化默认玩家失败:', error)
     } else {
       console.log('默认玩家初始化成功:', data)
+    }
+  }
+
+  async initializeAdminUser() {
+    const client = getSupabaseClient()
+
+    // 检查是否已有管理员
+    const { data: existing } = await client
+      .from('users')
+      .select('id')
+      .eq('role', 'admin')
+      .limit(1)
+
+    if (existing && existing.length > 0) {
+      console.log('管理员用户已存在，跳过初始化')
+      return
+    }
+
+    // 初始化一个默认管理员（openid 用固定占位符，H5 密码登录可用）
+    const { error } = await client
+      .from('users')
+      .insert({
+        openid: '__admin_default__',
+        nickname: '管理员',
+        role: 'admin',
+      })
+
+    if (error) {
+      console.error('初始化管理员用户失败:', error)
+    } else {
+      console.log('默认管理员用户初始化成功')
     }
   }
 }

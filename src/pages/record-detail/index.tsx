@@ -2,6 +2,7 @@ import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect, useCallback } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
 import { Network } from '@/network'
+import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
 // 图标组件 - 使用 Unicode 字符
@@ -86,6 +87,10 @@ export default function RecordDetailPage() {
   const getPlayerName = (playerId: string) => {
     const player = players.find(p => p.id === playerId)
     return player ? player.name : playerId
+  }
+
+  const getPlayer = (playerId: string) => {
+    return players.find(p => p.id === playerId) || null
   }
 
   const handleEdit = () => {
@@ -180,16 +185,12 @@ export default function RecordDetailPage() {
             <Text className="team-title team-title-1">队伍 1</Text>
             <View className="team-players">
               <View className="team-player">
-                <View className="player-avatar avatar-1">
-                  <Text className="avatar-text">{getPlayerName(match.team1Player1Id).charAt(0)}</Text>
-                </View>
+                <PlayerAvatar player={getPlayer(match.team1Player1Id)} size={40} />
                 <Text className="player-name">{getPlayerName(match.team1Player1Id)}</Text>
               </View>
               <Text className="plus-sign">+</Text>
               <View className="team-player">
-                <View className="player-avatar avatar-1">
-                  <Text className="avatar-text">{getPlayerName(match.team1Player2Id).charAt(0)}</Text>
-                </View>
+                <PlayerAvatar player={getPlayer(match.team1Player2Id)} size={40} />
                 <Text className="player-name">{getPlayerName(match.team1Player2Id)}</Text>
               </View>
             </View>
@@ -203,16 +204,12 @@ export default function RecordDetailPage() {
             <Text className="team-title team-title-2">队伍 2</Text>
             <View className="team-players">
               <View className="team-player">
-                <View className="player-avatar avatar-2">
-                  <Text className="avatar-text">{getPlayerName(match.team2Player1Id).charAt(0)}</Text>
-                </View>
+                <PlayerAvatar player={getPlayer(match.team2Player1Id)} size={40} />
                 <Text className="player-name">{getPlayerName(match.team2Player1Id)}</Text>
               </View>
               <Text className="plus-sign">+</Text>
               <View className="team-player">
-                <View className="player-avatar avatar-2">
-                  <Text className="avatar-text">{getPlayerName(match.team2Player2Id).charAt(0)}</Text>
-                </View>
+                <PlayerAvatar player={getPlayer(match.team2Player2Id)} size={40} />
                 <Text className="player-name">{getPlayerName(match.team2Player2Id)}</Text>
               </View>
             </View>

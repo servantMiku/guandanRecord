@@ -2,6 +2,7 @@ import { View, Text, Button } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
+import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
 // 图标组件 - 使用 Unicode 字符
@@ -376,6 +377,7 @@ export default function ArrangeMatchPage() {
                     {index + 1}
                   </Text>
                 </View>
+                <PlayerAvatar player={player} size={48} />
                 <Text className="player-name">{player.name}</Text>
                 <View className="player-matches">
                   <Text className="matches-count">{player.totalMatches}</Text>
@@ -424,16 +426,12 @@ export default function ArrangeMatchPage() {
                 </View>
                 <View className="team-players">
                   <View className="team-player">
-                    <View className="player-avatar">
-                      <Text className="avatar-text">{suggestion.team1.player1.name.charAt(0)}</Text>
-                    </View>
+                    <PlayerAvatar player={suggestion.team1.player1} size={72} />
                     <Text className="player-name">{suggestion.team1.player1.name}</Text>
                   </View>
                   <Text className="player-plus">+</Text>
                   <View className="team-player">
-                    <View className="player-avatar">
-                      <Text className="avatar-text">{suggestion.team1.player2.name.charAt(0)}</Text>
-                    </View>
+                    <PlayerAvatar player={suggestion.team1.player2} size={72} />
                     <Text className="player-name">{suggestion.team1.player2.name}</Text>
                   </View>
                 </View>
@@ -454,16 +452,12 @@ export default function ArrangeMatchPage() {
                 </View>
                 <View className="team-players">
                   <View className="team-player">
-                    <View className="player-avatar">
-                      <Text className="avatar-text">{suggestion.team2.player1.name.charAt(0)}</Text>
-                    </View>
+                    <PlayerAvatar player={suggestion.team2.player1} size={72} />
                     <Text className="player-name">{suggestion.team2.player1.name}</Text>
                   </View>
                   <Text className="player-plus">+</Text>
                   <View className="team-player">
-                    <View className="player-avatar">
-                      <Text className="avatar-text">{suggestion.team2.player2.name.charAt(0)}</Text>
-                    </View>
+                    <PlayerAvatar player={suggestion.team2.player2} size={72} />
                     <Text className="player-name">{suggestion.team2.player2.name}</Text>
                   </View>
                 </View>

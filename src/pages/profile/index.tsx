@@ -1,7 +1,9 @@
-import { View, Text, Input } from '@tarojs/components'
+import { View, Text, Input, Button } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
+import { getStoredUser, loginWithPassword, logout, UserInfo } from '@/stores/authStore'
+import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
 // 图标组件 - 使用 Unicode 字符
@@ -13,6 +15,8 @@ const Icon = ({ name, size = 24, color }: { name: string; size?: number; color?:
     Trash2: '🗑',
     Download: '⬇️',
     Upload: '⬆️',
+    User: '👤',
+    Shield: '🛡',
   }
   return (
     <Text style={{ fontSize: `${size}px`, color, lineHeight: 1 }}>{icons[name] || '•'}</Text>
@@ -24,6 +28,7 @@ type Player = {
   name: string
   avatar: string | null
   createdAt: string
+  userId: string | null
 }
 
 type EditingPlayer = {
@@ -33,6 +38,11 @@ type EditingPlayer = {
 }
 
 export default function ProfilePage() {
+  const [user, setUser] = useState<UserInfo | null>(getStoredUser())
+  const [showPasswordLogin, setShowPasswordLogin] = useState(false)
+  const [password, setPassword] = useState('')
+  const [loginLoading, setLoginLoading] = useState(false)
+
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
   const [editingPlayer, setEditingPlayer] = useState<EditingPlayer | null>(null)
@@ -42,6 +52,15 @@ export default function ProfilePage() {
   const [honorThreshold, setHonorThreshold] = useState(80)
   const [thresholdCalcMethod, setThresholdCalcMethod] = useState<'season_total' | 'avg_participation'>('season_total')
   const [thresholdLoading, setThresholdLoading] = useState(false)
+
+  const isAdmin = user?.role === 'admin'
+  const isMyPlayer = (player: Player): boolean => {
+    return !!user && player.userId === user.id
+  }
+
+  const refreshUser = () => {
+    setUser(getStoredUser())
+  }
 
   useEffect(() => {
     fetchPlayers()
@@ -126,6 +145,38 @@ export default function ProfilePage() {
     }
   }
 
+  const handlePasswordLogin = async () => {
+    if (!password.trim()) {
+      Taro.showToast({ title: '请输入密码', icon: 'none' })
+      return
+    }
+    setLoginLoading(true)
+    const result = await loginWithPassword(password.trim())
+    setLoginLoading(false)
+    if (result) {
+      Taro.showToast({ title: '登录成功', icon: 'success' })
+      setShowPasswordLogin(false)
+      setPassword('')
+      refreshUser()
+    } else {
+      Taro.showToast({ title: '密码错误', icon: 'none' })
+    }
+  }
+
+  const handleLogout = () => {
+    Taro.showModal({
+      title: '退出登录',
+      content: '确定要退出当前账户吗？',
+      success: (res) => {
+        if (res.confirm) {
+          logout()
+          setUser(null)
+          Taro.showToast({ title: '已退出', icon: 'success' })
+        }
+      }
+    })
+  }
+
   const handleCancelAddPlayer = () => {
     setShowAddInput(false)
     setNewPlayerName('')
@@ -201,8 +252,129 @@ export default function ProfilePage() {
     }
   }
 
-  const getPlayerInitial = (name: string) => {
-    return name ? name.charAt(0).toUpperCase() : '?'
+  // 绑定玩家（H5 直接绑定，无头像同步）
+  const handleBind = async (playerId: string) => {
+    if (!user) {
+      Taro.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+
+    Taro.showLoading({ title: '绑定中...' })
+    try {
+      const res = await Network.request({
+        url: `/api/players/${playerId}/bind`,
+        method: 'POST',
+      })
+      Taro.hideLoading()
+      if (res.data?.code === 200) {
+        Taro.showToast({ title: '绑定成功', icon: 'success' })
+        fetchPlayers()
+      } else {
+        Taro.showToast({ title: res.data?.msg || '绑定失败', icon: 'none' })
+      }
+    } catch (error) {
+      Taro.hideLoading()
+      console.error('绑定玩家失败:', error)
+      Taro.showToast({ title: '绑定失败', icon: 'none' })
+    }
+  }
+
+  // 微信小程序绑定（带头像选择）
+  const handleWechatBind = async (playerId: string, e: any) => {
+    const avatarUrl = e.detail?.avatarUrl
+    if (!avatarUrl || !user) return
+
+    Taro.showLoading({ title: '绑定中...' })
+    try {
+      // 转换头像为 base64
+      const fs = Taro.getFileSystemManager()
+      const fileData = fs.readFileSync(avatarUrl, 'base64')
+      const base64 = `data:image/jpeg;base64,${fileData}`
+
+      const res = await Network.request({
+        url: `/api/players/${playerId}/bind`,
+        method: 'POST',
+        data: { avatar: base64 },
+      })
+      Taro.hideLoading()
+      if (res.data?.code === 200) {
+        Taro.showToast({ title: '绑定成功', icon: 'success' })
+        fetchPlayers()
+      } else {
+        Taro.showToast({ title: res.data?.msg || '绑定失败', icon: 'none' })
+      }
+    } catch (error) {
+      Taro.hideLoading()
+      console.error('绑定玩家失败:', error)
+      Taro.showToast({ title: '绑定失败', icon: 'none' })
+    }
+  }
+
+  // 解绑玩家
+  const handleUnbind = async (playerId: string) => {
+    Taro.showModal({
+      title: '解除绑定',
+      content: '确定要解除与这个玩家的绑定吗？',
+      success: async (res) => {
+        if (!res.confirm) return
+        try {
+          const result = await Network.request({
+            url: `/api/players/${playerId}/unbind`,
+            method: 'POST',
+          })
+          if (result.data?.code === 200) {
+            Taro.showToast({ title: '解绑成功', icon: 'success' })
+            fetchPlayers()
+          } else {
+            Taro.showToast({ title: result.data?.msg || '解绑失败', icon: 'none' })
+          }
+        } catch (error) {
+          console.error('解绑玩家失败:', error)
+          Taro.showToast({ title: '解绑失败', icon: 'none' })
+        }
+      }
+    })
+  }
+
+  // 选择并上传头像
+  const pickAvatar = async (player: Player) => {
+    try {
+      const res = await Taro.chooseImage({ count: 1, sizeType: ['compressed'] })
+      const tempPath = res.tempFilePaths[0]
+
+      let base64 = ''
+      const env = Taro.getEnv()
+
+      if (env === Taro.ENV_TYPE.WEAPP) {
+        const fs = Taro.getFileSystemManager()
+        const fileData = fs.readFileSync(tempPath, 'base64')
+        base64 = `data:image/jpeg;base64,${fileData}`
+      } else {
+        // H5: tempPath is a blob URL
+        const response = await fetch(tempPath)
+        const blob = await response.blob()
+        base64 = await new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(blob)
+        })
+      }
+
+      Taro.showLoading({ title: '上传中...' })
+      await Network.request({
+        url: `/api/players/${player.id}`,
+        method: 'PUT',
+        data: { avatar: base64 },
+      })
+      Taro.hideLoading()
+
+      Taro.showToast({ title: '头像已更新', icon: 'success' })
+      fetchPlayers()
+    } catch (error) {
+      Taro.hideLoading()
+      console.error('上传头像失败:', error)
+      Taro.showToast({ title: '上传失败', icon: 'none' })
+    }
   }
 
   // 导出所有数据
@@ -393,11 +565,65 @@ export default function ProfilePage() {
 
   return (
     <View className="profile-page">
-      {/* 头部 */}
+      {/* 头部 - 用户信息 */}
       <View className="header">
-        <Text className="header-title">玩家管理</Text>
-        <Text className="header-subtitle">管理6位好友的信息</Text>
+        {user ? (
+          <View>
+            <View className="header-user-row">
+              <View className="header-avatar">
+                <Text className="header-avatar-text">
+                  {user.nickname ? user.nickname.charAt(0).toUpperCase() : 'U'}
+                </Text>
+              </View>
+              <View className="header-user-info">
+                <Text className="header-title">{user.nickname || '微信用户'}</Text>
+                <Text className={`header-role ${isAdmin ? 'role-admin' : 'role-user'}`}>
+                  {isAdmin ? '管理员' : '普通用户'}
+                </Text>
+              </View>
+            </View>
+            <Text className="header-logout" onClick={handleLogout}>退出登录</Text>
+          </View>
+        ) : (
+          <View>
+            <Text className="header-title">未登录</Text>
+            <Text className="header-subtitle">登录后可使用完整功能</Text>
+          </View>
+        )}
       </View>
+
+      {/* H5 密码登录 */}
+      {!user && !showPasswordLogin && Taro.getEnv() !== Taro.ENV_TYPE.WEAPP && (
+        <View className="login-section">
+          <View className="login-btn" onClick={() => setShowPasswordLogin(true)}>
+            <Icon name="Shield" size={24} color="#ffffff" />
+            <Text className="login-btn-text">管理员登录</Text>
+          </View>
+        </View>
+      )}
+
+      {!user && showPasswordLogin && (
+        <View className="login-section">
+          <View className="login-form">
+            <Input
+              className="login-input"
+              type="text"
+              password
+              placeholder="输入管理员密码"
+              value={password}
+              onInput={(e) => setPassword(e.detail.value)}
+            />
+            <View className="login-actions">
+              <View className="login-btn login-btn-cancel" onClick={() => { setShowPasswordLogin(false); setPassword('') }}>
+                <Text className="login-btn-text">取消</Text>
+              </View>
+              <View className="login-btn login-btn-submit" onClick={handlePasswordLogin}>
+                <Text className="login-btn-text">{loginLoading ? '登录中...' : '登录'}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
 
       <View className="content">
         {loading ? (
@@ -405,7 +631,8 @@ export default function ProfilePage() {
             <Text className="loading-text">加载中...</Text>
           </View>
         ) : (
-          <View>
+          <>
+            {isAdmin && (
             <View className="add-player-section">
               {showAddInput ? (
                 <View className="add-player-input-container">
@@ -433,14 +660,28 @@ export default function ProfilePage() {
                 </View>
               )}
             </View>
+            )}
 
             <View className="player-list">
             {players.map((player, index) => (
               <View key={player.id} className="player-card">
                 <View className="player-info">
-                  {/* 头像 - 名字缩写 */}
-                  <View className={`avatar avatar-${index}`}>
-                    <Text className="avatar-text">{getPlayerInitial(player.name)}</Text>
+                  <View style={{ position: 'relative' }}>
+                    <PlayerAvatar player={player} size={80} colorIndex={index} onClick={(isAdmin || isMyPlayer(player)) ? () => pickAvatar(player) : undefined} />
+                    {(isAdmin || isMyPlayer(player)) && (
+                      <View
+                        style={{
+                          position: 'absolute', bottom: 0, right: 0,
+                          width: '32px', height: '32px', borderRadius: '50%',
+                          background: 'rgba(0,0,0,0.6)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: '2px solid rgba(255,255,255,0.3)',
+                        }}
+                        onClick={() => pickAvatar(player)}
+                      >
+                        <Text style={{ color: '#fff', fontSize: '16px', lineHeight: 1 }}>📷</Text>
+                      </View>
+                    )}
                   </View>
 
                   {/* 玩家信息 */}
@@ -453,43 +694,90 @@ export default function ProfilePage() {
                         onInput={(e) => setEditingName(e.detail.value)}
                       />
                     ) : (
-                      <Text className="player-name">{player.name}</Text>
+                      <>
+                        <Text className="player-name">{player.name}</Text>
+                        {player.userId && isAdmin && (
+                          <Text className="bound-indicator">
+                            已绑定{player.userId === user?.id ? ' (我)' : ''}
+                          </Text>
+                        )}
+                      </>
                     )}
                   </View>
                 </View>
 
-                {/* 编辑按钮 */}
+                {/* 操作按钮 */}
+                {user && (
                 <View className="player-actions">
                   {editingPlayer?.id === player.id ? (
                     <>
-                      <View
-                        className="action-btn action-btn-save"
-                        onClick={handleSaveEdit}
-                      >
+                      <View className="action-btn action-btn-save" onClick={handleSaveEdit}>
                         <Icon name="Save" size={18} color="#ffffff" />
                       </View>
-                      <View
-                        className="action-btn action-btn-cancel"
-                        onClick={handleCancelEdit}
-                      >
+                      <View className="action-btn action-btn-cancel" onClick={handleCancelEdit}>
                         <Icon name="X" size={18} color="#ffffff" />
                       </View>
                     </>
                   ) : (
-                    <View
-                      className="action-btn action-btn-edit"
-                      onClick={() => handleStartEdit(player)}
-                    >
-                      <Icon name="Edit" size={18} color="#ffffff" />
-                    </View>
+                    <>
+                      {/* Admin 编辑 */}
+                      {isAdmin && (
+                        <View className="action-btn action-btn-edit" onClick={() => handleStartEdit(player)}>
+                          <Icon name="Edit" size={18} color="#ffffff" />
+                        </View>
+                      )}
+
+                      {/* 普通用户编辑自己的玩家 */}
+                      {!isAdmin && isMyPlayer(player) && (
+                        <View className="action-btn action-btn-edit" onClick={() => handleStartEdit(player)}>
+                          <Icon name="Edit" size={18} color="#ffffff" />
+                        </View>
+                      )}
+
+                      {/* Admin：绑定/解绑 */}
+                      {isAdmin && player.userId && (
+                        <View className="action-btn action-btn-unbind" onClick={() => handleUnbind(player.id)}>
+                          <Text style={{ color: '#fff', fontSize: '22px' }}>解绑</Text>
+                        </View>
+                      )}
+                      {isAdmin && !player.userId && (
+                        <View className="action-btn action-btn-bind" onClick={() => handleBind(player.id)}>
+                          <Text style={{ color: '#fff', fontSize: '22px' }}>绑定</Text>
+                        </View>
+                      )}
+
+                      {/* 普通用户：绑定/解绑/状态 */}
+                      {!isAdmin && isMyPlayer(player) && (
+                        <View className="action-btn action-btn-unbind" onClick={() => handleUnbind(player.id)}>
+                          <Text style={{ color: '#fff', fontSize: '22px' }}>解绑</Text>
+                        </View>
+                      )}
+                      {!isAdmin && !isMyPlayer(player) && !player.userId && (
+                        Taro.getEnv() === Taro.ENV_TYPE.WEAPP ? (
+                          <Button openType="chooseAvatar" className="action-btn action-btn-bind" onChooseAvatar={(e: any) => handleWechatBind(player.id, e)}>
+                            <Text style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold' }}>绑定</Text>
+                          </Button>
+                        ) : (
+                          <View className="action-btn action-btn-bind" onClick={() => handleBind(player.id)}>
+                            <Text style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold' }}>绑定</Text>
+                          </View>
+                        )
+                      )}
+                      {!isAdmin && !isMyPlayer(player) && player.userId && (
+                        <View className="bound-badge">
+                          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: '20px' }}>已绑定</Text>
+                        </View>
+                      )}
+                    </>
                   )}
                 </View>
+                )}
               </View>
             ))}
           </View>
-          </View>
-        )}
 
+        {isAdmin && (
+        <View>
         {/* 数据导出导入区域 */}
         <View className="data-backup-section">
           <Text className="data-backup-title">💾 数据备份</Text>
@@ -567,6 +855,10 @@ export default function ProfilePage() {
             <Text className="clear-data-btn-text" style={{ marginLeft: '12px' }}>清空所有数据</Text>
           </View>
         </View>
+        </View>
+        )}
+        </>
+      )}
       </View>
     </View>
   )
