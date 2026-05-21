@@ -173,19 +173,19 @@
 .team-avatars {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 8px;
 }
 
 .player-avatar-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .player-avatar {
-  width: 72px;
-  height: 72px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -203,16 +203,16 @@
 .avatar-text {
   display: block;
   color: #ffffff;
-  font-size: 32px;
+  font-size: 22px;
   font-weight: bold;
 }
 
 .avatar-name {
   display: block;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   text-align: center;
-  max-width: 72px;
+  max-width: 40px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -235,7 +235,7 @@
 .player-plus {
   display: block;
   color: #9ca3af;
-  font-size: 28px;
+  font-size: 20px;
   font-weight: bold;
 }
 
