@@ -1,4 +1,4 @@
-import { View, Text, Input } from '@tarojs/components'
+import { View, Text, Input, Button } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
@@ -28,6 +28,7 @@ type Player = {
   name: string
   avatar: string | null
   createdAt: string
+  userId: string | null
 }
 
 type EditingPlayer = {
@@ -53,6 +54,9 @@ export default function ProfilePage() {
   const [thresholdLoading, setThresholdLoading] = useState(false)
 
   const isAdmin = user?.role === 'admin'
+  const isMyPlayer = (player: Player): boolean => {
+    return !!user && player.userId === user.id
+  }
 
   const refreshUser = () => {
     setUser(getStoredUser())
@@ -246,6 +250,90 @@ export default function ProfilePage() {
     } finally {
       setThresholdLoading(false)
     }
+  }
+
+  // 绑定玩家（H5 直接绑定，无头像同步）
+  const handleBind = async (playerId: string) => {
+    if (!user) {
+      Taro.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+
+    Taro.showLoading({ title: '绑定中...' })
+    try {
+      const res = await Network.request({
+        url: `/api/players/${playerId}/bind`,
+        method: 'POST',
+      })
+      Taro.hideLoading()
+      if (res.data?.code === 200) {
+        Taro.showToast({ title: '绑定成功', icon: 'success' })
+        fetchPlayers()
+      } else {
+        Taro.showToast({ title: res.data?.msg || '绑定失败', icon: 'none' })
+      }
+    } catch (error) {
+      Taro.hideLoading()
+      console.error('绑定玩家失败:', error)
+      Taro.showToast({ title: '绑定失败', icon: 'none' })
+    }
+  }
+
+  // 微信小程序绑定（带头像选择）
+  const handleWechatBind = async (playerId: string, e: any) => {
+    const avatarUrl = e.detail?.avatarUrl
+    if (!avatarUrl || !user) return
+
+    Taro.showLoading({ title: '绑定中...' })
+    try {
+      // 转换头像为 base64
+      const fs = Taro.getFileSystemManager()
+      const fileData = fs.readFileSync(avatarUrl, 'base64')
+      const base64 = `data:image/jpeg;base64,${fileData}`
+
+      const res = await Network.request({
+        url: `/api/players/${playerId}/bind`,
+        method: 'POST',
+        data: { avatar: base64 },
+      })
+      Taro.hideLoading()
+      if (res.data?.code === 200) {
+        Taro.showToast({ title: '绑定成功', icon: 'success' })
+        fetchPlayers()
+      } else {
+        Taro.showToast({ title: res.data?.msg || '绑定失败', icon: 'none' })
+      }
+    } catch (error) {
+      Taro.hideLoading()
+      console.error('绑定玩家失败:', error)
+      Taro.showToast({ title: '绑定失败', icon: 'none' })
+    }
+  }
+
+  // 解绑玩家
+  const handleUnbind = async (playerId: string) => {
+    Taro.showModal({
+      title: '解除绑定',
+      content: '确定要解除与这个玩家的绑定吗？',
+      success: async (res) => {
+        if (!res.confirm) return
+        try {
+          const result = await Network.request({
+            url: `/api/players/${playerId}/unbind`,
+            method: 'POST',
+          })
+          if (result.data?.code === 200) {
+            Taro.showToast({ title: '解绑成功', icon: 'success' })
+            fetchPlayers()
+          } else {
+            Taro.showToast({ title: result.data?.msg || '解绑失败', icon: 'none' })
+          }
+        } catch (error) {
+          console.error('解绑玩家失败:', error)
+          Taro.showToast({ title: '解绑失败', icon: 'none' })
+        }
+      }
+    })
   }
 
   // 选择并上传头像
@@ -579,8 +667,8 @@ export default function ProfilePage() {
               <View key={player.id} className="player-card">
                 <View className="player-info">
                   <View style={{ position: 'relative' }}>
-                    <PlayerAvatar player={player} size={80} colorIndex={index} onClick={isAdmin ? () => pickAvatar(player) : undefined} />
-                    {isAdmin && (
+                    <PlayerAvatar player={player} size={80} colorIndex={index} onClick={(isAdmin || isMyPlayer(player)) ? () => pickAvatar(player) : undefined} />
+                    {(isAdmin || isMyPlayer(player)) && (
                       <View
                         style={{
                           position: 'absolute', bottom: 0, right: 0,
@@ -606,36 +694,81 @@ export default function ProfilePage() {
                         onInput={(e) => setEditingName(e.detail.value)}
                       />
                     ) : (
-                      <Text className="player-name">{player.name}</Text>
+                      <>
+                        <Text className="player-name">{player.name}</Text>
+                        {player.userId && isAdmin && (
+                          <Text className="bound-indicator">
+                            已绑定{player.userId === user?.id ? ' (我)' : ''}
+                          </Text>
+                        )}
+                      </>
                     )}
                   </View>
                 </View>
 
-                {/* 编辑按钮 */}
-                {isAdmin && (
+                {/* 操作按钮 */}
+                {user && (
                 <View className="player-actions">
                   {editingPlayer?.id === player.id ? (
                     <>
-                      <View
-                        className="action-btn action-btn-save"
-                        onClick={handleSaveEdit}
-                      >
+                      <View className="action-btn action-btn-save" onClick={handleSaveEdit}>
                         <Icon name="Save" size={18} color="#ffffff" />
                       </View>
-                      <View
-                        className="action-btn action-btn-cancel"
-                        onClick={handleCancelEdit}
-                      >
+                      <View className="action-btn action-btn-cancel" onClick={handleCancelEdit}>
                         <Icon name="X" size={18} color="#ffffff" />
                       </View>
                     </>
                   ) : (
-                    <View
-                      className="action-btn action-btn-edit"
-                      onClick={() => handleStartEdit(player)}
-                    >
-                      <Icon name="Edit" size={18} color="#ffffff" />
-                    </View>
+                    <>
+                      {/* Admin 编辑 */}
+                      {isAdmin && (
+                        <View className="action-btn action-btn-edit" onClick={() => handleStartEdit(player)}>
+                          <Icon name="Edit" size={18} color="#ffffff" />
+                        </View>
+                      )}
+
+                      {/* 普通用户编辑自己的玩家 */}
+                      {!isAdmin && isMyPlayer(player) && (
+                        <View className="action-btn action-btn-edit" onClick={() => handleStartEdit(player)}>
+                          <Icon name="Edit" size={18} color="#ffffff" />
+                        </View>
+                      )}
+
+                      {/* Admin：绑定/解绑 */}
+                      {isAdmin && player.userId && (
+                        <View className="action-btn action-btn-unbind" onClick={() => handleUnbind(player.id)}>
+                          <Text style={{ color: '#fff', fontSize: '22px' }}>解绑</Text>
+                        </View>
+                      )}
+                      {isAdmin && !player.userId && (
+                        <View className="action-btn action-btn-bind" onClick={() => handleBind(player.id)}>
+                          <Text style={{ color: '#fff', fontSize: '22px' }}>绑定</Text>
+                        </View>
+                      )}
+
+                      {/* 普通用户：绑定/解绑/状态 */}
+                      {!isAdmin && isMyPlayer(player) && (
+                        <View className="action-btn action-btn-unbind" onClick={() => handleUnbind(player.id)}>
+                          <Text style={{ color: '#fff', fontSize: '22px' }}>解绑</Text>
+                        </View>
+                      )}
+                      {!isAdmin && !isMyPlayer(player) && !player.userId && (
+                        Taro.getEnv() === Taro.ENV_TYPE.WEAPP ? (
+                          <Button openType="chooseAvatar" className="action-btn action-btn-bind" onChooseAvatar={(e: any) => handleWechatBind(player.id, e)}>
+                            <Text style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold' }}>绑定</Text>
+                          </Button>
+                        ) : (
+                          <View className="action-btn action-btn-bind" onClick={() => handleBind(player.id)}>
+                            <Text style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold' }}>绑定</Text>
+                          </View>
+                        )
+                      )}
+                      {!isAdmin && !isMyPlayer(player) && player.userId && (
+                        <View className="bound-badge">
+                          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: '20px' }}>已绑定</Text>
+                        </View>
+                      )}
+                    </>
                   )}
                 </View>
                 )}

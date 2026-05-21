@@ -40,6 +40,7 @@ export const players = pgTable(
       .default(sql`gen_random_uuid()`),
     name: varchar("name", { length: 50 }).notNull(),
     avatar: text("avatar"), // 头像URL（可选）
+    userId: varchar("user_id", { length: 36 }), // 绑定的用户ID
     createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' })
       .defaultNow()
       .notNull(),
@@ -47,6 +48,7 @@ export const players = pgTable(
   },
   (table) => [
     index("players_name_idx").on(table.name),
+    index("players_user_id_idx").on(table.userId),
   ]
 );
 

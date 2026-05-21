@@ -584,3 +584,57 @@
   font-size: 24px;
   font-weight: 600;
 }
+
+/* 绑定按钮 */
+.action-btn-bind {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  padding: 10px 20px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  min-height: 56px;
+  border: none;
+  font-family: inherit;
+}
+
+.action-btn-unbind {
+  background: rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  min-height: 56px;
+}
+
+/* 已绑定徽标 */
+.bound-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Admin 视图中的绑定状态文字 */
+.bound-indicator {
+  display: block;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+/* 微信 Button 样式重置 */
+button.action-btn-bind {
+  outline: none;
+  line-height: 1;
+}
+
+button.action-btn-bind::after {
+  border: none;
+}

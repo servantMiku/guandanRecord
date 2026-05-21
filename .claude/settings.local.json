@@ -38,7 +38,12 @@
       "Bash(npx kill-port *)",
       "Bash(npx nest *)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'Players: {len\\(d[\\\\\"data\\\\\"]\\)}, first: {d[\\\\\"data\\\\\"][0][\\\\\"name\\\\\"] if d[\\\\\"data\\\\\"] else \\\\\"none\\\\\"}'\\)\")",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'OK: {len\\(d[\\\\\"data\\\\\"]\\)} players'\\)\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'OK: {len\\(d[\\\\\"data\\\\\"]\\)} players'\\)\")",
+      "Bash(pnpm tsc *)",
+      "Bash(pkill -f \"node.*server\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\('API works:', data['code']\\); print\\('Has user_id:', 'user_id' in data['data'][0]\\)\")",
+      "WebSearch",
+      "Bash(claude plugin *)"
     ]
   }
 }
