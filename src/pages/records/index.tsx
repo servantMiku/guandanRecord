@@ -295,12 +295,12 @@ export default function RecordsPage() {
                     <View className="match-team winner-team">
                       <View className="team-avatars">
                         <View className="player-avatar-wrapper">
-                            <PlayerAvatar player={getPlayer(winnerP1)} size={72} />
+                            <PlayerAvatar player={getPlayer(winnerP1)} size={40} />
                             <Text className="avatar-name winner-name">{getPlayerName(winnerP1)}</Text>
                           </View>
                           <Text className="player-plus">+</Text>
                           <View className="player-avatar-wrapper">
-                            <PlayerAvatar player={getPlayer(winnerP2)} size={72} />
+                            <PlayerAvatar player={getPlayer(winnerP2)} size={40} />
                             <Text className="avatar-name winner-name">{getPlayerName(winnerP2)}</Text>
                           </View>
                       </View>
@@ -318,12 +318,12 @@ export default function RecordsPage() {
                     <View className="match-team loser-team">
                       <View className="team-avatars">
                         <View className="player-avatar-wrapper">
-                            <PlayerAvatar player={getPlayer(loserP1)} size={72} />
+                            <PlayerAvatar player={getPlayer(loserP1)} size={40} />
                             <Text className="avatar-name loser-name">{getPlayerName(loserP1)}</Text>
                           </View>
                           <Text className="player-plus">+</Text>
                           <View className="player-avatar-wrapper">
-                            <PlayerAvatar player={getPlayer(loserP2)} size={72} />
+                            <PlayerAvatar player={getPlayer(loserP2)} size={40} />
                             <Text className="avatar-name loser-name">{getPlayerName(loserP2)}</Text>
                           </View>
                       </View>
