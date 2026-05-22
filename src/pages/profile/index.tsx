@@ -703,7 +703,7 @@ export default function ProfilePage() {
             {user && !isAdmin && (
               <View className="bind-hint">
                 <View className="bind-hint-dot" />
-                <Text className="bind-hint-text">点击玩家旁的"绑定"按钮，将微信账号与该玩家关联</Text>
+                <Text className="bind-hint-text">点击玩家旁的&ldquo;绑定&rdquo;按钮，将微信账号与该玩家关联</Text>
               </View>
             )}
             {players.map((player, index) => (
