@@ -428,7 +428,7 @@ export class MatchesController {
         try {
           console.log(`正在处理玩家: ${playerId}`)
 
-          // 获取玩家名称
+          // 获取玩家名称（仅用于日志）
           const { data: player, error: playerError } = await client
             .from('players')
             .select('name')
@@ -446,25 +446,20 @@ export class MatchesController {
           }
 
           // 判断该玩家是否获胜
-          const isWinner = 
-            (matchData.team1_player1_id === playerId || matchData.team1_player2_id === playerId) 
-              ? matchData.winner_team === 1 
+          const isWinner =
+            (matchData.team1_player1_id === playerId || matchData.team1_player2_id === playerId)
+              ? matchData.winner_team === 1
               : matchData.winner_team === 2
 
           console.log(`玩家 ${playerId} (${player.name}) 获胜:`, isWinner)
 
-          // 获取现有统计数据
-          const { data: existing, error: existingError } = await client
+          // 使用 maybeSingle 避免因重复记录导致查询失败
+          const { data: existing } = await client
             .from('player_stats')
             .select('*')
             .eq('season_id', seasonId)
             .eq('player_id', playerId)
-            .single()
-
-          if (existingError && existingError.code !== 'PGRST116') {
-            console.error(`查询玩家 ${playerId} 统计失败:`, existingError)
-            continue
-          }
+            .maybeSingle()
 
           const delta = isAdd ? 1 : -1
           const winDelta = isWinner ? delta : 0
@@ -473,8 +468,8 @@ export class MatchesController {
             // 更新现有统计
             const newTotalMatches = Math.max(0, (existing.total_matches || 0) + delta)
             const newWins = Math.max(0, (existing.wins || 0) + winDelta)
-            const newWinRate = newTotalMatches > 0 
-              ? ((newWins / newTotalMatches) * 100).toFixed(2) 
+            const newWinRate = newTotalMatches > 0
+              ? ((newWins / newTotalMatches) * 100).toFixed(2)
               : '0.00'
 
             console.log(`更新玩家 ${playerId} 统计:`, {

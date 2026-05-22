@@ -2,7 +2,7 @@ import { View, Text, Input, Button } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
-import { getStoredUser, loginWithPassword, logout, UserInfo } from '@/stores/authStore'
+import { getStoredUser, loginWithPassword, loginWithWechat, logout, UserInfo } from '@/stores/authStore'
 import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
@@ -27,8 +27,9 @@ type Player = {
   id: string
   name: string
   avatar: string | null
-  createdAt: string
-  userId: string | null
+  created_at: string
+  updated_at: string
+  user_id: string | null
 }
 
 type EditingPlayer = {
@@ -55,7 +56,7 @@ export default function ProfilePage() {
 
   const isAdmin = user?.role === 'admin'
   const isMyPlayer = (player: Player): boolean => {
-    return !!user && player.userId === user.id
+    return !!user && player.user_id === user.id
   }
 
   const refreshUser = () => {
@@ -69,6 +70,7 @@ export default function ProfilePage() {
 
   // 页面显示时刷新数据
   useDidShow(() => {
+    refreshUser()
     fetchPlayers()
   })
 
@@ -151,15 +153,40 @@ export default function ProfilePage() {
       return
     }
     setLoginLoading(true)
-    const result = await loginWithPassword(password.trim())
-    setLoginLoading(false)
+    try {
+      const result = await loginWithPassword(password.trim())
+      if (result) {
+        Taro.showToast({ title: '登录成功', icon: 'success' })
+        setShowPasswordLogin(false)
+        setPassword('')
+        refreshUser()
+        fetchPlayers()
+      } else {
+        Taro.showToast({ title: '密码错误', icon: 'none' })
+      }
+    } catch (error) {
+      console.error('登录异常:', error)
+      Taro.showToast({ title: '登录失败，请重试', icon: 'none' })
+    } finally {
+      setLoginLoading(false)
+    }
+  }
+
+  const handleShowLoginForm = () => {
+    setShowPasswordLogin(true)
+  }
+
+  // 微信用户登录
+  const handleWechatLogin = async () => {
+    Taro.showLoading({ title: '登录中...' })
+    const result = await loginWithWechat()
+    Taro.hideLoading()
     if (result) {
       Taro.showToast({ title: '登录成功', icon: 'success' })
-      setShowPasswordLogin(false)
-      setPassword('')
       refreshUser()
+      fetchPlayers()
     } else {
-      Taro.showToast({ title: '密码错误', icon: 'none' })
+      Taro.showToast({ title: '登录失败，请重试', icon: 'none' })
     }
   }
 
@@ -171,11 +198,14 @@ export default function ProfilePage() {
         if (res.confirm) {
           logout()
           setUser(null)
+          setShowPasswordLogin(false)
+          setPassword('')
           Taro.showToast({ title: '已退出', icon: 'success' })
         }
       }
     })
   }
+
 
   const handleCancelAddPlayer = () => {
     setShowAddInput(false)
@@ -568,7 +598,7 @@ export default function ProfilePage() {
       {/* 头部 - 用户信息 */}
       <View className="header">
         {user ? (
-          <View>
+          <View key="header-logged-in">
             <View className="header-user-row">
               <View className="header-avatar">
                 <Text className="header-avatar-text">
@@ -585,25 +615,32 @@ export default function ProfilePage() {
             <Text className="header-logout" onClick={handleLogout}>退出登录</Text>
           </View>
         ) : (
-          <View>
+          <View key="header-not-logged-in">
             <Text className="header-title">未登录</Text>
             <Text className="header-subtitle">登录后可使用完整功能</Text>
           </View>
         )}
       </View>
 
-      {/* H5 密码登录 */}
-      {!user && !showPasswordLogin && Taro.getEnv() !== Taro.ENV_TYPE.WEAPP && (
-        <View className="login-section">
-          <View className="login-btn" onClick={() => setShowPasswordLogin(true)}>
+      {/* 登录区域 — 非管理员用户可见 */}
+      {!isAdmin && !showPasswordLogin && (
+        <View className="login-section" key="login-section">
+          {/* 微信用户登录：未登录时显示 */}
+          {!user && Taro.getEnv() === Taro.ENV_TYPE.WEAPP && (
+            <View className="login-btn login-btn-wechat" onClick={handleWechatLogin}>
+              <Icon name="User" size={24} color="#ffffff" />
+              <Text className="login-btn-text">微信用户登录</Text>
+            </View>
+          )}
+          <View className="login-btn" onClick={handleShowLoginForm}>
             <Icon name="Shield" size={24} color="#ffffff" />
-            <Text className="login-btn-text">管理员登录</Text>
+            <Text className="login-btn-text">{user ? '切换管理员账号' : '管理员登录'}</Text>
           </View>
         </View>
       )}
 
-      {!user && showPasswordLogin && (
-        <View className="login-section">
+      {!isAdmin && showPasswordLogin && (
+        <View className="login-section" key="login-form-section">
           <View className="login-form">
             <Input
               className="login-input"
@@ -663,8 +700,14 @@ export default function ProfilePage() {
             )}
 
             <View className="player-list">
+            {user && !isAdmin && (
+              <View className="bind-hint">
+                <View className="bind-hint-dot" />
+                <Text className="bind-hint-text">点击玩家旁的"绑定"按钮，将微信账号与该玩家关联</Text>
+              </View>
+            )}
             {players.map((player, index) => (
-              <View key={player.id} className="player-card">
+              <View key={player.id} className={`player-card ${player.user_id ? 'player-card-bound' : ''}`}>
                 <View className="player-info">
                   <View style={{ position: 'relative' }}>
                     <PlayerAvatar player={player} size={80} colorIndex={index} onClick={(isAdmin || isMyPlayer(player)) ? () => pickAvatar(player) : undefined} />
@@ -696,10 +739,16 @@ export default function ProfilePage() {
                     ) : (
                       <>
                         <Text className="player-name">{player.name}</Text>
-                        {player.userId && isAdmin && (
-                          <Text className="bound-indicator">
-                            已绑定{player.userId === user?.id ? ' (我)' : ''}
-                          </Text>
+                        {player.user_id && (
+                          <View className="bound-status">
+                            <View className="bound-dot" />
+                            <Text className="bound-indicator">
+                              已绑定{player.user_id === user?.id ? ' (我)' : ''}
+                            </Text>
+                          </View>
+                        )}
+                        {!player.user_id && !isAdmin && (
+                          <Text className="unbound-indicator">未绑定</Text>
                         )}
                       </>
                     )}
@@ -735,14 +784,15 @@ export default function ProfilePage() {
                       )}
 
                       {/* Admin：绑定/解绑 */}
-                      {isAdmin && player.userId && (
+                      {isAdmin && player.user_id && (
                         <View className="action-btn action-btn-unbind" onClick={() => handleUnbind(player.id)}>
                           <Text style={{ color: '#fff', fontSize: '22px' }}>解绑</Text>
                         </View>
                       )}
-                      {isAdmin && !player.userId && (
+                      {isAdmin && !player.user_id && (
                         <View className="action-btn action-btn-bind" onClick={() => handleBind(player.id)}>
-                          <Text style={{ color: '#fff', fontSize: '22px' }}>绑定</Text>
+                          <Icon name="User" size={18} color="#ffffff" />
+                          <Text style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold' }}>绑定</Text>
                         </View>
                       )}
 
@@ -752,18 +802,20 @@ export default function ProfilePage() {
                           <Text style={{ color: '#fff', fontSize: '22px' }}>解绑</Text>
                         </View>
                       )}
-                      {!isAdmin && !isMyPlayer(player) && !player.userId && (
+                      {!isAdmin && !isMyPlayer(player) && !player.user_id && (
                         Taro.getEnv() === Taro.ENV_TYPE.WEAPP ? (
                           <Button openType="chooseAvatar" className="action-btn action-btn-bind" onChooseAvatar={(e: any) => handleWechatBind(player.id, e)}>
+                            <Icon name="User" size={18} color="#ffffff" />
                             <Text style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold' }}>绑定</Text>
                           </Button>
                         ) : (
                           <View className="action-btn action-btn-bind" onClick={() => handleBind(player.id)}>
+                            <Icon name="User" size={18} color="#ffffff" />
                             <Text style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold' }}>绑定</Text>
                           </View>
                         )
                       )}
-                      {!isAdmin && !isMyPlayer(player) && player.userId && (
+                      {!isAdmin && !isMyPlayer(player) && player.user_id && (
                         <View className="bound-badge">
                           <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: '20px' }}>已绑定</Text>
                         </View>

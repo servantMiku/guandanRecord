@@ -521,16 +521,40 @@ export class StatsController {
       }
     }
 
+    // 从 matches 数据实时计算每位玩家的参赛场次和胜场数（绕过 player_stats 预聚合表的延迟问题）
+    const matchesPlayerStats = new Map<string, { totalMatches: number; wins: number }>()
+    if (matches) {
+      for (const match of matches) {
+        const team1Players = [match.team1_player1_id, match.team1_player2_id].filter(Boolean)
+        const team2Players = [match.team2_player1_id, match.team2_player2_id].filter(Boolean)
+        const allPlayers = [...team1Players, ...team2Players]
+        const isTeam1Win = match.winner_team === 1
+        for (const playerId of allPlayers) {
+          if (!playerId) continue
+          const cur = matchesPlayerStats.get(playerId) || { totalMatches: 0, wins: 0 }
+          cur.totalMatches += 1
+          const isWinner = team1Players.includes(playerId) ? isTeam1Win : !isTeam1Win
+          if (isWinner) cur.wins += 1
+          matchesPlayerStats.set(playerId, cur)
+        }
+      }
+    }
+
     // 合并玩家名称并转换字段名为 camelCase，添加连胜/连败数据
+    // 优先使用 matches 实时计算数据，fallback 到 player_stats 预聚合表
     // 确保所有玩家都显示，即使没有比赛记录
     const playerStatsMap = new Map(
       (playerStats || []).map(stat => [stat.player_id, stat])
     )
-    
+
     const playerStatsWithNames = (players || []).map(player => {
       const stat = playerStatsMap.get(player.id)
-      const streak = streakMap.get(player.id) || { 
-        currentStreak: 0, 
+      const computed = matchesPlayerStats.get(player.id)
+      const totalMatches = computed?.totalMatches ?? stat?.total_matches ?? 0
+      const wins = computed?.wins ?? stat?.wins ?? 0
+      const winRate = totalMatches > 0 ? ((wins / totalMatches) * 100).toFixed(2) : '0.00'
+      const streak = streakMap.get(player.id) || {
+        currentStreak: 0,
         currentType: 'none' as const,
         maxWinStreak: 0,
         maxLoseStreak: 0
@@ -540,9 +564,9 @@ export class StatsController {
         seasonId: stat?.season_id || seasonId,
         playerId: player.id,
         playerName: player.name,
-        totalMatches: stat?.total_matches || 0,
-        wins: stat?.wins || 0,
-        winRate: stat?.win_rate || '0.00',
+        totalMatches,
+        wins,
+        winRate,
         streak: streak.currentStreak,
         streakType: streak.currentType,
         maxWinStreak: streak.maxWinStreak,
