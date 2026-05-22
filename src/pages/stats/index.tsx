@@ -163,6 +163,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true)
   const [sortField, setSortField] = useState<SortField>('winRate')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [showAllRankings, setShowAllRankings] = useState(false)
 
   const fetchPlayers = async () => {
     try {
@@ -266,8 +267,8 @@ export default function StatsPage() {
 
   // 默认排序：胜率优先，胜场次之
   const getSortedStats = () => {
-    // 应用荣誉门槛过滤（非 GOAT 模式）
-    const filteredStats = selectedSeasonId !== 'all' && summary?.threshold
+    // 应用荣誉门槛过滤（非 GOAT 模式，且未开启"显示全部"）
+    const filteredStats = selectedSeasonId !== 'all' && summary?.threshold && !showAllRankings
       ? stats.filter(s => s.isEligible)
       : [...stats]
 
@@ -537,7 +538,18 @@ export default function StatsPage() {
                   荣誉门槛：参赛率 ≥ {(summary.threshold * 100).toFixed(0)}%{summary.minMatchesForAwards > 0 ? `（至少需参赛${summary.minMatchesForAwards}场）` : ''}
                 </Text>
                 <Text className="threshold-sub-text" style={{ marginTop: '4px' }}>
-                  计算方式：{getThresholdMethodText()} · 排名已过滤不符合门槛的玩家
+                  计算方式：{getThresholdMethodText()}
+                </Text>
+              </View>
+            )}
+            {/* 显示全部开关 */}
+            {selectedSeasonId !== 'all' && summary?.threshold && summary.threshold > 0 && (
+              <View className="show-all-toggle" onClick={() => setShowAllRankings(!showAllRankings)}>
+                <View className={`toggle-switch ${showAllRankings ? 'toggle-switch-on' : ''}`}>
+                  <View className="toggle-slider" />
+                </View>
+                <Text className="toggle-label">
+                  {showAllRankings ? '显示全部排名' : '仅显示荣誉门槛内'}
                 </Text>
               </View>
             )}
