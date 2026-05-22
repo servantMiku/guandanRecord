@@ -18,10 +18,22 @@ const avatarColors = [
   'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
 ]
 
-export function PlayerAvatar({ player, size = 60, className = '', colorIndex = 0, onClick }: PlayerAvatarProps) {
+// 根据字符串生成确定性的颜色索引
+function hashColorIndex(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return Math.abs(hash)
+}
+
+export function PlayerAvatar({ player, size = 60, className = '', colorIndex, onClick }: PlayerAvatarProps) {
   const hasAvatar = player?.avatar && player.avatar.length > 10
   const initial = player?.name ? player.name.charAt(0).toUpperCase() : '?'
   const fontSize = size * 0.45
+
+  // 未指定 colorIndex 时，用玩家 ID 或名字做哈希得到确定性颜色
+  const index = colorIndex ?? (player?.id ? hashColorIndex(player.id) : player?.name ? hashColorIndex(player.name) : 0)
 
   return (
     <View
@@ -35,7 +47,7 @@ export function PlayerAvatar({ player, size = 60, className = '', colorIndex = 0
         justifyContent: 'center',
         overflow: 'hidden',
         flexShrink: 0,
-        background: hasAvatar ? 'none' : avatarColors[colorIndex % avatarColors.length],
+        background: hasAvatar ? 'none' : avatarColors[index % avatarColors.length],
         position: 'relative',
       }}
       onClick={onClick}
