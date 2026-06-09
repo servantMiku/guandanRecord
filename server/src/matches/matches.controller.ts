@@ -285,9 +285,13 @@ export class MatchesController {
 
     console.log('原始战绩数据:', oldData)
 
-    // 先回退旧战绩的影响
-    console.log('先回退旧战绩对统计的影响')
-    await this.updatePlayerStatsIncremental(oldData.season_id, oldData, false)
+    // 先回退旧战绩的影响（即使失败也不影响更新）
+    try {
+      console.log('先回退旧战绩对统计的影响')
+      await this.updatePlayerStatsIncremental(oldData.season_id, oldData, false)
+    } catch (statsError) {
+      console.error('回退旧战绩统计失败:', statsError)
+    }
 
     // 记录编辑历史
     const editHistory = oldData.edit_history || []
@@ -301,7 +305,7 @@ export class MatchesController {
       }
     })
 
-    // 构建新数据
+    // 构建新数据（只更新 body 中提供的字段，未提供的保持原值）
     const newMatchData: any = {
       season_id: oldData.season_id,
       team1_player1_id: body.team1Player1Id !== undefined ? body.team1Player1Id : oldData.team1_player1_id,
@@ -309,16 +313,14 @@ export class MatchesController {
       team2_player1_id: body.team2Player1Id !== undefined ? body.team2Player1Id : oldData.team2_player1_id,
       team2_player2_id: body.team2Player2Id !== undefined ? body.team2Player2Id : oldData.team2_player2_id,
       winner_team: body.winnerTeam !== undefined ? body.winnerTeam : oldData.winner_team,
-      score: body.score,
-      remark: body.remark,
+      score: body.score !== undefined ? body.score : oldData.score,
+      remark: body.remark !== undefined ? body.remark : oldData.remark,
       edit_history: editHistory,
       updated_at: new Date().toISOString()
     }
-    
+
     // 如果提供了时间，更新创建时间（将本地时间转换为带时区的 ISO 格式）
     if (body.matchTime) {
-      // 前端发送的格式是 YYYY-MM-DDTHH:mm，需要确保按本地时间解析
-      // 通过添加秒和时区信息，确保正确转换为 UTC
       const localDateTime = body.matchTime + ':00+08:00' // 假设是北京时间
       newMatchData.created_at = new Date(localDateTime).toISOString()
     }
@@ -334,6 +336,12 @@ export class MatchesController {
 
     if (error) {
       console.error('更新战绩失败:', error)
+      // 更新失败时恢复旧战绩的统计数据
+      try {
+        await this.updatePlayerStatsIncremental(oldData.season_id, oldData, true)
+      } catch (e) {
+        console.error('恢复旧战绩统计失败:', e)
+      }
       return { code: 500, msg: '更新战绩失败', data: null }
     }
 
