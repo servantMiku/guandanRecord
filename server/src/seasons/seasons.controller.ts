@@ -41,6 +41,9 @@ export class SeasonsController {
           .eq('is_deleted', false)
 
         const realCount = matchIds?.length || 0
+
+
+        // 情况1: 计数不一致，需要修复
         if (season.current_matches !== realCount) {
           console.log(`修复赛季 ${season.name}: current_matches ${season.current_matches} → ${realCount}`)
           const updateData: any = {
@@ -56,6 +59,23 @@ export class SeasonsController {
           season.current_matches = realCount
           if (updateData.status) season.status = updateData.status
           if (updateData.end_date) season.end_date = updateData.end_date
+        }
+
+        // 情况2: 计数一致但已达到总场次却未结束（auto-repair 盲区）
+        if (season.current_matches === realCount
+          && season.status === 'active'
+          && season.total_matches
+          && realCount >= season.total_matches
+        ) {
+          const now = new Date().toISOString()
+          console.log(`赛季 ${season.name} 已达总场次(${realCount}/${season.total_matches})，补结束`)
+          await client.from('seasons').update({
+            status: 'ended',
+            end_date: now,
+            updated_at: now
+          }).eq('id', season.id)
+          season.status = 'ended'
+          season.end_date = now
         }
       } catch (e) {
         console.error(`修复赛季 ${season.id} current_matches 失败:`, e)
@@ -110,6 +130,36 @@ export class SeasonsController {
     }))
 
     return { code: 200, msg: 'success', data: seasons }
+  }
+
+  @Get(':id')
+  async getSeasonById(@Param('id') id: string) {
+    console.log('获取赛季详情请求 - ID:', id)
+    const client = getSupabaseClient()
+    const { data, error } = await client
+      .from('seasons')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      console.error('获取赛季详情失败:', error)
+      return { code: 500, msg: '获取赛季详情失败', data: null }
+    }
+
+    const season = data ? {
+      id: data.id,
+      name: data.name,
+      startDate: data.start_date,
+      endDate: data.end_date,
+      totalMatches: data.total_matches,
+      currentMatches: data.current_matches,
+      status: data.status,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    } : null
+
+    return { code: 200, msg: 'success', data: season }
   }
 
   @Post()

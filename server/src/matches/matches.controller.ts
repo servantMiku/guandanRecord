@@ -267,6 +267,8 @@ export class MatchesController {
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   async updateMatch(@Param('id') id: string, @Body() body: any) {
     console.log('更新战绩请求 - ID:', id, '数据:', body)
     const client = getSupabaseClient()
@@ -356,6 +358,41 @@ export class MatchesController {
       console.error('更新玩家统计数据失败，但战绩已更新:', statsError)
     }
 
+    // 更新后重新统计赛季场次（确保一致）
+    try {
+      const { data: matchIds } = await client
+        .from('matches')
+        .select('id')
+        .eq('season_id', oldData.season_id)
+        .eq('is_deleted', false)
+
+      if (matchIds) {
+        const newCount = matchIds.length
+        const seasonUpdateData: any = {
+          current_matches: newCount,
+          updated_at: new Date().toISOString()
+        }
+
+        // 检查是否达到总场次
+        const { data: seasonForCheck } = await client
+          .from('seasons')
+          .select('total_matches')
+          .eq('id', oldData.season_id)
+          .single()
+
+        if (seasonForCheck?.total_matches && newCount >= seasonForCheck.total_matches) {
+          seasonUpdateData.status = 'ended'
+          seasonUpdateData.end_date = new Date().toISOString()
+          console.log('修改战绩：赛季达到总场次，自动结束')
+        }
+
+        await client.from('seasons').update(seasonUpdateData).eq('id', oldData.season_id)
+        console.log('修改战绩后赛季场次已重新统计:', newCount)
+      }
+    } catch (recountError) {
+      console.error('修改战绩后统计赛季场次失败:', recountError)
+    }
+
     // 记录操作日志
     this.logService.log({
       action: 'update',
@@ -368,6 +405,8 @@ export class MatchesController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   async deleteMatch(@Param('id') id: string) {
     console.log('删除战绩请求 - ID:', id)
     const client = getSupabaseClient()

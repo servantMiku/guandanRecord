@@ -2,6 +2,7 @@ import { View, Text, Input } from '@tarojs/components'
 import { useState, useEffect, useCallback } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
 import { Network } from '@/network'
+import { getStoredUser } from '@/stores/authStore'
 import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
@@ -49,6 +50,7 @@ export default function RecordDetailPage() {
   const [editedScore, setEditedScore] = useState('')
   const [editedRemark, setEditedRemark] = useState('')
   const [loading, setLoading] = useState(true)
+  const isAdmin = getStoredUser()?.role === 'admin'
 
   const fetchData = useCallback(async () => {
     try {
@@ -158,7 +160,7 @@ export default function RecordDetailPage() {
           <Icon name="ArrowLeft" size={24} color="#ffffff" />
         </View>
         <Text className="header-title">战绩详情</Text>
-        {!editing && (
+        {isAdmin && !editing && (
           <View onClick={handleEdit}>
             <Icon name="Edit" size={24} color="#f472b6" />
           </View>

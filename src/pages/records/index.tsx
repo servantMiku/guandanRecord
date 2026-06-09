@@ -2,6 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Network } from '@/network'
+import { getStoredUser } from '@/stores/authStore'
 import { PlayerAvatar } from '@/components/PlayerAvatar'
 import './index.css'
 
@@ -56,6 +57,7 @@ export default function RecordsPage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('')
   const [loading, setLoading] = useState(true)
+  const isAdmin = getStoredUser()?.role === 'admin'
 
   const fetchSeasons = async () => {
     try {
@@ -273,6 +275,7 @@ export default function RecordsPage() {
                       <Text className="match-date">{formatDate(match.created_at || match.createdAt)}</Text>
                       <Text className="match-number">第{matchNumber}场</Text>
                     </View>
+                    {isAdmin && (
                     <View className="match-actions">
                       <View
                         className="action-btn action-btn-edit"
@@ -287,6 +290,7 @@ export default function RecordsPage() {
                         <Icon name="Trash2" size={16} color="#ffffff" />
                       </View>
                     </View>
+                    )}
                   </View>
 
                   {/* 对战双方 */}
