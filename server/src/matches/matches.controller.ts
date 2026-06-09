@@ -173,40 +173,47 @@ export class MatchesController {
       console.error('更新玩家统计数据失败，但战绩已创建:', statsError)
     }
 
-    // 更新赛季 current_matches 并检查是否达到总场次
+    // 统计该赛季实际非删除战绩数（原子操作，避免 race condition）
     try {
       console.log('开始更新赛季', body.seasonId, '的当前场次')
-      const { data: seasonData } = await client
-        .from('seasons')
-        .select('total_matches, current_matches')
-        .eq('id', body.seasonId)
-        .single()
+      const { count: actualMatchCount, error: countError } = await client
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('season_id', body.seasonId)
+        .eq('is_deleted', false)
 
-      if (seasonData) {
-        const newCurrent = (seasonData.current_matches || 0) + 1
-        console.log('赛季当前场次:', newCurrent, '/', seasonData.total_matches)
+      if (countError) {
+        console.error('统计战绩数失败:', countError)
+      } else if (actualMatchCount !== null) {
+        console.log('赛季实际场次:', actualMatchCount)
 
-        const updateData: any = {
-          current_matches: newCurrent,
+        const seasonUpdateData: any = {
+          current_matches: actualMatchCount,
           updated_at: new Date().toISOString()
         }
 
-        // 如果达到总场次，自动结束赛季
-        if (seasonData.total_matches && newCurrent >= seasonData.total_matches) {
-          updateData.end_date = new Date().toISOString()
-          updateData.status = 'ended'
+        // 检查是否达到总场次
+        const { data: seasonForCheck } = await client
+          .from('seasons')
+          .select('total_matches')
+          .eq('id', body.seasonId)
+          .single()
+
+        if (seasonForCheck?.total_matches && actualMatchCount >= seasonForCheck.total_matches) {
+          seasonUpdateData.end_date = new Date().toISOString()
+          seasonUpdateData.status = 'ended'
           console.log('赛季达到总场次，自动结束赛季')
         }
 
         const { error: seasonUpdateError } = await client
           .from('seasons')
-          .update(updateData)
+          .update(seasonUpdateData)
           .eq('id', body.seasonId)
 
         if (seasonUpdateError) {
           console.error('更新赛季场次失败:', seasonUpdateError)
         } else {
-          console.log('赛季场次更新成功:', newCurrent)
+          console.log('赛季场次更新成功:', actualMatchCount)
         }
       }
     } catch (seasonError) {
@@ -395,6 +402,24 @@ export class MatchesController {
     }
 
     console.log('战绩删除成功:', data?.[0]?.id)
+
+    // 回退赛季 current_matches（重新统计实际场次）
+    try {
+      const { count: newMatchCount, error: countError } = await client
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('season_id', matchData.season_id)
+        .eq('is_deleted', false)
+
+      if (!countError && newMatchCount !== null) {
+        await client
+          .from('seasons')
+          .update({ current_matches: newMatchCount, updated_at: new Date().toISOString() })
+          .eq('id', matchData.season_id)
+      }
+    } catch (recountError) {
+      console.error('回退赛季场次失败:', recountError)
+    }
 
     // 记录操作日志
     this.logService.log({

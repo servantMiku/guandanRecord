@@ -183,13 +183,17 @@ export default function SeasonsPage() {
 
     if (confirm) {
       try {
-        await Network.request({
+        const res = await Network.request({
           url: `/api/seasons/${season.id}/end`,
           method: 'PUT',
           data: { endDate: today }
         })
-        Taro.showToast({ title: '赛季已结束', icon: 'success' })
-        fetchSeasons()
+        if (res.data && res.data.code === 200) {
+          Taro.showToast({ title: '赛季已结束', icon: 'success' })
+          fetchSeasons()
+        } else {
+          Taro.showToast({ title: res.data?.msg || '结束赛季失败', icon: 'none' })
+        }
       } catch (error) {
         console.error('结束赛季失败:', error)
         Taro.showToast({ title: '结束赛季失败', icon: 'none' })

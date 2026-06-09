@@ -211,7 +211,7 @@ export class SeasonsController {
       console.log('开始清空赛季', id, '的历史数据')
       const { error: matchesError } = await client
         .from('matches')
-        .update({ deleted_at: new Date().toISOString() })
+        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
         .eq('season_id', id)
         .is('deleted_at', null)
 
