@@ -221,7 +221,7 @@ export class MatchesController {
 
         // 检查是否达到总场次
         if (seasonForCheck?.total_matches && actualMatchCount >= seasonForCheck.total_matches) {
-          seasonUpdateData.end_date = new Date().toISOString()
+          seasonUpdateData.end_date = new Date().toISOString().split('T')[0]
           seasonUpdateData.status = 'ended'
           console.log('赛季达到总场次，自动结束赛季')
         }
@@ -403,7 +403,7 @@ export class MatchesController {
 
         if (seasonForCheck?.total_matches && newCount >= seasonForCheck.total_matches) {
           seasonUpdateData.status = 'ended'
-          seasonUpdateData.end_date = new Date().toISOString()
+          seasonUpdateData.end_date = new Date().toISOString().split('T')[0]
           console.log('修改战绩：赛季达到总场次，自动结束')
         }
 

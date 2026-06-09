@@ -51,7 +51,7 @@ export class SeasonsController {
             updated_at: new Date().toISOString()
           }
           if (season.total_matches && realCount >= season.total_matches) {
-            updateData.end_date = new Date().toISOString()
+            updateData.end_date = new Date().toISOString().split('T')[0]
             updateData.status = 'ended'
             console.log(`赛季 ${season.name} 达到总场次，自动结束`)
           }
@@ -68,14 +68,15 @@ export class SeasonsController {
           && realCount >= season.total_matches
         ) {
           const now = new Date().toISOString()
+          const today = now.split('T')[0]
           console.log(`赛季 ${season.name} 已达总场次(${realCount}/${season.total_matches})，补结束`)
           await client.from('seasons').update({
             status: 'ended',
-            end_date: now,
+            end_date: today,
             updated_at: now
           }).eq('id', season.id)
           season.status = 'ended'
-          season.end_date = now
+          season.end_date = today
         }
       } catch (e) {
         console.error(`修复赛季 ${season.id} current_matches 失败:`, e)
