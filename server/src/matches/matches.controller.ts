@@ -176,15 +176,16 @@ export class MatchesController {
     // 统计该赛季实际非删除战绩数（原子操作，避免 race condition）
     try {
       console.log('开始更新赛季', body.seasonId, '的当前场次')
-      const { count: actualMatchCount, error: countError } = await client
+      const { data: matchIds, error: countError } = await client
         .from('matches')
-        .select('*', { count: 'exact', head: true })
+        .select('id')
         .eq('season_id', body.seasonId)
         .eq('is_deleted', false)
 
       if (countError) {
         console.error('统计战绩数失败:', countError)
-      } else if (actualMatchCount !== null) {
+      } else if (matchIds) {
+        const actualMatchCount = matchIds.length
         console.log('赛季实际场次:', actualMatchCount)
 
         const seasonUpdateData: any = {
@@ -405,16 +406,16 @@ export class MatchesController {
 
     // 回退赛季 current_matches（重新统计实际场次）
     try {
-      const { count: newMatchCount, error: countError } = await client
+      const { data: matchIds, error: countError } = await client
         .from('matches')
-        .select('*', { count: 'exact', head: true })
+        .select('id')
         .eq('season_id', matchData.season_id)
         .eq('is_deleted', false)
 
-      if (!countError && newMatchCount !== null) {
+      if (!countError && matchIds) {
         await client
           .from('seasons')
-          .update({ current_matches: newMatchCount, updated_at: new Date().toISOString() })
+          .update({ current_matches: matchIds.length, updated_at: new Date().toISOString() })
           .eq('id', matchData.season_id)
       }
     } catch (recountError) {

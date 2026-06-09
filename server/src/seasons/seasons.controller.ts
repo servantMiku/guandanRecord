@@ -30,6 +30,38 @@ export class SeasonsController {
 
     console.log('获取赛季列表成功，数量:', data?.length || 0)
 
+    // 修复活跃赛季的 current_matches 与实际战绩数同步，并检查自动结束
+    const activeSeasons = (data || []).filter((s: any) => s.status === 'active')
+    for (const season of activeSeasons) {
+      try {
+        const { data: matchIds } = await client
+          .from('matches')
+          .select('id')
+          .eq('season_id', season.id)
+          .eq('is_deleted', false)
+
+        const realCount = matchIds?.length || 0
+        if (season.current_matches !== realCount) {
+          console.log(`修复赛季 ${season.name}: current_matches ${season.current_matches} → ${realCount}`)
+          const updateData: any = {
+            current_matches: realCount,
+            updated_at: new Date().toISOString()
+          }
+          if (season.total_matches && realCount >= season.total_matches) {
+            updateData.end_date = new Date().toISOString()
+            updateData.status = 'ended'
+            console.log(`赛季 ${season.name} 达到总场次，自动结束`)
+          }
+          await client.from('seasons').update(updateData).eq('id', season.id)
+          season.current_matches = realCount
+          if (updateData.status) season.status = updateData.status
+          if (updateData.end_date) season.end_date = updateData.end_date
+        }
+      } catch (e) {
+        console.error(`修复赛季 ${season.id} current_matches 失败:`, e)
+      }
+    }
+
     // 转换字段名为 camelCase
     const seasons = (data || []).map((s: any) => ({
       id: s.id,
